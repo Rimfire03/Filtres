@@ -43,11 +43,18 @@ public class OrderLine
         _ => category.ToString()
     };
 
+    /// <summary>Famille des lignes rattachées à des filtres F7 à H13.</summary>
+    public const string OpacimetricFamilyLabel = "Filtres F7 à H13";
+
     /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Sans famille".</summary>
     public const int NoFamilyOverride = -1;
 
+    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Filtres F7 à H13".</summary>
+    public const int OpacimetricFamilyOverride = 100;
+
     /// <summary>Famille choisie manuellement (fenêtre Modifier) : null = automatique (d'après les filtres
-    /// rattachés), <see cref="NoFamilyOverride"/> = "Sans famille", sinon valeur de <see cref="FilterCategory"/>.</summary>
+    /// rattachés), <see cref="NoFamilyOverride"/> = "Sans famille", <see cref="OpacimetricFamilyOverride"/> =
+    /// "Filtres F7 à H13", sinon valeur de <see cref="FilterCategory"/>.</summary>
     public int? FamilyOverride { get; set; }
 
     /// <summary>Famille affichée (séparateur des grilles Inventaire et Commande) : le choix manuel s'il y en
@@ -57,21 +64,24 @@ public class OrderLine
     {
         null => AutomaticFamilyLabel,
         NoFamilyOverride => NoFamilyLabel,
+        OpacimetricFamilyOverride => OpacimetricFamilyLabel,
         int category => FamilyLabelFor((FilterCategory)category)
     };
 
     /// <summary>Famille déduite de la catégorie des filtres rattachés : "Sans famille" si aucun, "Plusieurs
-    /// familles" s'ils sont de catégories différentes. Nécessite FilterLinks et leurs PeriodicFilter chargés.</summary>
+    /// familles" s'ils sont de catégories différentes ("Filtres F7 à H13" comptant comme une catégorie).
+    /// Nécessite FilterLinks (avec PeriodicFilter) et OpacimetricLinks chargés.</summary>
     [NotMapped]
     public string AutomaticFamilyLabel
     {
         get
         {
-            var categories = LinkedFilters.Select(f => f.Category).Distinct().ToList();
-            return categories.Count switch
+            var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category)).Distinct().ToList();
+            if (OpacimetricLinks.Count > 0) families.Add(OpacimetricFamilyLabel);
+            return families.Count switch
             {
                 0 => NoFamilyLabel,
-                1 => FamilyLabelFor(categories[0]),
+                1 => families[0],
                 _ => MultipleFamiliesLabel
             };
         }
@@ -91,8 +101,11 @@ public class OrderLine
     /// calcul automatique du besoin semestriel. Voir <see cref="OrderNeedCalculationService"/>.</summary>
     public List<OrderLinePeriodicFilter> FilterLinks { get; set; } = new();
 
+    /// <summary>Rattachement manuel à des filtres F7 à H13 (pas de besoin calculé : besoin saisi).</summary>
+    public List<OrderLineOpacimetricFilter> OpacimetricLinks { get; set; } = new();
+
     [NotMapped]
-    public int LinkedFilterCount => FilterLinks.Count;
+    public int LinkedFilterCount => FilterLinks.Count + OpacimetricLinks.Count;
 
     [NotMapped]
     public string LinkedFilterCountDisplay => LinkedFilterCount switch

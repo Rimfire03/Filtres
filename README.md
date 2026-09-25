@@ -198,11 +198,10 @@ l'historique git.
 
 ## Fonctionnalités par écran
 
-**Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3 et Charbon)** : première colonne de la
+**Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3, Charbon et F7 à H13)** : première colonne de la
 grille, puce **verte** si le filtre est rattaché à une ligne de Commande / Inventaire (bouton
 « Rattacher des filtres... » de l'écran Commande), **rouge** sinon. Le survol de la puce indique la
-ligne concernée. Recalculée à chaque ouverture de l'écran. Les filtres F7 à H13 ne sont pas
-rattachables et n'ont donc pas de puce.
+ligne concernée. Recalculée à chaque ouverture de l'écran.
 
 Chaque catégorie de filtre à périodicité mensuelle (G4 plissé, G4 plan, G3,
 Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
@@ -313,10 +312,16 @@ Famille automatique :
 | uniquement des filtres de « Filtres G4 plan »      | Filtres G4 plan      |
 | uniquement des filtres de « Filtres G3 »           | Filtres G3           |
 | uniquement des filtres de « Charbon »              | Charbon              |
+| uniquement des filtres F7 à H13                    | Filtres F7 à H13     |
 | des filtres de plusieurs catégories                | Plusieurs familles   |
 | aucun filtre                                       | Sans famille         |
 
-Les filtres F7 à H13 ne sont pas rattachables et n'ont donc pas de famille pour le moment.
+**Rattachement des filtres F7 à H13** (migration v15, table `OrderLineOpacimetricFilters`) : ils se
+rattachent à une ligne de Commande / Inventaire comme les autres filtres (fenêtre « Rattacher des
+filtres... » et menu rapide du clic droit sur « Filtres liés », même comparaison approximative des
+dimensions, un filtre = une seule ligne). Une ligne qui n'a que des F7 à H13 est rangée dans la
+famille « Filtres F7 à H13 » (aussi proposée au choix manuel) ; comme pour Charbon, son besoin n'est
+pas calculé et se saisit dans la colonne « Besoin » de l'écran Commande.
 
 - Les lignes sont **regroupées sous un bandeau titre par famille** (même style que la Liste K7),
   dans l'ordre du tableau ci-dessus.

@@ -44,7 +44,7 @@ public partial class OrderView : UserControl
         {
             // TextBlock : un "_" dans un emplacement ne doit pas devenir un raccourci clavier.
             var item = new MenuItem { Header = new TextBlock { Text = option.Label }, IsCheckable = true, IsChecked = option.IsLinked, IsEnabled = App.IsWritable };
-            item.Click += (_, _) => vm.SetQuickLink(line, option.FilterId, item.IsChecked);
+            item.Click += (_, _) => vm.SetQuickLink(line, option.Ref, item.IsChecked);
             menu.Items.Add(item);
         }
 

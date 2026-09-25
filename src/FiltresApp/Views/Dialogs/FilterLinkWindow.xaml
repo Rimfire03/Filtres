@@ -29,7 +29,7 @@
                    Text="Rattacher des filtres à cette ligne de commande"/>
 
         <TextBlock Grid.Row="1" Margin="0,4,0,8" TextWrapping="Wrap" Foreground="Gray"
-                   Text="Choisissez les filtres (G4 plissé, G4 plan, G3, Charbon) concernés par cette ligne. Le besoin de commande (mars / septembre) sera recalculé automatiquement à partir de leur périodicité et de leur quantité en place. Un filtre déjà rattaché à une autre ligne (surligné en rouge ci-dessous) sera déplacé vers celle-ci si vous le cochez."/>
+                   Text="Choisissez les filtres (G4 plissé, G4 plan, G3, Charbon, F7 à H13) concernés par cette ligne. Pour les familles G4 plissés, G4 plan et G3, le besoin (mars / septembre) est recalculé automatiquement à partir de leur périodicité et de leur quantité en place ; pour les autres, il se saisit dans l'écran Commande. Un filtre déjà rattaché à une autre ligne (surligné en rouge ci-dessous) sera déplacé vers celle-ci si vous le cochez."/>
 
         <TextBlock x:Name="DimensionInfoText" Grid.Row="2" Margin="0,0,0,8" TextWrapping="Wrap" FontStyle="Italic" Foreground="Gray"/>
 

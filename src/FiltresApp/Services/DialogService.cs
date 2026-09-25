@@ -12,7 +12,7 @@ public interface IDialogService
     bool EditFields(string title, List<EditField> fields);
     (int Month, DateOnly Date, int Quantity)? PickReplacement(int defaultMonth, int defaultQuantity);
     (DateOnly Date, int Quantity)? PickSimpleReplacement(int defaultQuantity);
-    List<int>? PickFilterLinks(List<FilterPickItem> items);
+    List<FilterRef>? PickFilterLinks(List<FilterPickItem> items);
     void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements);
     void ShowOpacimetricHistory(string location, string dimension, List<OpacimetricReplacement> replacements);
 }
@@ -65,10 +65,10 @@ public class DialogService : IDialogService
         return EditFields("Enregistrer un remplacement", fields) ? (date, qty) : null;
     }
 
-    public List<int>? PickFilterLinks(List<FilterPickItem> items)
+    public List<FilterRef>? PickFilterLinks(List<FilterPickItem> items)
     {
         var window = new FilterLinkWindow(items) { Owner = Application.Current.MainWindow };
-        return window.ShowDialog() == true ? window.SelectedFilterIds : null;
+        return window.ShowDialog() == true ? window.SelectedFilters : null;
     }
 
     public void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements)

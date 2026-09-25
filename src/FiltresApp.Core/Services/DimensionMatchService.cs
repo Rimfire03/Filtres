@@ -58,10 +58,13 @@ public static class DimensionMatchService
     /// <summary>Comparaison approximative : chaque valeur à ±<see cref="ToleranceMm"/> mm près, largeur et
     /// hauteur interchangeables, et épaisseur comparée seulement si les deux côtés en ont une. Retourne
     /// false si l'une des deux dimensions n'a pas pu être lue.</summary>
-    public static bool Matches(OrderLine line, PeriodicFilter filter)
+    public static bool Matches(OrderLine line, PeriodicFilter filter) => Matches(line, filter.Dimension);
+
+    /// <summary>Même comparaison, à partir de la colonne Dimension d'un filtre quelconque (ex. F7 à H13).</summary>
+    public static bool Matches(OrderLine line, string? filterDimension)
     {
         var a = GetOrderLineValues(line);
-        var b = ExtractValues(filter.Dimension);
+        var b = ExtractValues(filterDimension);
         if (a is null || b is null) return false;
 
         var sameOrder = Close(a[0], b[0]) && Close(a[1], b[1]);

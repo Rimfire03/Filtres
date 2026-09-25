@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.ViewModels;
 
-public partial class OpacimetricFilterListViewModel : ObservableObject
+public partial class OpacimetricFilterListViewModel : ObservableObject, IReloadable
 {
     public string Title => "Filtres F7 à H13";
 
@@ -81,8 +81,23 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
         }
     }
 
+    /// <summary>Rechargé à chaque ouverture de l'écran : familles et rattachements à Commande / Inventaire
+    /// (puce "Lié") peuvent avoir changé ailleurs.</summary>
+    public void Reload()
+    {
+        RefreshFamilies();
+        Load();
+    }
+
     private void Load()
     {
+        // Ligne de Commande / Inventaire à laquelle chaque filtre est rattaché (un filtre = une ligne au plus).
+        var linkedLines = App.Db.OrderLineOpacimetricFilters.AsNoTracking()
+            .Select(l => new { l.OpacimetricFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.OpacimetricFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+
         var query = App.Db.OpacimetricFilters
             .Include(f => f.Replacements)
             .Include(f => f.Family)
@@ -99,7 +114,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
             .ThenBy(f => f.Location)
             .ToList();
         Filters = new ObservableCollection<OpacimetricFilterRowViewModel>(
-            all.Select(f => new OpacimetricFilterRowViewModel(f, YearContext.Year, this)));
+            all.Select(f => new OpacimetricFilterRowViewModel(f, YearContext.Year, this, linkedLines.GetValueOrDefault(f.Id))));
     }
 
     [RelayCommand]

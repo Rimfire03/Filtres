@@ -47,6 +47,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
             App.Db.OrderLines
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
+                .Include(l => l.OpacimetricLinks)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
                 .ToList()));
@@ -106,41 +107,72 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         if (SelectedLine is not null) OpenLinkWindow(SelectedLine);
     }
 
+    /// <summary>Filtre rattachable (à périodicité ou F7 à H13), vu depuis une ligne de commande.</summary>
+    private sealed record LinkCandidate(FilterRef Ref, string Category, string Location, string Dimension,
+        bool IsLinked, string? LinkedElsewhere, bool DimensionMatches, Func<FilterPickItem> ToPickItem);
+
+    /// <summary>Tous les filtres rattachables pour <paramref name="line"/> (chargée avec ses rattachements),
+    /// dans l'ordre catégorie puis emplacement, filtres F7 à H13 en dernier.</summary>
+    private List<LinkCandidate> LoadLinkCandidates(OrderLine line)
+    {
+        // Filtres déjà rattachés à une AUTRE ligne : indicateur rouge / mention "déjà rattaché à".
+        var periodicElsewhere = App.Db.OrderLinePeriodicFilters.AsNoTracking()
+            .Where(l => l.OrderLineId != line.Id)
+            .Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.PeriodicFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+        var opacimetricElsewhere = App.Db.OrderLineOpacimetricFilters.AsNoTracking()
+            .Where(l => l.OrderLineId != line.Id)
+            .Select(l => new { l.OpacimetricFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.OpacimetricFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+
+        var linkedPeriodic = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
+        var linkedOpacimetric = line.OpacimetricLinks.Select(l => l.OpacimetricFilterId).ToHashSet();
+
+        var candidates = new List<LinkCandidate>();
+        foreach (var f in App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList())
+        {
+            var category = CategoryLabels.GetValueOrDefault(f.Category, f.Category.ToString());
+            var isLinked = linkedPeriodic.Contains(f.Id);
+            var elsewhere = periodicElsewhere.GetValueOrDefault(f.Id);
+            var matches = DimensionMatchService.Matches(line, f);
+            candidates.Add(new LinkCandidate(FilterRef.Periodic(f.Id), category, f.Location, f.Dimension, isLinked, elsewhere, matches,
+                () => new FilterPickItem(f, category, isLinked, matches, elsewhere)));
+        }
+        foreach (var f in App.Db.OpacimetricFilters.AsNoTracking().OrderBy(f => f.Location).ToList())
+        {
+            var isLinked = linkedOpacimetric.Contains(f.Id);
+            var elsewhere = opacimetricElsewhere.GetValueOrDefault(f.Id);
+            var matches = DimensionMatchService.Matches(line, f.Dimension);
+            candidates.Add(new LinkCandidate(FilterRef.Opacimetric(f.Id), OrderLine.OpacimetricFamilyLabel, f.Location, f.Dimension, isLinked, elsewhere, matches,
+                () => new FilterPickItem(f, isLinked, matches, elsewhere)));
+        }
+        return candidates;
+    }
+
+    /// <summary>Remplace les rattachements de la ligne, enregistre et recharge l'écran.</summary>
+    private void SaveLinks(OrderLine line, IEnumerable<FilterRef> selected)
+    {
+        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).Include(l => l.OpacimetricLinks).First(l => l.Id == line.Id);
+        FilterLinkService.SetLinks(App.Db, tracked, selected);
+        App.Db.SaveChanges();
+        Load();
+        SelectedLine = Lines.FirstOrDefault(l => l.Id == line.Id);
+    }
+
     /// <summary>Fenêtre complète "Rattacher des filtres..." pour une ligne (bouton, ou menu rapide).</summary>
     public void OpenLinkWindow(OrderLine line)
     {
         if (!App.GuardWritable()) return;
         SelectedLine = line;
 
-        var allFilters = App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList();
-        var linkedIds = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
-
-        // Filtres déjà rattachés à une AUTRE ligne de commande (n'importe laquelle) : sert à l'indicateur
-        // rouge du sélecteur, pour prévenir l'utilisateur avant qu'il ne déplace un rattachement existant.
-        var linkedElsewhereByFilterId = App.Db.OrderLinePeriodicFilters
-            .AsNoTracking()
-            .Include(l => l.OrderLine)
-            .Where(l => l.OrderLineId != line.Id)
-            .GroupBy(l => l.PeriodicFilterId)
-            .ToDictionary(g => g.Key, g => g.First().OrderLine?.Designation ?? $"ligne #{g.First().OrderLineId}");
-
-        var items = allFilters
-            .Select(f => new FilterPickItem(
-                f,
-                CategoryLabels.GetValueOrDefault(f.Category, f.Category.ToString()),
-                isSelected: linkedIds.Contains(f.Id),
-                dimensionMatches: DimensionMatchService.Matches(line, f),
-                linkedElsewhereLabel: linkedElsewhereByFilterId.GetValueOrDefault(f.Id)))
-            .ToList();
-
-        var selectedIds = App.Dialogs.PickFilterLinks(items);
-        if (selectedIds is null) return;
-
-        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == line.Id);
-        FilterLinkService.SetLinks(App.Db, tracked, selectedIds);
-
-        App.Db.SaveChanges();
-        Load();
+        var items = LoadLinkCandidates(line).Select(c => c.ToPickItem()).ToList();
+        var selected = App.Dialogs.PickFilterLinks(items);
+        if (selected is null) return;
+        SaveLinks(line, selected);
     }
 
     /// <summary>Saisie directe dans la cellule "Besoin" (lignes hors familles G4 plissé, G4 plan, G3).
@@ -159,58 +191,42 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         return true;
     }
 
-    public record QuickLinkOption(int FilterId, string Label, bool IsLinked);
+    public record QuickLinkOption(FilterRef Ref, string Label, bool IsLinked);
 
     /// <summary>Nombre maximal de filtres de dimension correspondante proposés dans le menu rapide.</summary>
     public const int QuickLinkMaxSuggestions = 20;
 
     /// <summary>Menu rapide (clic droit sur "Filtres liés") : filtres déjà rattachés à la ligne, puis
-    /// filtres de dimension correspondante (même comparaison approximative que la fenêtre complète),
-    /// limités à <see cref="QuickLinkMaxSuggestions"/>. Le second élément indique combien de suggestions
-    /// ont été omises.</summary>
+    /// filtres de dimension correspondante (même comparaison approximative que la fenêtre complète, F7 à
+    /// H13 compris), limités à <see cref="QuickLinkMaxSuggestions"/>. Le second élément indique combien de
+    /// suggestions ont été omises.</summary>
     public (List<QuickLinkOption> Options, int Omitted) GetQuickLinkOptions(OrderLine line)
     {
-        var linkedIds = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
-        var linkedElsewhere = App.Db.OrderLinePeriodicFilters
-            .AsNoTracking()
-            .Where(l => l.OrderLineId != line.Id)
-            .Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
-            .ToList()
-            .GroupBy(l => l.PeriodicFilterId)
-            .ToDictionary(g => g.Key, g => g.First().Designation);
+        var candidates = LoadLinkCandidates(line);
 
-        var filters = App.Db.PeriodicFilters.AsNoTracking()
-            .OrderBy(f => f.Category).ThenBy(f => f.Location)
-            .ToList();
-
-        string Label(PeriodicFilter f)
+        static string Label(LinkCandidate c)
         {
-            var label = $"{CategoryLabels.GetValueOrDefault(f.Category, f.Category.ToString())} — {f.Location} ({f.Dimension})";
-            return linkedElsewhere.TryGetValue(f.Id, out var other) ? $"{label} — déjà rattaché à « {other} »" : label;
+            var label = $"{c.Category} — {c.Location} ({c.Dimension})";
+            return c.LinkedElsewhere is null ? label : $"{label} — déjà rattaché à « {c.LinkedElsewhere} »";
         }
 
-        var options = filters.Where(f => linkedIds.Contains(f.Id))
-            .Select(f => new QuickLinkOption(f.Id, Label(f), true))
-            .ToList();
-        var suggestions = filters.Where(f => !linkedIds.Contains(f.Id) && DimensionMatchService.Matches(line, f)).ToList();
-        options.AddRange(suggestions.Take(QuickLinkMaxSuggestions).Select(f => new QuickLinkOption(f.Id, Label(f), false)));
+        var options = candidates.Where(c => c.IsLinked).Select(c => new QuickLinkOption(c.Ref, Label(c), true)).ToList();
+        var suggestions = candidates.Where(c => !c.IsLinked && c.DimensionMatches).ToList();
+        options.AddRange(suggestions.Take(QuickLinkMaxSuggestions).Select(c => new QuickLinkOption(c.Ref, Label(c), false)));
         return (options, Math.Max(0, suggestions.Count - QuickLinkMaxSuggestions));
     }
 
     /// <summary>Coche / décoche un filtre depuis le menu rapide. Un filtre rattaché à une autre ligne lui
     /// est retiré (un filtre = une seule ligne), comme dans la fenêtre complète.</summary>
-    public void SetQuickLink(OrderLine line, int filterId, bool link)
+    public void SetQuickLink(OrderLine line, FilterRef filter, bool link)
     {
         if (!App.GuardWritable()) return;
-        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == line.Id);
-        var ids = tracked.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
-        if (link) ids.Add(filterId);
-        else ids.Remove(filterId);
-
-        FilterLinkService.SetLinks(App.Db, tracked, ids);
-        App.Db.SaveChanges();
-        Load();
-        SelectedLine = Lines.FirstOrDefault(l => l.Id == line.Id);
+        var selected = line.FilterLinks.Select(l => FilterRef.Periodic(l.PeriodicFilterId))
+            .Concat(line.OpacimetricLinks.Select(l => FilterRef.Opacimetric(l.OpacimetricFilterId)))
+            .ToHashSet();
+        if (link) selected.Add(filter);
+        else selected.Remove(filter);
+        SaveLinks(line, selected);
     }
 
     [RelayCommand]

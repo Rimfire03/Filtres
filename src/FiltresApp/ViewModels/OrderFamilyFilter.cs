@@ -20,6 +20,7 @@ public partial class OrderFamilyFilter : ObservableObject
         OrderLine.FamilyLabelFor(FilterCategory.G4Plan),
         OrderLine.FamilyLabelFor(FilterCategory.G3),
         OrderLine.FamilyLabelFor(FilterCategory.Charbon),
+        OrderLine.OpacimetricFamilyLabel,
         OrderLine.MultipleFamiliesLabel,
         OrderLine.NoFamilyLabel
     };
@@ -45,33 +46,31 @@ public partial class OrderFamilyFilter : ObservableObject
     {
         get
         {
-            foreach (var category in Enum.GetValues<FilterCategory>())
-                if (OrderLine.FamilyLabelFor(category) == Selected) return (int)category;
-            return Selected == OrderLine.NoFamilyLabel ? OrderLine.NoFamilyOverride : null;
+            var choice = ManualChoices.FirstOrDefault(c => c.Label == Selected);
+            return choice.Label is null ? null : choice.Override;
         }
     }
+
+    /// <summary>Familles proposées au choix manuel, avec la valeur de <see cref="OrderLine.FamilyOverride"/>
+    /// correspondante.</summary>
+    private static readonly (string Label, int Override)[] ManualChoices =
+        Enum.GetValues<FilterCategory>().Select(c => (OrderLine.FamilyLabelFor(c), (int)c))
+            .Append((OrderLine.OpacimetricFamilyLabel, OrderLine.OpacimetricFamilyOverride))
+            .Append((OrderLine.NoFamilyLabel, OrderLine.NoFamilyOverride))
+            .ToArray();
 
     /// <summary>Champ "Famille" de la fenêtre Ajouter / Modifier : "Automatique" (famille déduite des filtres
     /// rattachés, rappelée entre parenthèses) ou une famille choisie manuellement.</summary>
     public static EditField CreateEditField(OrderLine entity, string automaticLabel)
     {
-        var categories = Enum.GetValues<FilterCategory>();
         var names = new List<string> { $"Automatique (d'après les filtres rattachés : {automaticLabel})" };
-        names.AddRange(categories.Select(OrderLine.FamilyLabelFor));
-        names.Add(OrderLine.NoFamilyLabel);
-
-        var noFamilyIndex = names.Count - 1;
-        var currentIndex = entity.FamilyOverride switch
-        {
-            null => 0,
-            OrderLine.NoFamilyOverride => noFamilyIndex,
-            int c => Array.IndexOf(categories, (FilterCategory)c) + 1
-        };
+        names.AddRange(ManualChoices.Select(c => c.Label));
+        var currentIndex = entity.FamilyOverride is int value
+            ? Array.FindIndex(ManualChoices, c => c.Override == value) + 1
+            : 0;
 
         return EditField.ComboField("Famille", names, () => currentIndex, v => entity.FamilyOverride =
-            v <= 0 ? null
-            : v == noFamilyIndex ? OrderLine.NoFamilyOverride
-            : (int)categories[v - 1]);
+            v >= 1 && v <= ManualChoices.Length ? ManualChoices[v - 1].Override : null);
     }
 
     /// <summary>Ajouté au titre des impressions / exports quand un filtre est actif.</summary>

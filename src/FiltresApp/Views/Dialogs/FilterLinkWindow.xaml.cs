@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using FiltresApp.Core.Models;
 using FiltresApp.ViewModels;
 
 namespace FiltresApp.Views.Dialogs;
@@ -20,7 +21,7 @@ public partial class FilterLinkWindow : Window
     private readonly ICollectionView _view;
     private readonly bool _hasAnyDimensionMatch;
 
-    public List<int> SelectedFilterIds { get; private set; } = new();
+    public List<FilterRef> SelectedFilters { get; private set; } = new();
 
     public FilterLinkWindow(List<FilterPickItem> items)
     {
@@ -75,7 +76,7 @@ public partial class FilterLinkWindow : Window
 
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
-        SelectedFilterIds = _allItems.Where(i => i.IsSelected).Select(i => i.FilterId).ToList();
+        SelectedFilters = _allItems.Where(i => i.IsSelected).Select(i => i.Ref).ToList();
         DialogResult = true;
         Close();
     }

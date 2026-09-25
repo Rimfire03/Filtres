@@ -50,6 +50,7 @@ public class DbContextFactory
         (12, "Besoin saisi (Commande, familles hors G4 / G3)", AddOrderLineManualNeedColumn),
         (13, "Logo de l'entreprise (stockage dans la base)", AddSharedAssetsTable),
         (14, "Familles des filtres F7 à H13", AddOpacimetricFamilies),
+        (15, "Rattachement des filtres F7 à H13 à Commande / Inventaire", AddOrderLineOpacimetricFilters),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -142,6 +143,24 @@ public class DbContextFactory
         var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
+    }
+
+    private static void AddOrderLineOpacimetricFilters(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "OrderLineOpacimetricFilters" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderLineOpacimetricFilters" PRIMARY KEY AUTOINCREMENT,
+                "OrderLineId" INTEGER NOT NULL,
+                "OpacimetricFilterId" INTEGER NOT NULL,
+                CONSTRAINT "FK_OrderLineOpacimetricFilters_OrderLines_OrderLineId" FOREIGN KEY ("OrderLineId") REFERENCES "OrderLines" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_OrderLineOpacimetricFilters_OpacimetricFilters_OpacimetricFilterId" FOREIGN KEY ("OpacimetricFilterId") REFERENCES "OpacimetricFilters" ("Id") ON DELETE CASCADE
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_OrderLineOpacimetricFilters_OrderLineId" ON "OrderLineOpacimetricFilters" ("OrderLineId");""");
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_OrderLineOpacimetricFilters_OpacimetricFilterId" ON "OrderLineOpacimetricFilters" ("OpacimetricFilterId");""");
     }
 
     private static void AddOpacimetricFamilies(FiltresDbContext ctx)

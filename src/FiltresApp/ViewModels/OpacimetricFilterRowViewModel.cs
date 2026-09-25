@@ -15,12 +15,23 @@ public partial class OpacimetricFilterRowViewModel : ObservableObject
     public OpacimetricFilter Filter { get; }
     private readonly int _year;
 
-    public OpacimetricFilterRowViewModel(OpacimetricFilter filter, int year, OpacimetricFilterListViewModel owner)
+    public OpacimetricFilterRowViewModel(OpacimetricFilter filter, int year, OpacimetricFilterListViewModel owner, string? linkedOrderLine)
     {
         Filter = filter;
         _year = year;
         _owner = owner;
+        LinkedOrderLine = linkedOrderLine;
     }
+
+    /// <summary>Dimension de la ligne de Commande / Inventaire à laquelle ce filtre est rattaché, ou null.</summary>
+    public string? LinkedOrderLine { get; }
+
+    /// <summary>Puce verte (rattaché) ou rouge (non rattaché) en tête de ligne.</summary>
+    public bool IsLinkedToOrder => LinkedOrderLine is not null;
+
+    public string LinkToolTip => IsLinkedToOrder
+        ? $"Rattaché à la ligne « {LinkedOrderLine} » de Commande / Inventaire"
+        : "Rattaché à aucune ligne de Commande / Inventaire";
 
     /// <summary>"Consulter l'historique..." (menu contextuel de la grille) : voir
     /// <see cref="OpacimetricFilterListViewModel.ShowHistory"/>.</summary>

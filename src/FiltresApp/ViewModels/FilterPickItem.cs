@@ -11,7 +11,7 @@ namespace FiltresApp.ViewModels;
 /// <see cref="Core.Services.DimensionMatchService"/> et <see cref="DimensionMatches"/>).</summary>
 public partial class FilterPickItem : ObservableObject
 {
-    public int FilterId { get; }
+    public FilterRef Ref { get; }
     public string CategoryLabel { get; }
     public string Location { get; }
     public string Dimension { get; }
@@ -36,13 +36,28 @@ public partial class FilterPickItem : ObservableObject
 
     public FilterPickItem(PeriodicFilter filter, string categoryLabel, bool isSelected, bool dimensionMatches, string? linkedElsewhereLabel)
     {
-        FilterId = filter.Id;
+        Ref = FilterRef.Periodic(filter.Id);
         CategoryLabel = categoryLabel;
         Location = filter.Location;
         Dimension = filter.Dimension;
         MediaType = filter.MediaType;
         QuantityInPlace = filter.QuantityInPlace;
         PeriodicityDisplay = filter.PeriodicityDisplay;
+        DimensionMatches = dimensionMatches;
+        LinkedElsewhereLabel = linkedElsewhereLabel;
+        _isSelected = isSelected;
+    }
+
+    /// <summary>Filtre F7 à H13 : pas de type média ni de périodicité fixe.</summary>
+    public FilterPickItem(OpacimetricFilter filter, bool isSelected, bool dimensionMatches, string? linkedElsewhereLabel)
+    {
+        Ref = FilterRef.Opacimetric(filter.Id);
+        CategoryLabel = OrderLine.OpacimetricFamilyLabel;
+        Location = filter.Location;
+        Dimension = filter.Dimension;
+        MediaType = filter.FilterType ?? string.Empty;
+        QuantityInPlace = filter.QuantityInPlace;
+        PeriodicityDisplay = string.Empty;
         DimensionMatches = dimensionMatches;
         LinkedElsewhereLabel = linkedElsewhereLabel;
         _isSelected = isSelected;
