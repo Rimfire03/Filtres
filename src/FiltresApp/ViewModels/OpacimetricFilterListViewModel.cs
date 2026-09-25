@@ -290,6 +290,29 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
             $"Export de l'année {YearContext.Year} généré avec succès (toutes catégories, une feuille par catégorie).\n\nIl est stocké dans :\n{path}");
     }
 
+    /// <summary>Valeurs déjà utilisées pour "Type" (toutes familles confondues), pour le menu rapide au
+    /// clic droit sur la colonne (voir OpacimetricFilterView.xaml.cs) : liste dynamique, pas de valeurs
+    /// figées en dur, puisque cette colonne reste un champ texte libre.</summary>
+    public List<string> GetDistinctFilterTypes() =>
+        App.Db.OpacimetricFilters.AsNoTracking()
+            .Select(f => f.FilterType)
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct()
+            .OrderBy(t => t)
+            .Select(t => t!)
+            .ToList();
+
+    /// <summary>Applique le type choisi dans le menu rapide, sauvegarde immédiatement, et met à jour la
+    /// ligne affichée sans recharger toute la grille (pas de <see cref="Load"/> : perdrait la sélection).</summary>
+    public void SetFilterType(OpacimetricFilterRowViewModel row, string newType)
+    {
+        if (!App.GuardWritable()) return;
+        var tracked = App.Db.OpacimetricFilters.First(f => f.Id == row.Id);
+        tracked.FilterType = newType;
+        App.Db.SaveChanges();
+        row.ApplyFilterType(newType);
+    }
+
     /// <summary>"Consulter l'historique..." (menu contextuel de la grille) : ouvre une fenêtre de lecture
     /// seule listant, pour l'année choisie parmi celles où ce filtre précis a de l'historique, la liste
     /// chronologique des remplacements (qté changée + date). Cette feuille n'a pas de mois fixe (voir

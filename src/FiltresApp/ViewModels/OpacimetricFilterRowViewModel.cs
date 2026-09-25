@@ -43,6 +43,14 @@ public partial class OpacimetricFilterRowViewModel : ObservableObject
     public string Location => Filter.Location;
     public string Dimension => Filter.Dimension;
     public string? FilterType => Filter.FilterType;
+
+    /// <summary>Appelé après sauvegarde par <see cref="OpacimetricFilterListViewModel.SetFilterType"/>
+    /// (menu rapide au clic droit) : met à jour la valeur affichée sans recharger toute la grille.</summary>
+    public void ApplyFilterType(string? newType)
+    {
+        Filter.FilterType = newType;
+        OnPropertyChanged(nameof(FilterType));
+    }
     public int QuantityInPlace => Filter.QuantityInPlace;
 
     private IEnumerable<OpacimetricReplacement> ReplacementsForYear =>
