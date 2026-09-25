@@ -38,9 +38,9 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     private void Load()
     {
         Lines = new ObservableCollection<OrderLine>(
-            FamilyFilter.Apply(App.Db.OrderLines.Include(l => l.Family).AsNoTracking())
-                .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy)
-                .OrderBy(l => l.Ordre)
+            OrderFamilyFilter.OrderByFamily(
+                    FamilyFilter.Apply(App.Db.OrderLines.Include(l => l.Family).AsNoTracking())
+                        .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy))
                 .ToList());
     }
 
@@ -123,23 +123,26 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         return true;
     }
 
-    private static string[] BuildHeaders() => new[] { "Famille", "Dimension", "Destination", "Type", "Référence fournisseur", "Inventaire", "Quantité" };
+    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Inventaire", "Quantité" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.FamilyName, l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
+        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
     };
+
+    private List<string[]> BuildPrintRows() =>
+        OrderFamilyFilter.BuildGroupedRows(Lines, BuildRow, BuildHeaders().Length);
 
     [RelayCommand]
     private void Print()
     {
-        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, BuildHeaders(), Lines.Select(BuildRow).ToList());
+        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, BuildHeaders(), BuildPrintRows());
     }
 
     [RelayCommand]
     private void ExportPdf()
     {
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, "Commande" + FamilyFilter.TitleSuffix, BuildHeaders(), Lines.Select(BuildRow).ToList());
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, "Commande" + FamilyFilter.TitleSuffix, BuildHeaders(), BuildPrintRows());
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

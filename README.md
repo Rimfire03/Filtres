@@ -222,19 +222,23 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
   mêmes libellés.
 
 **Familles (Inventaire et Commande)** — migration v9, table `OrderFamilies` et champ
-`OrderLine.OrderFamilyId`. Les familles sont communes aux deux écrans (mêmes lignes).
+`OrderLine.OrderFamilyId`. Les familles sont communes aux deux écrans (mêmes lignes) et
+indépendantes de toute autre information (sans lien avec les familles K7 ni avec les filtres).
 
 - Barre « Famille » en haut de chaque écran : liste déroulante pour **filtrer** (« Toutes les
   familles », « Sans famille », puis chaque famille), et boutons « + Nouvelle famille »,
   « Renommer la famille » et « Supprimer la famille » (ces deux derniers agissent sur la famille
   choisie dans le filtre). Chaque écran garde son propre filtre.
-- Une colonne « Famille » (première colonne) et un champ « Famille » dans la fenêtre
+- Pas de colonne « Famille » : les lignes sont **regroupées sous un bandeau titre par famille**
+  (séparateur horizontal, même style que la Liste K7), familles triées par nom et « Sans famille »
+  en dernier. Le choix de la famille d'une ligne se fait dans le champ « Famille » de la fenêtre
   d'ajout/modification. Une ligne ajoutée pendant qu'une famille est filtrée reçoit cette famille
   par défaut.
 - Supprimer une famille ne supprime aucune ligne : ses lignes passent en « Sans famille » (après
   confirmation indiquant leur nombre). Deux familles ne peuvent pas porter le même nom.
-- L'impression et l'export PDF suivent le filtre en cours, avec la famille ajoutée au titre et une
-  colonne « Famille ».
+- L'impression et l'export PDF suivent le filtre en cours (famille ajoutée au titre) et reprennent
+  le regroupement : une ligne titre « — NOM DE LA FAMILLE — » avant les lignes de chaque famille.
+- Le nom « Sans famille » est réservé au groupe des lignes sans famille.
 - En lecture seule, le filtre reste utilisable ; la gestion des familles est désactivée.
 
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de

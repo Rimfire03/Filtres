@@ -34,8 +34,11 @@ public class OrderLine
     public int? OrderFamilyId { get; set; }
     public OrderFamily? Family { get; set; }
 
+    public const string NoFamilyLabel = "Sans famille";
+
+    /// <summary>Titre du séparateur de famille dans les grilles Inventaire et Commande.</summary>
     [NotMapped]
-    public string FamilyName => Family?.Nom ?? string.Empty;
+    public string FamilyGroupLabel => Family?.Nom ?? NoFamilyLabel;
 
     /// <summary>Quantité relevée à l'inventaire, saisie directement dans la grille de l'écran Inventaire.</summary>
     public int? Inventaire { get; set; }

@@ -7,6 +7,14 @@
              d:DataContext="{d:DesignInstance vm:InventoryListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Lignes regroupées par famille : un bandeau titre par famille (même style que la Liste K7). -->
+        <CollectionViewSource x:Key="GroupedLines" Source="{Binding Lines}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -37,9 +45,9 @@
                     Command="{Binding FamilyFilter.DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
         </DockPanel>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Lines}" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True">
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Famille" Binding="{Binding FamilyName}" Width="1.2*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
@@ -56,6 +64,17 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource BrushSidebar}" Padding="10,5" Margin="0,6,0,2">
+                                <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+                            </Border>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
         </DataGrid>
     </Grid>
 </UserControl>

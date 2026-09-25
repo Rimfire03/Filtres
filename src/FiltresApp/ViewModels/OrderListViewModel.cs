@@ -49,12 +49,12 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     private void Load()
     {
         Lines = new ObservableCollection<OrderLine>(
-            FamilyFilter.Apply(App.Db.OrderLines)
-                .Include(l => l.Family)
-                .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
-                .AsNoTracking()
-                .Where(l => l.DocumentType == _type)
-                .OrderBy(l => l.Ordre)
+            OrderFamilyFilter.OrderByFamily(
+                    FamilyFilter.Apply(App.Db.OrderLines)
+                        .Include(l => l.Family)
+                        .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
+                        .AsNoTracking()
+                        .Where(l => l.DocumentType == _type))
                 .ToList());
     }
 
@@ -157,11 +157,10 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     }
 
     private static string[] BuildHeaders() =>
-        new[] { "Famille", "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Quantité à commander" };
+        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Quantité à commander" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.FamilyName,
         l.Designation,
         l.Destination ?? "",
         l.Dimension ?? "",
@@ -175,14 +174,14 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Print()
     {
-        var rows = Lines.Select(BuildRow).ToList();
+        var rows = OrderFamilyFilter.BuildGroupedRows(Lines, BuildRow, BuildHeaders().Length);
         App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
     }
 
     [RelayCommand]
     private void ExportPdf()
     {
-        var rows = Lines.Select(BuildRow).ToList();
+        var rows = OrderFamilyFilter.BuildGroupedRows(Lines, BuildRow, BuildHeaders().Length);
         var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }

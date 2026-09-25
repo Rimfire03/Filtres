@@ -93,6 +93,31 @@ public partial class OrderFamilyFilter : ObservableObject
         _ => ""
     };
 
+    /// <summary>Tri des lignes pour l'affichage par famille : familles par nom, "Sans famille" en dernier.</summary>
+    public static IQueryable<OrderLine> OrderByFamily(IQueryable<OrderLine> lines) =>
+        lines.OrderBy(l => l.OrderFamilyId == null).ThenBy(l => l.Family!.Nom).ThenBy(l => l.Ordre);
+
+    /// <summary>Lignes d'impression / PDF avec, à la place d'une colonne Famille, une ligne titre avant
+    /// chaque famille (lignes déjà triées par famille).</summary>
+    public static List<string[]> BuildGroupedRows(IEnumerable<OrderLine> lines, Func<OrderLine, string[]> buildRow, int columnCount)
+    {
+        var rows = new List<string[]>();
+        string? currentGroup = null;
+        foreach (var line in lines)
+        {
+            if (line.FamilyGroupLabel != currentGroup)
+            {
+                currentGroup = line.FamilyGroupLabel;
+                var title = new string[columnCount];
+                Array.Fill(title, "");
+                title[0] = "— " + currentGroup.ToUpperInvariant() + " —";
+                rows.Add(title);
+            }
+            rows.Add(buildRow(line));
+        }
+        return rows;
+    }
+
     public EditField CreateEditField(OrderLine entity)
     {
         var families = Families;
@@ -156,6 +181,12 @@ public partial class OrderFamilyFilter : ObservableObject
         if (!App.Dialogs.EditFields(title, fields)) return false;
 
         var name = family.Nom;
+        if (string.Equals(name, OrderLine.NoFamilyLabel, StringComparison.OrdinalIgnoreCase))
+        {
+            App.Dialogs.ShowMessage("Famille", $"« {OrderLine.NoFamilyLabel} » est réservé au groupe des lignes sans famille : choisissez un autre nom.");
+            if (family.Id != 0) App.Db.Entry(family).Reload();
+            return false;
+        }
         var exists = App.Db.OrderFamilies.AsNoTracking()
             .Any(f => f.Id != family.Id && f.Nom.ToLower() == name.ToLower());
         if (!exists) return true;
