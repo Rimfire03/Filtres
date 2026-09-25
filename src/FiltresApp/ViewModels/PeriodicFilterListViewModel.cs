@@ -162,7 +162,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         var fields = new List<EditField>
         {
             EditField.Text(_locationColumnLabel, () => entity.Location, v => entity.Location = v, required: true),
-            EditField.Text("Dimension", () => entity.Dimension, v => entity.Dimension = v),
+            EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
             EditField.Text("Type", () => entity.MediaType, v => entity.MediaType = v),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.MonthsField("Périodicité de remplacement (mois)", () => months, v => months = v)
@@ -177,8 +177,32 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         fields.Add(EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v));
 
         var ok = App.Dialogs.EditFields(isNew ? "Ajouter un filtre" : "Modifier le filtre", fields);
-        if (ok) entity.Periodicity = PeriodicFilter.FormatPeriodicityMonths(months);
+        if (ok)
+        {
+            entity.Periodicity = PeriodicFilter.FormatPeriodicityMonths(months);
+            ProposeDimensionCorrection(() => entity.Dimension, v => entity.Dimension = v);
+        }
         return ok;
+    }
+
+    /// <summary>Propose une correction du champ Dimension selon la norme harmonisée ("aaaa x bbbb x
+    /// cccc", voir <see cref="DimensionFormatService"/>) juste après validation du formulaire, si le
+    /// texte saisi ne correspond pas déjà exactement à cette norme. N'affiche rien si aucun motif de
+    /// dimension n'a pu être reconnu (le texte reste inchangé, ex. "A laver"). Partagée avec
+    /// <see cref="OpacimetricFilterListViewModel"/> (même règle pour les filtres F7 à H13).</summary>
+    internal static void ProposeDimensionCorrection(Func<string> get, Action<string> set)
+    {
+        var raw = get();
+        var normalized = DimensionFormatService.Normalize(raw);
+        if (normalized is null || normalized == raw) return;
+
+        if (App.Dialogs.ShowConfirm("Format de dimension",
+                "Le format standard des dimensions est « aaaa x bbbb x cccc » (le plus grand des deux " +
+                "premiers nombres en premier, l'épaisseur toujours en dernier).\n\n" +
+                $"Remplacer :\n« {raw} »\n\npar :\n« {normalized} » ?"))
+        {
+            set(normalized);
+        }
     }
 
     [RelayCommand]

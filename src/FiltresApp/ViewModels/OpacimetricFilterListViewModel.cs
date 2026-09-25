@@ -318,12 +318,14 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
             EditField.ComboField("Famille", familyNames, () => familyIndex,
                 v => entity.OpacimetricFamilyId = v >= 1 && v <= families.Count ? families[v - 1].Id : null),
             EditField.Text("Nom de la centrale d'air", () => entity.Location, v => entity.Location = v, required: true),
-            EditField.Text("Dimension", () => entity.Dimension, v => entity.Dimension = v),
+            EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
             EditField.NullableText("Type", () => entity.FilterType, v => entity.FilterType = v),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v)
         };
-        return App.Dialogs.EditFields(isNew ? "Ajouter un filtre F7/H13" : "Modifier le filtre", fields);
+        var ok = App.Dialogs.EditFields(isNew ? "Ajouter un filtre F7/H13" : "Modifier le filtre", fields);
+        if (ok) PeriodicFilterListViewModel.ProposeDimensionCorrection(() => entity.Dimension, v => entity.Dimension = v);
+        return ok;
     }
 
     [RelayCommand]

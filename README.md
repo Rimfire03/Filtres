@@ -1105,6 +1105,25 @@ imprimés (`PrintService`, impression générale) reprennent la
 même couleur de bordure sur chaque cellule (bordure complète 0.75px au lieu du simple soulignement bas
 précédent).
 
+### Harmonisation du format Dimension (filtres G4 plissé/plan, G3, Charbon, F7 à H13)
+
+`FiltresApp.Core.Services.DimensionFormatService.Normalize` impose le format **"aaaa x bbbb x cccc"**
+au champ Dimension des filtres à périodicité et F7 à H13 : `aaaa` est toujours le plus grand des deux
+premiers nombres (`bbbb` le plus petit), `cccc` (épaisseur) n'est **jamais** réordonné et reste en
+dernière position. Un indice de classe entre parenthèses (`(A+)`, `( C )`, `(Classe B)`...) est retiré ;
+les autres parenthèses (`(9poches)`, `(à découper)`...) sont conservées comme texte libre. Tout texte
+libre restant après les nombres est déplacé sur une seconde ligne, sous la dimension (champ Dimension
+multi-lignes dans le formulaire "Modifier"). Si le texte ne commence pas par un motif de dimension
+reconnaissable ("NxN" ou "NxNxN", ex. "A laver"), `Normalize` retourne `null` : la valeur reste
+inchangée, aucune règle ne s'y applique.
+
+À l'ajout/la modification d'un filtre (`PeriodicFilterListViewModel.EditEntity`,
+`OpacimetricFilterListViewModel.EditEntity`), si le texte saisi ne correspond pas déjà exactement à la
+norme, `PeriodicFilterListViewModel.ProposeDimensionCorrection` (partagée entre les deux écrans) affiche
+une boîte de confirmation proposant la correction ; l'utilisateur peut l'accepter ou la refuser (le texte
+saisi est alors conservé tel quel). Les données existantes ont été harmonisées une fois via un script
+ponctuel (273 valeurs corrigées sur 475, le 26/09/2026).
+
 ## Pistes d'amélioration
 
 - Ajouter des migrations EF Core si le schéma doit évoluer après mise en
