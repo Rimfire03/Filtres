@@ -182,23 +182,43 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     public IReadOnlyList<string> FamilyQuickChoices => OrderFamilyFilter.QuickChoices;
 
     /// <summary>Colonne "Famille" (masquée par défaut) : change la famille de la ligne sans ouvrir
-    /// "Modifier". "Automatique" revient à la famille déduite des filtres rattachés.</summary>
+    /// "Modifier". "Automatique" revient à la famille déduite des filtres rattachés.
+    /// <para>Ne recharge jamais toute la liste (<see cref="Load"/>) : un rechargement remplace
+    /// entièrement <see cref="Lines"/>, ce qui fait sauter la grille tout en haut quelle que soit la
+    /// sélection ensuite restaurée. La ligne modifiée est plutôt retirée puis réinsérée au même endroit
+    /// dans la collection existante (même identité d'objet, même ObservableCollection) : cela force le
+    /// regroupement à se recalculer pour cette seule ligne, avec seulement les notifications de
+    /// changement de collection nécessaires, sans jamais remplacer la source de la grille.</para></summary>
     public void SetFamilyChoice(OrderLine line, string choice)
     {
         if (choice == line.FamilyChoiceLabel || !App.GuardWritable()) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == line.Id);
         tracked.FamilyOverride = OrderFamilyFilter.OverrideForChoice(choice);
         App.Db.SaveChanges();
+        line.FamilyOverride = tracked.FamilyOverride;
 
-        // La ligne modifiée va changer de groupe (donc de position dans la grille) : on se positionne
-        // sur la ligne suivante (repérée avant le rechargement) plutôt que de resélectionner la ligne
-        // déplacée, pour que la vue ne saute pas visuellement à l'emplacement de sa nouvelle famille.
-        var currentIndex = Lines.ToList().FindIndex(l => l.Id == line.Id);
-        var nextLineId = currentIndex >= 0 && currentIndex + 1 < Lines.Count ? Lines[currentIndex + 1].Id : (int?)null;
+        var index = Lines.IndexOf(line);
+        if (index < 0) return;
 
-        Load();
-        SelectedLine = (nextLineId is int id ? Lines.FirstOrDefault(l => l.Id == id) : null)
-            ?? Lines.FirstOrDefault(l => l.Id == line.Id);
+        // La ligne suivante (avant déplacement) reste le point de repère visuel demandé : la vue s'y
+        // fixe plutôt que de suivre la ligne qui vient de changer de famille/groupe.
+        var nextLine = index + 1 < Lines.Count ? Lines[index + 1] : index > 0 ? Lines[index - 1] : null;
+
+        if (!FamilyFilter.Matches(line))
+        {
+            // Ne correspond plus au filtre de famille actuellement affiché : simplement retirée.
+            Lines.RemoveAt(index);
+        }
+        else
+        {
+            // Retrait + réinsertion au même index (au lieu d'une simple notification de "changement de
+            // propriété", qu'OrderLine ne peut pas émettre - ce n'est pas un ObservableObject) : la vue
+            // groupée range alors la ligne dans son nouveau groupe sans recharger le reste.
+            Lines.RemoveAt(index);
+            Lines.Insert(index, line);
+        }
+
+        SelectedLine = nextLine ?? line;
     }
 
     /// <summary>Saisie directe dans la cellule "Besoin" (lignes hors familles G4 plissé, G4 plan, G3).

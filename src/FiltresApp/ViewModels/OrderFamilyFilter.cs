@@ -35,10 +35,14 @@ public partial class OrderFamilyFilter : ObservableObject
 
     /// <summary>Lignes (filtres rattachés chargés) filtrées puis triées par famille, puis par ordre.</summary>
     public List<OrderLine> Apply(IEnumerable<OrderLine> lines) =>
-        lines.Where(l => Selected == AllLabel || l.FamilyGroupLabel == Selected)
+        lines.Where(Matches)
             .OrderBy(l => Array.IndexOf(FamilyOrder, l.FamilyGroupLabel))
             .ThenBy(l => l.Ordre)
             .ToList();
+
+    /// <summary>True si la ligne correspond au filtre de famille actuellement choisi (toujours vrai si
+    /// "Toutes les familles" est sélectionné).</summary>
+    public bool Matches(OrderLine line) => Selected == AllLabel || line.FamilyGroupLabel == Selected;
 
     /// <summary>Choix de famille manuel pour une nouvelle ligne : celle du filtre en cours si c'est une famille
     /// de filtres, sinon automatique.</summary>
