@@ -145,7 +145,7 @@ changement réalisé, plutôt que de dépendre des formules Excel d'origine.
   l'ordinateur (et la session Windows) de l'utilisateur, dans
   `%LocalAppData%\FiltresApp\grilles.json` : il n'est pas partagé avec les autres postes, même si
   l'exécutable et la base sont sur le disque réseau. Disponible sur les écrans de filtres, Liste K7,
-  Inventaire, Commande chmy et dans la fenêtre « Rattacher des filtres ». Les impressions et exports
+  Inventaire, Commande et dans la fenêtre « Rattacher des filtres ». Les impressions et exports
   gardent toutes les colonnes.
 - **Largeur des colonnes mémorisée** : quand l'utilisateur élargit ou rétrécit une colonne à la souris,
   la largeur est enregistrée au même endroit (par écran et par ordinateur) et restaurée à la prochaine
@@ -172,6 +172,11 @@ proposent en plus un export PDF vers le dossier configuré dans les Paramètres
 (équivalent `exportcmd`, sans chemin réseau codé en dur). **Depuis la fusion
 Inventaire / Commande chmy (voir plus bas), ces deux écrans affichent et
 modifient les mêmes lignes.**
+
+> L'onglet « Commande chmy » s'appelle désormais simplement **« Commande »** dans
+> l'application (titre de l'écran et des impressions/exports compris). Le reste de ce
+> README conserve l'ancien nom dans les sections historiques ; la feuille du classeur
+> Excel source s'appelle toujours « Commande chmy » et l'import la lit sous ce nom.
 
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de
 l'application (interface, code et données), voir plus bas.
