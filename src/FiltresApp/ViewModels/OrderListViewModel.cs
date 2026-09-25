@@ -189,8 +189,16 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         var tracked = App.Db.OrderLines.First(l => l.Id == line.Id);
         tracked.FamilyOverride = OrderFamilyFilter.OverrideForChoice(choice);
         App.Db.SaveChanges();
+
+        // La ligne modifiée va changer de groupe (donc de position dans la grille) : on se positionne
+        // sur la ligne suivante (repérée avant le rechargement) plutôt que de resélectionner la ligne
+        // déplacée, pour que la vue ne saute pas visuellement à l'emplacement de sa nouvelle famille.
+        var currentIndex = Lines.ToList().FindIndex(l => l.Id == line.Id);
+        var nextLineId = currentIndex >= 0 && currentIndex + 1 < Lines.Count ? Lines[currentIndex + 1].Id : (int?)null;
+
         Load();
-        SelectedLine = Lines.FirstOrDefault(l => l.Id == line.Id);
+        SelectedLine = (nextLineId is int id ? Lines.FirstOrDefault(l => l.Id == id) : null)
+            ?? Lines.FirstOrDefault(l => l.Id == line.Id);
     }
 
     /// <summary>Saisie directe dans la cellule "Besoin" (lignes hors familles G4 plissé, G4 plan, G3).
