@@ -47,6 +47,11 @@ public class DbContextFactory
     /// <summary>Version de base attendue par cette version de l'application.</summary>
     public static int LatestVersion => Migrations[^1].Version;
 
+    /// <summary>Libellés des migrations à appliquer depuis <paramref name="fromVersion"/>, pour la demande
+    /// de confirmation.</summary>
+    public static IReadOnlyList<string> PendingMigrations(int fromVersion) =>
+        Migrations.Where(m => m.Version > fromVersion).Select(m => $"v{m.Version} : {m.Description}").ToList();
+
     /// <summary>Version actuelle du fichier de base (0 = base antérieure au système de version).</summary>
     public int GetDatabaseVersion()
     {

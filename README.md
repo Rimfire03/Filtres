@@ -115,9 +115,13 @@ La base porte un numéro de version (stocké dans le fichier SQLite, `PRAGMA use
 version du logiciel qui l'a mise à jour en dernier dans la table `DbInfo`). Les deux versions —
 logiciel et base — sont affichées en haut de l'écran **Paramètres**.
 
-- **Après une mise à jour du logiciel**, le premier poste qui ouvre la base **en écriture** la met à
-  jour automatiquement au lancement. Avant toute modification, une copie complète est faite à côté du
-  fichier : `filtres.db.avant-maj-v<ancienne version>-<date>.bak` (à supprimer à la main une fois la
+- **Après une mise à jour du logiciel**, si la base est dans une version inférieure à celle attendue,
+  le premier poste qui l'ouvre **en écriture** **propose la mise à jour** au lancement (liste des
+  modifications à appliquer, réponse Oui/Non). Si l'utilisateur refuse, le démarrage s'arrête avec un
+  message explicite (la base reste inchangée) ; il suffit de relancer et d'accepter. Pour une base
+  créée avant ce système (version 0), la liste affiche toutes les étapes 1 à 6 : les étapes 1 à 5
+  sont déjà présentes et ne modifient rien. Avant toute modification, une copie complète est faite à
+  côté du fichier : `filtres.db.avant-maj-v<ancienne version>-<date>.bak` (à supprimer à la main une fois la
   mise à jour validée). Chaque étape est appliquée dans une transaction : en cas d'erreur, la base
   reste à la dernière version réussie et le démarrage s'arrête avec le détail de l'erreur.
 - **Démarrage bloqué avec un message explicite** si le poste n'a pas la bonne version :

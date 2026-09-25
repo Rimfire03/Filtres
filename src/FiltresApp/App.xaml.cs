@@ -65,7 +65,7 @@ public partial class App : Application
         }
         catch (DatabaseVersionException ex)
         {
-            MessageBox.Show(ex.Message, "Version du logiciel incompatible avec la base", MessageBoxButton.OK, MessageBoxImage.Stop);
+            MessageBox.Show(ex.Message, "Démarrage impossible : version de la base de données", MessageBoxButton.OK, MessageBoxImage.Stop);
             Shutdown(-1);
             return;
         }
@@ -207,6 +207,23 @@ public partial class App : Application
                 $"Version de base gérée par ce logiciel : {expected}\n\n" +
                 "Installez la dernière version du logiciel sur ce poste" + (by is null ? "" : $" ({by} ou plus récente)") +
                 ", puis relancez-le. Rien n'a été modifié dans la base.");
+        }
+
+        if (dbVersion < expected && !IsReadOnly)
+        {
+            var changes = string.Join("\n", DbContextFactory.PendingMigrations(dbVersion).Select(c => "  • " + c));
+            var accepted = MessageBox.Show(
+                $"La base de données est en version {dbVersion} ; cette version du logiciel ({CurrentVersion}) a besoin de la version {expected}.\n\n" +
+                $"Modifications à appliquer :\n{changes}\n\n" +
+                "Une copie de sauvegarde complète de la base sera faite à côté du fichier avant la mise à jour. " +
+                "Après la mise à jour, les postes équipés d'une version plus ancienne du logiciel ne pourront plus l'ouvrir.\n\n" +
+                "Mettre à jour la base maintenant ?",
+                "Mise à jour de la base de données", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+            if (accepted != MessageBoxResult.Yes)
+                throw new DatabaseVersionException(
+                    $"La base de données n'a pas été mise à jour : elle reste en version {dbVersion}, et cette version du logiciel ({CurrentVersion}) " +
+                    $"ne peut pas l'ouvrir sans la mettre en version {expected}.\n\n" +
+                    "Relancez le logiciel et acceptez la mise à jour, ou utilisez sur ce poste la version du logiciel qui correspond à la base.");
         }
 
         if (dbVersion < expected && IsReadOnly)
