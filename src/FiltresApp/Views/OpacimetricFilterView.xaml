@@ -45,6 +45,8 @@
                     Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
             <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
+            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0"
+                    ToolTip="Vide les filtres nom et dimension placés sous les titres de colonnes"/>
         </DockPanel>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
@@ -83,8 +85,31 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Filtres d'affichage dans le bas du bandeau des titres : "contient" sur le nom, liste des
+                     dimensions présentes (OpacimetricFilterListViewModel.NameFilter / SelectedDimension). -->
+                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" SortMemberPath="Location" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
+                                <TextBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres dont le nom contient ce texte"
+                                         Text="{Binding DataContext.NameFilter, RelativeSource={RelativeSource AncestorType=DataGrid}, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" ElementStyle="{StaticResource CenteredCellStyle}">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
+                                <ComboBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres de cette dimension"
+                                          ItemsSource="{Binding DataContext.DimensionOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                          SelectedItem="{Binding DataContext.SelectedDimension, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
                 <!-- Clic droit : menu rapide listant les types déjà utilisés (OpacimetricFilterView.xaml.cs). -->
                 <DataGridTextColumn x:Name="TypeColumn" Header="Type" Binding="{Binding FilterType}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.8*" ElementStyle="{StaticResource CenteredCellStyle}"/>

@@ -212,6 +212,9 @@ texte saisi (majuscules et accents ignorés) ; sous « Dimension », une liste d
 sur l'écran (« Toutes » par défaut). Ces filtres se combinent avec « Filtrer par mois », sont
 appliqués immédiatement (sans relire la base), repris par l'impression (titre complété) et remis à
 zéro par « Réinitialiser les filtres ».
+Même principe sur l'écran **F7 à H13** : champ « contient » sous « Nom de la centrale d'air » et
+liste des dimensions sous « Dimension », combinés avec le filtre par famille, repris à l'impression et
+remis à zéro par « Réinitialiser les filtres ».
 
 **Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3, Charbon et F7 à H13)** : première colonne de la
 grille, puce **verte** si le filtre est rattaché à une ligne de Commande / Inventaire (bouton
