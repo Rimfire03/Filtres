@@ -22,10 +22,13 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private ObservableCollection<OrderLine> _lines = new();
     [ObservableProperty] private OrderLine? _selectedLine;
 
+    public OrderFamilyFilter FamilyFilter { get; }
+
     public OrderListViewModel(OrderDocumentType type, string title)
     {
         _type = type;
         Title = title;
+        FamilyFilter = new OrderFamilyFilter(Load);
         Load();
     }
 
@@ -37,12 +40,17 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         [FilterCategory.Charbon] = "Charbon"
     };
 
-    public void Reload() => Load();
+    public void Reload()
+    {
+        FamilyFilter.Refresh();
+        Load();
+    }
 
     private void Load()
     {
         Lines = new ObservableCollection<OrderLine>(
-            App.Db.OrderLines
+            FamilyFilter.Apply(App.Db.OrderLines)
+                .Include(l => l.Family)
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
@@ -54,7 +62,12 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     private void Add()
     {
         if (!App.GuardWritable()) return;
-        var entity = new OrderLine { DocumentType = _type, Ordre = (Lines.Count == 0 ? 0 : Lines.Max(l => l.Ordre)) + 1 };
+        var entity = new OrderLine
+        {
+            DocumentType = _type,
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == _type).Max(l => (int?)l.Ordre) ?? 0) + 1,
+            OrderFamilyId = FamilyFilter.DefaultFamilyId
+        };
         if (!EditEntity(entity, true)) return;
         App.Db.OrderLines.Add(entity);
         App.Db.SaveChanges();
@@ -76,6 +89,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     {
         var fields = new List<EditField>
         {
+            FamilyFilter.CreateEditField(entity),
             EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
@@ -143,10 +157,11 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     }
 
     private static string[] BuildHeaders() =>
-        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Quantité à commander" };
+        new[] { "Famille", "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Quantité à commander" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
+        l.FamilyName,
         l.Designation,
         l.Destination ?? "",
         l.Dimension ?? "",
@@ -161,14 +176,14 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     private void Print()
     {
         var rows = Lines.Select(BuildRow).ToList();
-        App.Printer.PrintTable(Title, BuildHeaders(), rows);
+        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
     }
 
     [RelayCommand]
     private void ExportPdf()
     {
         var rows = Lines.Select(BuildRow).ToList();
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title, BuildHeaders(), rows);
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

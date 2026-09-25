@@ -21,18 +21,24 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private ObservableCollection<OrderLine> _lines = new();
     [ObservableProperty] private OrderLine? _selectedLine;
 
+    public OrderFamilyFilter FamilyFilter { get; }
+
     public InventoryListViewModel()
     {
+        FamilyFilter = new OrderFamilyFilter(Load);
         Load();
     }
 
-    public void Reload() => Load();
+    public void Reload()
+    {
+        FamilyFilter.Refresh();
+        Load();
+    }
 
     private void Load()
     {
         Lines = new ObservableCollection<OrderLine>(
-            App.Db.OrderLines
-                .AsNoTracking()
+            FamilyFilter.Apply(App.Db.OrderLines.Include(l => l.Family).AsNoTracking())
                 .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy)
                 .OrderBy(l => l.Ordre)
                 .ToList());
@@ -45,7 +51,8 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         var entity = new OrderLine
         {
             DocumentType = OrderDocumentType.CommandeChmy,
-            Ordre = (Lines.Count == 0 ? 0 : Lines.Max(l => l.Ordre)) + 1
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == OrderDocumentType.CommandeChmy).Max(l => (int?)l.Ordre) ?? 0) + 1,
+            OrderFamilyId = FamilyFilter.DefaultFamilyId
         };
         if (!EditEntity(entity, true)) return;
         App.Db.OrderLines.Add(entity);
@@ -68,6 +75,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     {
         var fields = new List<EditField>
         {
+            FamilyFilter.CreateEditField(entity),
             EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
@@ -115,23 +123,23 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         return true;
     }
 
-    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Inventaire", "Quantité" };
+    private static string[] BuildHeaders() => new[] { "Famille", "Dimension", "Destination", "Type", "Référence fournisseur", "Inventaire", "Quantité" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
+        l.FamilyName, l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
     };
 
     [RelayCommand]
     private void Print()
     {
-        App.Printer.PrintTable(Title, BuildHeaders(), Lines.Select(BuildRow).ToList());
+        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, BuildHeaders(), Lines.Select(BuildRow).ToList());
     }
 
     [RelayCommand]
     private void ExportPdf()
     {
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, "Commande", BuildHeaders(), Lines.Select(BuildRow).ToList());
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, "Commande" + FamilyFilter.TitleSuffix, BuildHeaders(), Lines.Select(BuildRow).ToList());
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

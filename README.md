@@ -221,6 +221,22 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 - Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les
   mêmes libellés.
 
+**Familles (Inventaire et Commande)** — migration v9, table `OrderFamilies` et champ
+`OrderLine.OrderFamilyId`. Les familles sont communes aux deux écrans (mêmes lignes).
+
+- Barre « Famille » en haut de chaque écran : liste déroulante pour **filtrer** (« Toutes les
+  familles », « Sans famille », puis chaque famille), et boutons « + Nouvelle famille »,
+  « Renommer la famille » et « Supprimer la famille » (ces deux derniers agissent sur la famille
+  choisie dans le filtre). Chaque écran garde son propre filtre.
+- Une colonne « Famille » (première colonne) et un champ « Famille » dans la fenêtre
+  d'ajout/modification. Une ligne ajoutée pendant qu'une famille est filtrée reçoit cette famille
+  par défaut.
+- Supprimer une famille ne supprime aucune ligne : ses lignes passent en « Sans famille » (après
+  confirmation indiquant leur nombre). Deux familles ne peuvent pas porter le même nom.
+- L'impression et l'export PDF suivent le filtre en cours, avec la famille ajoutée au titre et une
+  colonne « Famille ».
+- En lecture seule, le filtre reste utilisable ; la gestion des familles est désactivée.
+
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de
 l'application (interface, code et données), voir plus bas.
 

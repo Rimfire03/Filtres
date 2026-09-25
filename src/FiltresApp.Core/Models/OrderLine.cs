@@ -31,6 +31,12 @@ public class OrderLine
 
     public string? Destination { get; set; }
 
+    public int? OrderFamilyId { get; set; }
+    public OrderFamily? Family { get; set; }
+
+    [NotMapped]
+    public string FamilyName => Family?.Nom ?? string.Empty;
+
     /// <summary>Quantité relevée à l'inventaire, saisie directement dans la grille de l'écran Inventaire.</summary>
     public int? Inventaire { get; set; }
 

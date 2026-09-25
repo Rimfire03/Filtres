@@ -44,6 +44,7 @@ public class DbContextFactory
         (6, "Colonne Destination (Commande / Inventaire)", EnsureOrderLineDestinationColumn),
         (7, "Suppression de la colonne Unité (Inventaire) et de son contenu", DropOrderLineUniteColumn),
         (8, "Colonne Inventaire (écran Inventaire)", AddOrderLineInventaireColumn),
+        (9, "Familles des écrans Inventaire et Commande", AddOrderFamilies),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -125,6 +126,22 @@ public class DbContextFactory
     {
         var backupPath = $"{_dbPath}.avant-maj-v{fromVersion}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
+    }
+
+    private static void AddOrderFamilies(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "OrderFamilies" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderFamilies" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL
+            );
+            """);
+        if (!GetColumns(ctx, "OrderLines").Contains("OrderFamilyId"))
+            ctx.Database.ExecuteSqlRaw(
+                """ALTER TABLE "OrderLines" ADD COLUMN "OrderFamilyId" INTEGER NULL REFERENCES "OrderFamilies" ("Id") ON DELETE SET NULL;""");
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_OrderLines_OrderFamilyId" ON "OrderLines" ("OrderFamilyId");""");
     }
 
     private static void AddOrderLineInventaireColumn(FiltresDbContext ctx)
