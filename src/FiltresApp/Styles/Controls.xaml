@@ -109,7 +109,8 @@
         <Setter Property="CanUserAddRows" Value="False"/>
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="SelectionMode" Value="Single"/>
-        <Setter Property="RowHeight" Value="32"/>
+        <!-- Hauteur minimale seulement : la ligne s'agrandit quand un texte passe à la ligne. -->
+        <Setter Property="MinRowHeight" Value="32"/>
         <Setter Property="FontSize" Value="12.5"/>
     </Style>
 
@@ -130,6 +131,15 @@
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="2,4"/>
+    </Style>
+
+    <!-- Colonnes alignées à gauche (première colonne des grilles) : même retour à la ligne automatique. -->
+    <Style x:Key="WrappingCellStyle" TargetType="TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="4,4"/>
     </Style>
 
     <!-- Équivalent de CenteredCellStyle pour DataGridCheckBoxColumn (l'élément généré est une CheckBox,

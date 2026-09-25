@@ -1,6 +1,7 @@
 <UserControl x:Class="FiltresApp.Views.K7View"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
              xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:K7ListViewModel}"
@@ -35,11 +36,11 @@
                 <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             </StackPanel>
 
-            <DataGrid Grid.Row="2" ItemsSource="{Binding Source={StaticResource GroupedLocations}}"
+            <DataGrid Grid.Row="2" ItemsSource="{Binding Source={StaticResource GroupedLocations}}" svc:ColumnChooser.Key="Liste K7"
                       SelectedItem="{Binding SelectedLocation}" IsReadOnly="True"
                       AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Lieu" Binding="{Binding Lieu}" Width="3*"/>
+                    <DataGridTextColumn Header="Lieu" Binding="{Binding Lieu}" Width="3*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                     <DataGridTextColumn Header="N° porte" Binding="{Binding NumeroPorte}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                     <DataGridTextColumn Header="Changement réalisé" Binding="{Binding ChangementRealise, StringFormat='dd/MM/yyyy'}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                     <DataGridTextColumn Header="Nb de filtres" Binding="{Binding NbFiltres}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>

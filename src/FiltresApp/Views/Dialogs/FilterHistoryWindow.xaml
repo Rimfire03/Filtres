@@ -28,7 +28,7 @@
         <DataGrid x:Name="MonthsGrid" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Mois" Binding="{Binding MonthLabel}" Width="2*"/>
+                <DataGridTextColumn Header="Mois" Binding="{Binding MonthLabel}" Width="2*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridCheckBoxColumn Header="Réalisé" Binding="{Binding IsDone}" Width="*" ElementStyle="{StaticResource CenteredCheckBoxCellStyle}"/>
                 <DataGridTextColumn Header="Date du changement" Binding="{Binding DateLabel}" Width="1.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>

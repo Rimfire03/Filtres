@@ -69,7 +69,8 @@ qu'aucune version de .NET ne soit installée sur la machine cible.
 ## Emplacement des données (mode portable)
 
 - `settings.json` est créé au premier lancement **à côté de l'exécutable**
-  (jamais dans le registre ni dans `%AppData%`). Il contient :
+  (jamais dans le registre ni dans `%AppData%`). Seule exception : le choix des
+  colonnes affichées, propre à chaque ordinateur (voir « Affichage des grilles »). Il contient :
   - `DatabasePath` : chemin (relatif ou absolu) vers le fichier SQLite.
     Par défaut `data\filtres.db`, relatif au dossier de l'exe.
   - `PdfExportPath` : dossier de destination des exports PDF (remplace le
@@ -133,6 +134,19 @@ Les colonnes "changement prévu en [mois]" ne sont pas importées : la
 prochaine échéance est recalculée par l'application
 (`MaintenanceScheduleService`) à partir de la périodicité et du dernier
 changement réalisé, plutôt que de dépendre des formules Excel d'origine.
+
+## Affichage des grilles
+
+- **Retour à la ligne** : un texte plus long que la largeur de sa cellule passe à la ligne, et la
+  hauteur de la ligne s'adapte automatiquement (32 px minimum).
+- **Colonnes affichées, au choix de chaque ordinateur** : clic droit sur n'importe quel en-tête de
+  colonne → cocher/décocher les colonnes à afficher, ou « Afficher toutes les colonnes ». Au moins
+  une colonne reste toujours visible. Le choix est mémorisé séparément pour chaque écran, sur
+  l'ordinateur (et la session Windows) de l'utilisateur, dans
+  `%LocalAppData%\FiltresApp\colonnes.json` : il n'est pas partagé avec les autres postes, même si
+  l'exécutable et la base sont sur le disque réseau. Disponible sur les écrans de filtres, Liste K7,
+  Inventaire, Commande chmy et dans la fenêtre « Rattacher des filtres ». Les impressions et exports
+  gardent toutes les colonnes.
 
 ## Fonctionnalités par écran
 

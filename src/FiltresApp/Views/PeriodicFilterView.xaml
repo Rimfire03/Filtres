@@ -1,6 +1,7 @@
 <UserControl x:Class="FiltresApp.Views.PeriodicFilterView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
              xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:PeriodicFilterListViewModel}"
@@ -35,7 +36,7 @@
             <ComboBox ItemsSource="{Binding MonthOptions}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding ConsultedMonth}" Width="130"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Filters}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Filters}" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Resources>
                 <!-- Menu contextuel "Changé tous les 15 jours" : uniquement proposé sur l'écran
@@ -67,7 +68,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{Binding LocationColumnLabel}" Binding="{Binding Location}" Width="2.2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="{Binding LocationColumnLabel}" Binding="{Binding Location}" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
