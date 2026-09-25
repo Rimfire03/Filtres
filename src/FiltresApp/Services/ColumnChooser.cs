@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -8,12 +9,21 @@ using System.Windows.Media.Media3D;
 namespace FiltresApp.Services;
 
 /// <summary>
-/// Clic droit sur un en-tête de colonne d'une grille portant <c>ColumnChooser.Key</c> : menu pour masquer
-/// ou réafficher des colonnes. Le choix est mémorisé sur l'ordinateur (voir <see cref="ColumnPreferences"/>),
-/// sous la clé de la grille.
+/// Grilles portant <c>ColumnChooser.Key</c> : clic droit sur un en-tête de colonne pour masquer ou
+/// réafficher des colonnes, et mémorisation des largeurs redimensionnées à la souris. Tout est enregistré
+/// sur l'ordinateur (voir <see cref="ColumnPreferences"/>), sous la clé de la grille.
 /// </summary>
 public static class ColumnChooser
 {
+    private sealed class OriginalWidth(DataGridLength width)
+    {
+        public DataGridLength Width { get; } = width;
+    }
+
+    /// <summary>Largeur définie dans le XAML, pour "Réinitialiser les largeurs" et pour ne mémoriser que
+    /// les colonnes réellement modifiées.</summary>
+    private static readonly ConditionalWeakTable<DataGridColumn, OriginalWidth> OriginalWidths = new();
+
     public static readonly DependencyProperty KeyProperty = DependencyProperty.RegisterAttached(
         "Key", typeof(string), typeof(ColumnChooser), new PropertyMetadata(null, OnKeyChanged));
 
@@ -27,6 +37,8 @@ public static class ColumnChooser
         grid.Loaded += OnLoaded;
         grid.PreviewMouseRightButtonUp -= OnPreviewRightClick;
         grid.PreviewMouseRightButtonUp += OnPreviewRightClick;
+        grid.RemoveHandler(Thumb.DragCompletedEvent, (DragCompletedEventHandler)OnResizeCompleted);
+        grid.AddHandler(Thumb.DragCompletedEvent, (DragCompletedEventHandler)OnResizeCompleted, handledEventsToo: true);
         if (grid.IsLoaded) Apply(grid);
     }
 
@@ -38,7 +50,14 @@ public static class ColumnChooser
         if (string.IsNullOrEmpty(key)) return;
 
         foreach (var column in grid.Columns)
-            column.Visibility = ColumnPreferences.IsHidden(key, ColumnKey(grid, column)) ? Visibility.Collapsed : Visibility.Visible;
+        {
+            var columnKey = ColumnKey(grid, column);
+            column.Visibility = ColumnPreferences.IsHidden(key, columnKey) ? Visibility.Collapsed : Visibility.Visible;
+
+            var original = OriginalWidths.GetValue(column, c => new OriginalWidth(c.Width)).Width;
+            var saved = ColumnPreferences.GetWidth(key, columnKey);
+            column.Width = saved is null ? original : new DataGridLength(saved.Value, saved.Star ? DataGridLengthUnitType.Star : DataGridLengthUnitType.Pixel);
+        }
 
         if (grid.Columns.Count > 0 && grid.Columns.All(c => c.Visibility != Visibility.Visible))
             grid.Columns[0].Visibility = Visibility.Visible;
@@ -85,10 +104,41 @@ public static class ColumnChooser
         };
         menu.Items.Add(showAll);
 
+        var resetWidths = new MenuItem { Header = "Réinitialiser les largeurs" };
+        resetWidths.Click += (_, _) =>
+        {
+            ColumnPreferences.SetWidths(key, new Dictionary<string, ColumnWidth>());
+            foreach (var column in grid.Columns)
+                if (OriginalWidths.TryGetValue(column, out var original)) column.Width = original.Width;
+        };
+        menu.Items.Add(resetWidths);
+
         menu.PlacementTarget = grid;
         menu.Placement = PlacementMode.MousePoint;
         menu.IsOpen = true;
         e.Handled = true;
+    }
+
+    /// <summary>Fin d'un redimensionnement à la souris (poignée d'un en-tête) : mémorise la largeur de toutes
+    /// les colonnes qui diffèrent de leur largeur d'origine (en mode proportionnel, WPF peut aussi ajuster
+    /// les colonnes voisines).</summary>
+    private static void OnResizeCompleted(object sender, DragCompletedEventArgs e)
+    {
+        var grid = (DataGrid)sender;
+        var key = GetKey(grid);
+        if (string.IsNullOrEmpty(key) || FindAncestor<DataGridColumnHeader>(e.OriginalSource as DependencyObject) is null) return;
+
+        var widths = new Dictionary<string, ColumnWidth>();
+        foreach (var column in grid.Columns)
+        {
+            if (!OriginalWidths.TryGetValue(column, out var original)) continue;
+            var width = column.Width;
+            if (width.UnitType == original.Width.UnitType && width.Value.Equals(original.Width.Value)) continue;
+            widths[ColumnKey(grid, column)] = width.IsStar
+                ? new ColumnWidth(width.Value, Star: true)
+                : new ColumnWidth(width.IsAbsolute ? width.Value : column.ActualWidth, Star: false);
+        }
+        ColumnPreferences.SetWidths(key, widths);
     }
 
     /// <summary>Identifiant stable de la colonne : son titre, ou sa position si le titre n'est pas un texte.</summary>
