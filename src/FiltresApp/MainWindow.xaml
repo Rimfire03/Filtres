@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:FiltresApp.ViewModels"
         xmlns:app="clr-namespace:FiltresApp"
-        Title="Suivi maintenance filtres à air" Height="800" Width="1300"
+        Title="Suivi maintenance Filtres" Height="800" Width="1300"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:MainViewModel/>
