@@ -123,7 +123,7 @@ static DbWriteLock? AcquireWriteLockOrReport(string dbPath)
     {
         var owner = DbWriteLock.ReadOwner(dbPath);
         Console.Error.WriteLine("Import annulé : la base est ouverte en écriture par l'application" +
-            (owner is null ? "." : $" ({owner}).") + " Fermez l'application sur ce poste puis relancez l'import.");
+            (owner is null ? "." : $" par @{owner}.") + " Fermez l'application sur ce poste puis relancez l'import.");
     }
     return writeLock;
 }

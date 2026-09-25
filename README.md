@@ -90,8 +90,9 @@ règle **« un seul rédacteur, plusieurs lecteurs »** :
 - Le **premier** poste qui ouvre la base obtient l'accès en **lecture/écriture**. Il garde ouvert en
   exclusivité un fichier `filtres.db.lock` créé à côté de la base (qui contient le nom de
   l'utilisateur et du poste).
-- Les postes suivants s'ouvrent en **lecture seule** : un bandeau jaune en haut de la fenêtre indique
-  qui détient l'accès en écriture, les boutons de modification (ajouter, modifier, supprimer,
+- Les postes suivants s'ouvrent en **lecture seule** : dès l'ouverture, un message s'affiche
+  « Données en lecture seule : fichier actuellement utilisé par @nom_de_session_windows », puis un
+  bandeau jaune reste en haut de la fenêtre pour le rappeler ; les boutons de modification (ajouter, modifier, supprimer,
   enregistrer un remplacement, case « Réalisé », import Excel...) sont désactivés, et la connexion
   SQLite elle-même est ouverte en lecture seule (aucune écriture possible, même par erreur).
   La consultation, l'impression et les exports PDF/Excel restent disponibles.

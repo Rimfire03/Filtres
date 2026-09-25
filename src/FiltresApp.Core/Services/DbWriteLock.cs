@@ -39,22 +39,23 @@ public sealed class DbWriteLock : IDisposable
             return null;
         }
 
-        var owner = Encoding.UTF8.GetBytes($"{Environment.UserName} sur le poste {Environment.MachineName}, depuis le {DateTime.Now:dd/MM/yyyy HH:mm}");
+        // 1re ligne : nom de la session Windows (lu par ReadOwner) ; les suivantes sont informatives.
+        var owner = Encoding.UTF8.GetBytes($"{Environment.UserName}\nPoste : {Environment.MachineName}\nDepuis le {DateTime.Now:dd/MM/yyyy HH:mm}");
         stream.SetLength(0);
         stream.Write(owner);
         stream.Flush(flushToDisk: true);
         return new DbWriteLock(stream);
     }
 
-    /// <summary>Description du poste qui détient actuellement l'accès en écriture, ou null si illisible.</summary>
+    /// <summary>Nom de la session Windows qui détient actuellement l'accès en écriture, ou null si illisible.</summary>
     public static string? ReadOwner(string dbPath)
     {
         try
         {
             using var stream = new FileStream(GetLockPath(dbPath), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(stream, Encoding.UTF8);
-            var text = reader.ReadToEnd().Trim();
-            return text.Length > 0 ? text : null;
+            var user = reader.ReadLine()?.Trim();
+            return string.IsNullOrEmpty(user) ? null : user;
         }
         catch (IOException)
         {

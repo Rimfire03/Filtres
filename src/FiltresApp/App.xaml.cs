@@ -81,6 +81,9 @@ public partial class App : Application
         MainWindow = mainWindow;
         mainWindow.Show();
 
+        if (IsReadOnly)
+            MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);
+
         if (Settings.AutoUpdateEnabled) _ = CheckForUpdateOnStartupAsync();
     }
 
@@ -194,10 +197,12 @@ public partial class App : Application
         return false;
     }
 
+    public static string ReadOnlyTitle =>
+        "Données en lecture seule : fichier actuellement utilisé par " +
+        (WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner);
+
     public static string ReadOnlyMessage =>
-        "Lecture seule : la base est déjà ouverte en écriture par un autre utilisateur" +
-        (WriteLockOwner is null ? "" : $" ({WriteLockOwner})") +
-        ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
+        ReadOnlyTitle + ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
 
     /// <summary>Construit le contexte d'année partagé par les écrans de suivi : année courante par
     /// défaut, plus toutes les années déjà présentes dans l'historique de remplacements en base.</summary>
