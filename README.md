@@ -10,10 +10,8 @@ autonome (aucune installation requise).
 FiltresApp.sln
 src/
   FiltresApp.Core/        Modèles, DbContext EF Core, services métier (calcul
-                           des échéances, import Excel, export PDF)
+                           des échéances, export PDF/Excel)
   FiltresApp/              Application WPF (MVVM, CommunityToolkit.Mvvm)
-  FiltresApp.ImportCli/    Petit outil console pour (ré)importer un classeur
-                           Excel en ligne de commande
 ```
 
 ## Prérequis pour builder
@@ -94,7 +92,7 @@ règle **« un seul rédacteur, plusieurs lecteurs »** :
 - Les postes suivants s'ouvrent en **lecture seule** : dès l'ouverture, un message s'affiche
   « Données en lecture seule : fichier actuellement utilisé par @nom_de_session_windows », puis un
   bandeau jaune reste en haut de la fenêtre pour le rappeler ; les boutons de modification (ajouter, modifier, supprimer,
-  enregistrer un remplacement, case « Réalisé », import Excel...) sont désactivés, et la connexion
+  enregistrer un remplacement, case « Réalisé »...) sont désactivés, et la connexion
   SQLite elle-même est ouverte en lecture seule (aucune écriture possible, même par erreur).
   La consultation, l'impression et les exports PDF/Excel restent disponibles.
 - Les postes en lecture seule voient les modifications du rédacteur en changeant d'écran (les
@@ -103,8 +101,6 @@ règle **« un seul rédacteur, plusieurs lecteurs »** :
   **relancer** l'application pour obtenir l'accès en écriture. Le verrou est aussi libéré
   automatiquement par Windows si l'application plante ou si le poste est éteint : il n'y a jamais de
   fichier `.lock` à supprimer à la main.
-- L'outil en ligne de commande `FiltresApp.ImportCli` respecte le même verrou : il refuse d'importer
-  si l'application est ouverte en écriture sur un poste.
 
 Recommandations :
 - Placer la base sur un vrai partage réseau Windows (SMB), **jamais** dans un dossier synchronisé
@@ -113,27 +109,14 @@ Recommandations :
   fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
 - Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
 
-## Réimporter les données depuis Excel
+## Import Excel (supprimé)
 
-Deux façons équivalentes :
-
-1. **Depuis l'application** : écran *Paramètres* → *Importer depuis Excel* →
-   choisir le fichier `.xlsm`/`.xlsx` → *Lancer l'import*. Attention : cette
-   opération **remplace** toutes les données actuellement en base.
-
-2. **En ligne de commande** (utile pour scripter/régénérer la base de
-   référence) :
-   ```powershell
-   $env:PATH = "$env:LOCALAPPDATA\Microsoft\dotnet;$env:PATH"
-   dotnet run --project src\FiltresApp.ImportCli\FiltresApp.ImportCli.csproj -- `
-     "chemin\vers\Filtres.xlsm" "chemin\vers\filtres.db"
-   ```
-
-L'import lit uniquement les **valeurs** des feuilles (pas les macros/ActiveX).
-Les colonnes "changement prévu en [mois]" ne sont pas importées : la
-prochaine échéance est recalculée par l'application
-(`MaintenanceScheduleService`) à partir de la périodicité et du dernier
-changement réalisé, plutôt que de dépendre des formules Excel d'origine.
+Le système d'import a été **supprimé** : bouton « Importer depuis Excel » de l'écran Paramètres,
+outil en ligne de commande `FiltresApp.ImportCli`, et services `ExcelImportService` /
+`ArchiveImportService`. Les données déjà importées (classeur courant et archives 2014-2025) restent
+en base ; elles se gèrent désormais uniquement depuis l'application. Les sections historiques plus
+bas qui décrivent ces imports sont conservées pour mémoire. Le code supprimé reste consultable dans
+l'historique git.
 
 ## Affichage des grilles
 
@@ -176,7 +159,7 @@ modifient les mêmes lignes.**
 > L'onglet « Commande chmy » s'appelle désormais simplement **« Commande »** dans
 > l'application (titre de l'écran et des impressions/exports compris). Le reste de ce
 > README conserve l'ancien nom dans les sections historiques ; la feuille du classeur
-> Excel source s'appelle toujours « Commande chmy » et l'import la lit sous ce nom.
+> Excel source s'appelait « Commande chmy ».
 
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de
 l'application (interface, code et données), voir plus bas.
@@ -721,6 +704,9 @@ identifiées).
     seul le rattachement `K7FamilyId`/`IsFamilyHeader` a été ajouté).
 
 ### Import des archives 2014-2025
+
+> Historique : l'outil d'import décrit ci-dessous a depuis été supprimé (voir « Import Excel
+> (supprimé) »).
 
 En plus du classeur "courant" (`Filtres 2026.xlsm`, importé intégralement via `ExcelImportService`,
 voir plus haut), 12 classeurs d'archives annuels (2014 à 2025,

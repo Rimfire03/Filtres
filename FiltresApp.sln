@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiltresApp.Core", "src\Filt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiltresApp", "src\FiltresApp\FiltresApp.csproj", "{A73E17EA-80F0-4B9E-B126-2B94AED3CAAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiltresApp.ImportCli", "src\FiltresApp.ImportCli\FiltresApp.ImportCli.csproj", "{65453448-7515-420D-BDD5-0537147D3ED4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,14 +26,9 @@ Global
 		{A73E17EA-80F0-4B9E-B126-2B94AED3CAAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A73E17EA-80F0-4B9E-B126-2B94AED3CAAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A73E17EA-80F0-4B9E-B126-2B94AED3CAAB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{65453448-7515-420D-BDD5-0537147D3ED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65453448-7515-420D-BDD5-0537147D3ED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65453448-7515-420D-BDD5-0537147D3ED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65453448-7515-420D-BDD5-0537147D3ED4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{63505BB8-1D99-4CFC-9F8F-706211A6531C} = {9807EEDD-D6F8-4C20-9198-3EB5A4BB3DE7}
 		{A73E17EA-80F0-4B9E-B126-2B94AED3CAAB} = {9807EEDD-D6F8-4C20-9198-3EB5A4BB3DE7}
-		{65453448-7515-420D-BDD5-0537147D3ED4} = {9807EEDD-D6F8-4C20-9198-3EB5A4BB3DE7}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,3 @@
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Services;
@@ -11,7 +10,6 @@ public partial class SettingsViewModel : ObservableObject
 {
     [ObservableProperty] private string _databasePath;
     [ObservableProperty] private string _pdfExportPath;
-    [ObservableProperty] private string _importSourcePath = string.Empty;
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private string _exportStatusMessage = string.Empty;
 
@@ -137,16 +135,6 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void BrowseImportSource()
-    {
-        var dialog = new OpenFileDialog
-        {
-            Filter = "Classeur Excel (*.xlsm;*.xlsx)|*.xlsm;*.xlsx"
-        };
-        if (dialog.ShowDialog() == true) ImportSourcePath = dialog.FileName;
-    }
-
-    [RelayCommand]
     private void SaveSettings()
     {
         App.Settings.DatabasePath = DatabasePath;
@@ -155,35 +143,5 @@ public partial class SettingsViewModel : ObservableObject
 
         App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
         StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
-    }
-
-    [RelayCommand]
-    private void ImportFromExcel()
-    {
-        if (!App.GuardWritable()) return;
-        if (string.IsNullOrWhiteSpace(ImportSourcePath) || !File.Exists(ImportSourcePath))
-        {
-            StatusMessage = "Merci de choisir un fichier Excel (.xlsm/.xlsx) valide.";
-            return;
-        }
-
-        if (!App.Dialogs.ShowConfirm("Importer depuis Excel",
-                "Cette opération va REMPLACER toutes les données actuelles de l'application par celles du fichier Excel sélectionné. Continuer ?"))
-        {
-            return;
-        }
-
-        try
-        {
-            var result = App.Importer.Import(ImportSourcePath, App.Settings.ResolvedDatabasePath);
-            App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
-            StatusMessage = $"Import terminé : {result.Total} lignes importées.";
-            if (result.Warnings.Count > 0)
-                StatusMessage += $" Avertissements : {string.Join("; ", result.Warnings)}";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Erreur pendant l'import : {ex.Message}";
-        }
     }
 }

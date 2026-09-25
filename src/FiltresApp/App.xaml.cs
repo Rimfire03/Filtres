@@ -15,7 +15,6 @@ public partial class App : Application
     public static PrintService Printer { get; private set; } = null!;
     public static PdfExportService PdfExport { get; private set; } = null!;
     public static ExcelExportService ExcelExport { get; private set; } = null!;
-    public static ExcelImportService Importer { get; private set; } = null!;
     public static YearContext YearContext { get; private set; } = null!;
     public static UpdateService Updater { get; } = new();
 
@@ -74,7 +73,6 @@ public partial class App : Application
         Printer = new PrintService();
         PdfExport = new PdfExportService();
         ExcelExport = new ExcelExportService();
-        Importer = new ExcelImportService();
         YearContext = CreateYearContext();
 
         var mainWindow = new MainWindow();
