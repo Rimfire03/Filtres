@@ -38,7 +38,7 @@
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
             <TextBlock Text="Filtrer par mois :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
             <ComboBox ItemsSource="{Binding MonthFilterOptions}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding MonthFilter}" Width="150"/>
-            <Button Content="Réinitialiser le filtre" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFilterCommand}" Margin="12,0,0,0"/>
+            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFilterCommand}" Margin="12,0,0,0"/>
 
             <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
             <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
@@ -102,8 +102,31 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="{Binding LocationColumnLabel}" Binding="{Binding Location}" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Filtres d'affichage placés dans le bas du bandeau des titres : "contient" sur le nom, liste
+                     des dimensions présentes (PeriodicFilterListViewModel.NameFilter / SelectedDimension). -->
+                <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
+                                <TextBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres dont le nom contient ce texte"
+                                         Text="{Binding DataContext.NameFilter, RelativeSource={RelativeSource AncestorType=DataGrid}, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}">
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
+                                <ComboBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres de cette dimension"
+                                          ItemsSource="{Binding DataContext.DimensionOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                          SelectedItem="{Binding DataContext.SelectedDimension, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>

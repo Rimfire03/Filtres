@@ -205,6 +205,14 @@ l'historique git.
 
 ## Fonctionnalités par écran
 
+**Colonne « Filtres » et filtres sous les titres (écrans G4 plissés, G4 plan, G3, Charbon)** : la
+colonne du nom (centrale / emplacement) s'intitule « Filtres ». Dans le bas du bandeau des titres de
+colonnes : sous « Filtres », un champ texte n'affiche que les filtres dont le nom **contient** le
+texte saisi (majuscules et accents ignorés) ; sous « Dimension », une liste des dimensions présentes
+sur l'écran (« Toutes » par défaut). Ces filtres se combinent avec « Filtrer par mois », sont
+appliqués immédiatement (sans relire la base), repris par l'impression (titre complété) et remis à
+zéro par « Réinitialiser les filtres ».
+
 **Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3, Charbon et F7 à H13)** : première colonne de la
 grille, puce **verte** si le filtre est rattaché à une ligne de Commande / Inventaire (bouton
 « Rattacher des filtres... » de l'écran Commande), **rouge** sinon. Le survol de la puce indique la

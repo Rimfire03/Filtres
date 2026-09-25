@@ -14,7 +14,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private readonly string _locationColumnLabel;
 
     public string Title { get; }
-    public string LocationColumnLabel => _locationColumnLabel;
     public bool ShowHourCounter => _category == FilterCategory.Charbon;
     public bool ShowK7Reference => _category == FilterCategory.G3;
 
@@ -101,7 +100,63 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     partial void OnMonthFilterChanged(int? value)
     {
         MonthFilterLabel = value.HasValue ? MonthLabels[value.Value - 1] : "Tous les mois";
-        Load();
+        ApplyFilters();
+    }
+
+    // ---- Filtres placés sous les titres de colonnes ----
+
+    public const string AllDimensions = "Toutes";
+
+    /// <summary>Colonne "Filtres" : n'affiche que les filtres dont le nom contient ce texte (sans tenir
+    /// compte des majuscules ni des accents).</summary>
+    [ObservableProperty] private string _nameFilter = string.Empty;
+
+    /// <summary>Colonne "Dimension" : "Toutes", puis les dimensions présentes sur cet écran.</summary>
+    [ObservableProperty] private List<string> _dimensionOptions = new() { AllDimensions };
+    [ObservableProperty] private string _selectedDimension = AllDimensions;
+
+    partial void OnNameFilterChanged(string value) => ApplyFilters();
+    partial void OnSelectedDimensionChanged(string value) => ApplyFilters();
+
+    private List<PeriodicFilter> _allFilters = new();
+    private Dictionary<int, string> _linkedLines = new();
+    private bool _refreshingDimensions;
+
+    private void RefreshDimensionOptions()
+    {
+        var options = new List<string> { AllDimensions };
+        options.AddRange(_allFilters.Select(f => f.Dimension.Trim()).Where(d => d.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(d => d, StringComparer.CurrentCultureIgnoreCase));
+
+        _refreshingDimensions = true;
+        try
+        {
+            var previous = SelectedDimension;
+            DimensionOptions = options;
+            SelectedDimension = options.FirstOrDefault(o => string.Equals(o, previous, StringComparison.OrdinalIgnoreCase)) ?? AllDimensions;
+        }
+        finally
+        {
+            _refreshingDimensions = false;
+        }
+    }
+
+    /// <summary>Applique les filtres d'affichage (mois, nom, dimension) sans relire la base.</summary>
+    private void ApplyFilters()
+    {
+        if (_refreshingDimensions) return;
+        var name = NameFilter.Trim();
+        var compare = System.Globalization.CultureInfo.CurrentCulture.CompareInfo;
+        const System.Globalization.CompareOptions ignore =
+            System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace;
+
+        var filtered = _allFilters.Where(f =>
+            (!MonthFilter.HasValue || f.GetPeriodicityMonths().Contains(MonthFilter.Value))
+            && (name.Length == 0 || compare.IndexOf(f.Location, name, ignore) >= 0)
+            && (SelectedDimension == AllDimensions || string.Equals(f.Dimension.Trim(), SelectedDimension, StringComparison.OrdinalIgnoreCase)));
+
+        Filters = new ObservableCollection<PeriodicFilterRowViewModel>(
+            filtered.Select(f => new PeriodicFilterRowViewModel(f, this, _linkedLines.GetValueOrDefault(f.Id))));
     }
 
     private void RefreshRows()
@@ -116,7 +171,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private void Load()
     {
         // Ligne de Commande / Inventaire à laquelle chaque filtre est rattaché (un filtre = une ligne au plus).
-        var linkedLines = App.Db.OrderLinePeriodicFilters
+        _linkedLines = App.Db.OrderLinePeriodicFilters
             .AsNoTracking()
             .Where(l => l.PeriodicFilter!.Category == _category)
             .Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
@@ -124,19 +179,24 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             .GroupBy(l => l.PeriodicFilterId)
             .ToDictionary(g => g.Key, g => g.First().Designation);
 
-        var all = App.Db.PeriodicFilters
+        _allFilters = App.Db.PeriodicFilters
             .Include(f => f.Replacements)
             .Where(f => f.Category == _category)
             .AsNoTracking()
             .OrderBy(f => f.Location)
             .ToList();
 
-        var filtered = MonthFilter.HasValue ? all.Where(f => f.GetPeriodicityMonths().Contains(MonthFilter.Value)) : all;
-        Filters = new ObservableCollection<PeriodicFilterRowViewModel>(filtered.Select(f => new PeriodicFilterRowViewModel(f, this, linkedLines.GetValueOrDefault(f.Id))));
+        RefreshDimensionOptions();
+        ApplyFilters();
     }
 
     [RelayCommand]
-    private void ResetFilter() => MonthFilter = null;
+    private void ResetFilter()
+    {
+        MonthFilter = null;
+        NameFilter = string.Empty;
+        SelectedDimension = AllDimensions;
+    }
 
     [RelayCommand]
     private void AddFilter()
@@ -335,7 +395,10 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         var columns = PrintableColumns().Where(c => !IsColumnHidden(c.Key)).ToList();
         var headers = columns.Select(c => c.Header).ToArray();
         var rows = Filters.Select(f => columns.Select(c => c.Value(f)).ToArray()).ToList();
-        var title = MonthFilter.HasValue ? $"{Title} - {MonthFilterLabel}" : Title;
+        var title = Title;
+        if (MonthFilter.HasValue) title += $" - {MonthFilterLabel}";
+        if (SelectedDimension != AllDimensions) title += $" - Dimension {SelectedDimension}";
+        if (NameFilter.Trim().Length > 0) title += $" - Nom contenant « {NameFilter.Trim()} »";
         App.Printer.PrintTable(title, headers, rows, includeCheckboxColumn: true);
     }
 
@@ -343,7 +406,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private IEnumerable<(string Key, string Header, Func<PeriodicFilterRowViewModel, string> Value)> PrintableColumns()
     {
         yield return ("Lié", "Lié", f => f.IsWashable ? "" : f.IsLinkedToOrder ? "Oui" : "Non");
-        yield return (_locationColumnLabel, _locationColumnLabel, f => f.Location);
+        yield return ("Filtres", "Filtres", f => f.Location);
         yield return ("Dimension", "Dimension", f => f.Dimension);
         yield return ("Type", "Type", f => f.MediaType);
         yield return ("Qté en place", "Qté en place", f => f.QuantityInPlace.ToString());
@@ -354,10 +417,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         yield return ("Date du changement", "Date du changement", f => f.DateDoneForConsultedMonth?.ToString("dd/MM/yyyy") ?? "");
     }
 
-    /// <summary>Colonne masquée sur ce poste (voir ColumnChooser). La colonne d'emplacement, dont le titre
-    /// est lié au ViewModel, peut être mémorisée par sa position si ce titre n'était pas encore résolu.</summary>
-    private bool IsColumnHidden(string key) =>
-        ColumnPreferences.IsHidden(Title, key) || (key == _locationColumnLabel && ColumnPreferences.IsHidden(Title, "#1"));
+    /// <summary>Colonne masquée sur ce poste (voir ColumnChooser).</summary>
+    private bool IsColumnHidden(string key) => ColumnPreferences.IsHidden(Title, key);
 
     [RelayCommand]
     private void ExportExcelYear()
