@@ -39,7 +39,10 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     {
         Lines = new ObservableCollection<OrderLine>(
             OrderFamilyFilter.OrderByFamily(
-                    FamilyFilter.Apply(App.Db.OrderLines.Include(l => l.Family).AsNoTracking())
+                    FamilyFilter.Apply(App.Db.OrderLines
+                            .Include(l => l.Family)
+                            .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
+                            .AsNoTracking())
                         .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy))
                 .ToList());
     }
@@ -123,11 +126,11 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         return true;
     }
 
-    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Inventaire", "Quantité" };
+    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Inventaire", "Quantité" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
+        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.NeedMars?.ToString() ?? "", l.NeedSeptembre?.ToString() ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
     };
 
     private List<string[]> BuildPrintRows() =>

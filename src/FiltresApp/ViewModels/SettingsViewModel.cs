@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FiltresApp.Core.Data;
 using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using Microsoft.Win32;
@@ -28,11 +29,82 @@ public partial class SettingsViewModel : ObservableObject
     /// partagée avec le sélecteur d'année global de la barre latérale.</summary>
     public YearContext YearContext => App.YearContext;
 
+    // ---- Suppression de l'historique d'une année (deux fonctions séparées) ----
+    [ObservableProperty] private List<int> _periodicHistoryYears = new();
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeletePeriodicHistoryCommand))]
+    private int? _selectedPeriodicHistoryYear;
+
+    [ObservableProperty] private List<int> _opacimetricHistoryYears = new();
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteOpacimetricHistoryCommand))]
+    private int? _selectedOpacimetricHistoryYear;
+
+    [ObservableProperty] private string _historyStatusMessage = string.Empty;
+
     public SettingsViewModel()
     {
         _databasePath = App.Settings.DatabasePath;
         _pdfExportPath = App.Settings.PdfExportPath;
         _autoUpdateEnabled = App.Settings.AutoUpdateEnabled;
+        LoadHistoryYears();
+    }
+
+    private void LoadHistoryYears()
+    {
+        PeriodicHistoryYears = HistoryCleanupService.GetPeriodicYears(App.Db);
+        SelectedPeriodicHistoryYear = PeriodicHistoryYears.Count > 0 ? PeriodicHistoryYears[^1] : null;
+        OpacimetricHistoryYears = HistoryCleanupService.GetOpacimetricYears(App.Db);
+        SelectedOpacimetricHistoryYear = OpacimetricHistoryYears.Count > 0 ? OpacimetricHistoryYears[^1] : null;
+    }
+
+    private bool CanDeletePeriodicHistory() => SelectedPeriodicHistoryYear.HasValue;
+    private bool CanDeleteOpacimetricHistory() => SelectedOpacimetricHistoryYear.HasValue;
+
+    /// <summary>Supprime l'historique de l'année choisie pour G4 plissé, G4 plan, G3 et Charbon
+    /// uniquement (pas F7 à H13, qui a sa propre fonction).</summary>
+    [RelayCommand(CanExecute = nameof(CanDeletePeriodicHistory))]
+    private void DeletePeriodicHistory()
+    {
+        if (SelectedPeriodicHistoryYear is not int year) return;
+        DeleteHistory(year, "Filtres G4 plissés, G4 plan, G3 et Charbon", "Les filtres F7 à H13 ne sont pas concernés.",
+            HistoryCleanupService.CountPeriodic, HistoryCleanupService.DeletePeriodicYear);
+    }
+
+    /// <summary>Supprime l'historique de l'année choisie pour les filtres F7 à H13 uniquement.</summary>
+    [RelayCommand(CanExecute = nameof(CanDeleteOpacimetricHistory))]
+    private void DeleteOpacimetricHistory()
+    {
+        if (SelectedOpacimetricHistoryYear is not int year) return;
+        DeleteHistory(year, "Filtres F7 à H13", "Les filtres G4 plissés, G4 plan, G3 et Charbon ne sont pas concernés.",
+            HistoryCleanupService.CountOpacimetric, HistoryCleanupService.DeleteOpacimetricYear);
+    }
+
+    private void DeleteHistory(int year, string scope, string notConcerned,
+        Func<FiltresDbContext, int, int> count, Func<FiltresDbContext, int, int> delete)
+    {
+        if (!App.GuardWritable()) return;
+
+        var n = count(App.Db, year);
+        if (!App.Dialogs.ShowConfirm("Supprimer l'historique",
+                $"Supprimer définitivement l'historique de l'année {year} ?\n\n{scope} : {n} remplacement(s) enregistré(s) seront supprimés. " +
+                $"Les filtres eux-mêmes sont conservés. {notConcerned}\n\n" +
+                "Une copie de sauvegarde de la base sera faite juste avant.")) return;
+
+        try
+        {
+            var backup = App.DbFactory.CreateBackup($"avant-suppression-historique-{year}");
+            var deleted = delete(App.Db, year);
+            // Des remplacements supprimés peuvent encore être suivis en mémoire par le contexte.
+            App.Db.ChangeTracker.Clear();
+            (System.Windows.Application.Current.MainWindow?.DataContext as MainViewModel)?.ResetOtherScreens();
+            HistoryStatusMessage = $"{scope} : historique {year} supprimé ({deleted} remplacement(s)). Sauvegarde : {backup}";
+        }
+        catch (Exception ex)
+        {
+            HistoryStatusMessage = $"Erreur pendant la suppression : {ex.Message}";
+        }
+        LoadHistoryYears();
     }
 
     /// <summary>La case à cocher se sauvegarde immédiatement : contrairement aux autres champs, il n'y

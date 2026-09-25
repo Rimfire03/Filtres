@@ -109,6 +109,21 @@ Recommandations :
   fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
 - Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
 
+## Suppression de l'historique d'une année
+
+Écran **Paramètres** → carte « Supprimer l'historique d'une année », avec deux fonctions séparées :
+
+- **Filtres G4 plissés, G4 plan, G3 et Charbon** : supprime les remplacements (cases « Réalisé » /
+  dates) de l'année choisie. Les filtres F7 à H13 ne sont pas touchés.
+- **Filtres F7 à H13** : supprime les remplacements datés de l'année choisie, uniquement pour ces
+  filtres.
+
+Chaque liste ne propose que les années qui ont réellement un historique. Les filtres eux-mêmes ne
+sont jamais supprimés. Une confirmation indique le nombre de remplacements concernés, et une copie
+de la base est faite juste avant, à côté du fichier
+(`filtres.db.avant-suppression-historique-<année>-<date>.bak`). Désactivé sur un poste en lecture
+seule.
+
 ## Version de la base de données et mises à jour automatiques
 
 La base porte un numéro de version (stocké dans le fichier SQLite, `PRAGMA user_version`, plus la
@@ -211,9 +226,12 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 | Type                    | `Dimension`     | ex-« Dimension »                             |
 | Référence fournisseur   | `Notes`         | ex-« Notes », placée après Type              |
 
-- **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés, Besoin mars,
-  Besoin septembre, **Quantité à commander en dernier**.
-- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, **Inventaire**, Quantité.
+- **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés,
+  **Quantité à commander en dernier**.
+- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Besoin mars (calculé),
+  Besoin septembre (calculé), **Inventaire**, Quantité. Les colonnes « Besoin » ont été déplacées
+  depuis Commande ; elles restent calculées à partir des filtres rattachés à la ligne (bouton
+  « Rattacher des filtres... » de l'écran Commande).
   La colonne « Inventaire » (nombre entier, migration v8) se saisit **directement dans la grille** :
   un clic dans la cellule (fond bleuté) suffit pour taper la valeur ; elle est enregistrée avec
   Entrée, Tab ou en cliquant ailleurs, Échap annule la saisie en cours, et une cellule vidée efface

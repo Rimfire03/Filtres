@@ -123,10 +123,21 @@ public class DbContextFactory
     }
 
     /// <summary>Copie cohérente de la base (VACUUM INTO) avant toute migration, à côté du fichier.</summary>
-    private void Backup(FiltresDbContext ctx, int fromVersion)
+    private void Backup(FiltresDbContext ctx, int fromVersion) => BackupTo(ctx, $"avant-maj-v{fromVersion}");
+
+    /// <summary>Copie cohérente de la base à côté du fichier, avant une opération destructive ; retourne
+    /// le chemin de la copie.</summary>
+    public string CreateBackup(string reason)
     {
-        var backupPath = $"{_dbPath}.avant-maj-v{fromVersion}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
+        using var ctx = Create();
+        return BackupTo(ctx, reason);
+    }
+
+    private string BackupTo(FiltresDbContext ctx, string reason)
+    {
+        var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
+        return backupPath;
     }
 
     private static void AddOpacimetricFilterTypeColumn(FiltresDbContext ctx)

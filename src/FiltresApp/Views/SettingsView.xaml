@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
@@ -74,6 +75,31 @@
                     </DockPanel>
                     <Button Content="Exporter l'année en Excel" Style="{StaticResource PrimaryButton}" Command="{Binding ExportExcelYearCommand}" HorizontalAlignment="Left"/>
                     <TextBlock Text="{Binding ExportStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Supprimer l'historique d'une année" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Supprime définitivement les remplacements enregistrés pour l'année choisie. Les filtres eux-mêmes sont conservés. Seules les années ayant un historique sont proposées. Une sauvegarde de la base est faite avant chaque suppression." Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                    <TextBlock Text="Filtres G4 plissés, G4 plan, G3 et Charbon" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding PeriodicHistoryYears}" SelectedItem="{Binding SelectedPeriodicHistoryYear}" Width="120"/>
+                        <Button Content="Supprimer l'historique de cette année" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
+                                Command="{Binding DeletePeriodicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Filtres F7 à H13" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding OpacimetricHistoryYears}" SelectedItem="{Binding SelectedOpacimetricHistoryYear}" Width="120"/>
+                        <Button Content="Supprimer l'historique de cette année" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
+                                Command="{Binding DeleteOpacimetricHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 

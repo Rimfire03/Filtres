@@ -55,8 +55,6 @@
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Filtres liés" Binding="{Binding LinkedFilterCountDisplay}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Besoin mars (calculé)" Binding="{Binding NeedMars}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Besoin septembre (calculé)" Binding="{Binding NeedSeptembre}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Quantité à commander" Binding="{Binding Quantite}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>

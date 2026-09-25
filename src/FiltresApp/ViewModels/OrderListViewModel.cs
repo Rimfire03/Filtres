@@ -157,7 +157,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     }
 
     private static string[] BuildHeaders() =>
-        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Quantité à commander" };
+        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Quantité à commander" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
@@ -166,8 +166,6 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         l.Dimension ?? "",
         l.Notes ?? "",
         l.LinkedFilterCount > 0 ? l.LinkedFilterCount.ToString() : "",
-        l.NeedMars?.ToString() ?? "",
-        l.NeedSeptembre?.ToString() ?? "",
         l.Quantite?.ToString() ?? ""
     };
 

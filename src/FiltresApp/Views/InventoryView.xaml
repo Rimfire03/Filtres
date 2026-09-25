@@ -52,6 +52,8 @@
                 <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Besoin mars (calculé)" Binding="{Binding NeedMars}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Besoin septembre (calculé)" Binding="{Binding NeedSeptembre}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTemplateColumn Header="Inventaire" Width="0.8*" SortMemberPath="Inventaire">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

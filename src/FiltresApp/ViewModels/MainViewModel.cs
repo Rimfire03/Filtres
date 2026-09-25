@@ -37,6 +37,14 @@ public partial class MainViewModel : ObservableObject
         SelectedItem = NavigationItems[0];
     }
 
+    /// <summary>Oublie les écrans déjà ouverts (sauf l'écran courant) pour qu'ils relisent la base à la
+    /// prochaine ouverture, après une modification faite depuis un autre écran.</summary>
+    public void ResetOtherScreens()
+    {
+        foreach (var item in NavigationItems)
+            if (item != SelectedItem) item.Reset();
+    }
+
     partial void OnSelectedItemChanged(NavigationItem? value)
     {
         var vm = value?.GetOrCreateViewModel();
