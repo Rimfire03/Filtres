@@ -52,7 +52,7 @@ public class ExcelExportService
         var col = 1;
         ws.Cell(1, col).Value = locationLabel; col++;
         ws.Cell(1, col).Value = "Dimension"; col++;
-        ws.Cell(1, col).Value = "Média"; col++;
+        ws.Cell(1, col).Value = "Type"; col++;
         ws.Cell(1, col).Value = "Qté en place"; col++;
         ws.Cell(1, col).Value = "Périodicité"; col++;
         if (category == FilterCategory.Charbon) { ws.Cell(1, col).Value = "Compteur d'heures"; col++; }

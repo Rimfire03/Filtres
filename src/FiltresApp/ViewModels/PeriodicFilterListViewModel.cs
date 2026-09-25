@@ -124,7 +124,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
         {
             EditField.Text(_locationColumnLabel, () => entity.Location, v => entity.Location = v, required: true),
             EditField.Text("Dimension", () => entity.Dimension, v => entity.Dimension = v),
-            EditField.Text("Média / type de filtre", () => entity.MediaType, v => entity.MediaType = v),
+            EditField.Text("Type", () => entity.MediaType, v => entity.MediaType = v),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.MonthsField("Périodicité de remplacement (mois)", () => months, v => months = v)
         };
@@ -317,7 +317,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
 
     private string[] BuildHeaders()
     {
-        var headers = new List<string> { _locationColumnLabel, "Dimension", "Média", "Qté en place", "Périodicité" };
+        var headers = new List<string> { _locationColumnLabel, "Dimension", "Type", "Qté en place", "Périodicité" };
         if (ShowK7Reference) headers.Add("Réf. K7");
         if (ShowHourCounter) headers.Add("Compteur h.");
         headers.Add("Prochaine échéance");
