@@ -31,10 +31,8 @@
             <ComboBox ItemsSource="{Binding MonthFilterOptions}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding MonthFilter}" Width="150"/>
             <Button Content="Réinitialiser le filtre" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFilterCommand}" Margin="12,0,0,0"/>
 
-            <TextBlock VerticalAlignment="Center" Margin="24,0,0,0" Style="{StaticResource SectionText}">
-                <Run Text="« Réalisé » et « Date du changement » portent sur le mois en cours :"/>
-                <Run Text="{Binding CurrentMonthLabel, Mode=OneWay}" FontWeight="SemiBold"/>
-            </TextBlock>
+            <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
         </StackPanel>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Filters}" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
@@ -99,7 +97,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      IsChecked="{Binding IsDoneForCurrentMonth, UpdateSourceTrigger=PropertyChanged}"
+                                      IsChecked="{Binding IsDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
                                       IsEnabled="{x:Static app:App.IsWritable}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -107,7 +105,7 @@
                 <DataGridTemplateColumn Header="Date du changement" Width="95">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DatePicker SelectedDate="{Binding DateDoneForCurrentMonth, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <DatePicker SelectedDate="{Binding DateDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

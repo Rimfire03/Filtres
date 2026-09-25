@@ -60,34 +60,36 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
         }
     }
 
-    private FilterReplacement? CurrentReplacement => Filter.Replacements
-        .FirstOrDefault(r => r.Month == _owner.CurrentMonth && r.Year == _owner.YearContext.Year);
+    private FilterReplacement? CurrentReplacement => _owner.SelectedConsultedMonth is { } consulted
+        ? Filter.Replacements.FirstOrDefault(r => r.Month == consulted.Month && r.Year == consulted.Year)
+        : null;
 
-    /// <summary>Case à cocher "Changement réalisé" pour le mois/année consultés. Cocher fixe
-    /// automatiquement la date du jour (éditable ensuite via <see cref="DateDoneForCurrentMonth"/>) ;
-    /// décocher réinitialise le statut et vide la date (choix délibéré : on ne veut pas garder une
-    /// ligne "réalisée sans date", ambiguë).</summary>
-    public bool IsDoneForCurrentMonth
+    /// <summary>Case à cocher "Changement réalisé" pour le mois consulté (voir
+    /// <see cref="PeriodicFilterListViewModel.SelectedConsultedMonth"/>). Cocher fixe automatiquement la
+    /// date du jour (éditable ensuite via <see cref="DateDoneForConsultedMonth"/>) ; décocher réinitialise
+    /// le statut et vide la date (choix délibéré : on ne veut pas garder une ligne "réalisée sans date",
+    /// ambiguë).</summary>
+    public bool IsDoneForConsultedMonth
     {
         get => CurrentReplacement?.DateDone is not null;
         set
         {
             _owner.SetReplacementDone(Filter, value);
             OnPropertyChanged();
-            OnPropertyChanged(nameof(DateDoneForCurrentMonth));
+            OnPropertyChanged(nameof(DateDoneForConsultedMonth));
             OnPropertyChanged(nameof(NextDueDate));
             OnPropertyChanged(nameof(LastDoneDate));
         }
     }
 
-    public DateTime? DateDoneForCurrentMonth
+    public DateTime? DateDoneForConsultedMonth
     {
         get => CurrentReplacement?.DateDone?.ToDateTime(TimeOnly.MinValue);
         set
         {
             _owner.SetReplacementDate(Filter, value.HasValue ? DateOnly.FromDateTime(value.Value) : null);
             OnPropertyChanged();
-            OnPropertyChanged(nameof(IsDoneForCurrentMonth));
+            OnPropertyChanged(nameof(IsDoneForConsultedMonth));
             OnPropertyChanged(nameof(NextDueDate));
             OnPropertyChanged(nameof(LastDoneDate));
         }
@@ -100,8 +102,8 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
 
     public void RefreshAll()
     {
-        OnPropertyChanged(nameof(IsDoneForCurrentMonth));
-        OnPropertyChanged(nameof(DateDoneForCurrentMonth));
+        OnPropertyChanged(nameof(IsDoneForConsultedMonth));
+        OnPropertyChanged(nameof(DateDoneForConsultedMonth));
         OnPropertyChanged(nameof(NextDueDate));
         OnPropertyChanged(nameof(LastDoneDate));
     }

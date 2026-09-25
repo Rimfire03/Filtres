@@ -32,11 +32,37 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private int? _monthFilter;
     [ObservableProperty] private string _monthFilterLabel = "Tous les mois";
 
-    /// <summary>Mois lu et écrit par les colonnes "Réalisé" / "Date du changement" de la grille : toujours
-    /// le mois en cours, pour l'année choisie dans la barre latérale.</summary>
-    public int CurrentMonth => DateTime.Today.Month;
+    /// <summary>Un mois consultable dans le sélecteur "Mois consulté" : porte son propre numéro d'année,
+    /// puisque la première option (Décembre de l'année précédente) n'appartient pas à l'année choisie
+    /// dans la barre latérale.</summary>
+    public record ConsultedMonthOption(int Month, int Year, string Label);
 
-    public string CurrentMonthLabel => $"{MonthLabels[CurrentMonth - 1]} {YearContext.Year}";
+    /// <summary>Options du sélecteur "Mois consulté" (case à cocher/date de la grille) pour l'année
+    /// choisie : Décembre de l'année précédente en premier (pratique pour finir de pointer un
+    /// changement fait fin décembre une fois basculé sur la nouvelle année), puis Janvier à Décembre de
+    /// l'année choisie. Reconstruites à chaque changement d'année (voir constructeur).</summary>
+    [ObservableProperty] private List<ConsultedMonthOption> _consultedMonthOptions = new();
+
+    /// <summary>Mois actuellement lu/écrit par les colonnes "Réalisé" / "Date du changement" de la
+    /// grille. Par défaut, le mois calendaire du jour dans l'année choisie.</summary>
+    [ObservableProperty] private ConsultedMonthOption? _selectedConsultedMonth;
+
+    partial void OnSelectedConsultedMonthChanged(ConsultedMonthOption? value) => RefreshRows();
+
+    /// <summary>Reconstruit <see cref="ConsultedMonthOptions"/> pour l'année choisie, en conservant la
+    /// même position dans la liste (donc le même mois "relatif") qu'avant le changement d'année.</summary>
+    private void RefreshConsultedMonthOptions()
+    {
+        var year = YearContext.Year;
+        var previousIndex = SelectedConsultedMonth is null ? DateTime.Today.Month : ConsultedMonthOptions.IndexOf(SelectedConsultedMonth);
+        if (previousIndex < 0) previousIndex = DateTime.Today.Month;
+
+        var options = new List<ConsultedMonthOption> { new(12, year - 1, $"Décembre {year - 1}") };
+        options.AddRange(Enumerable.Range(1, 12).Select(m => new ConsultedMonthOption(m, year, $"{MonthLabels[m - 1]} {year}")));
+
+        ConsultedMonthOptions = options;
+        SelectedConsultedMonth = options[Math.Clamp(previousIndex, 0, options.Count - 1)];
+    }
 
     public static readonly string[] MonthLabels =
         { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
@@ -54,10 +80,11 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         _category = category;
         Title = title;
         _locationColumnLabel = locationColumnLabel;
+        RefreshConsultedMonthOptions();
         App.YearContext.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName != nameof(Services.YearContext.Year)) return;
-            OnPropertyChanged(nameof(CurrentMonthLabel));
+            RefreshConsultedMonthOptions();
             RefreshRows();
         };
         Load();
@@ -200,14 +227,14 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    /// <summary>Case à cocher de la grille : trouve ou crée la ligne de suivi (mois en cours / année
-    /// consultée) et fixe la date du jour. Ne supprime jamais les lignes des autres mois/années : c'est
-    /// ce qui permet de changer d'année sans perdre l'historique.</summary>
+    /// <summary>Case à cocher de la grille : trouve ou crée la ligne de suivi (mois consulté, voir
+    /// <see cref="SelectedConsultedMonth"/>) et fixe la date du jour. Ne supprime jamais les lignes des
+    /// autres mois/années : c'est ce qui permet de changer d'année sans perdre l'historique.</summary>
     public void SetReplacementDone(PeriodicFilter filter, bool done)
     {
-        if (!App.GuardWritable()) return;
-        var year = YearContext.Year;
-        var month = CurrentMonth;
+        if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
+        var year = consulted.Year;
+        var month = consulted.Month;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
         var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
 
@@ -259,9 +286,9 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     public void SetReplacementDate(PeriodicFilter filter, DateOnly? date)
     {
-        if (!App.GuardWritable()) return;
-        var year = YearContext.Year;
-        var month = CurrentMonth;
+        if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
+        var year = consulted.Year;
+        var month = consulted.Month;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
         var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
 
@@ -326,8 +353,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         yield return ("Périodicité", "Périodicité", f => f.PeriodicityDisplay);
         yield return ("Prochaine échéance", "Prochaine échéance", f => f.NextDueDate?.ToString("MM/yyyy") ?? "-");
         yield return ("Dernier changement", "Dernier changement", f => f.LastDoneDate?.ToString("dd/MM/yyyy") ?? "-");
-        yield return ("Réalisé", "Réalisé", f => f.IsDoneForCurrentMonth ? "Oui" : "");
-        yield return ("Date du changement", "Date du changement", f => f.DateDoneForCurrentMonth?.ToString("dd/MM/yyyy") ?? "");
+        yield return ("Réalisé", "Réalisé", f => f.IsDoneForConsultedMonth ? "Oui" : "");
+        yield return ("Date du changement", "Date du changement", f => f.DateDoneForConsultedMonth?.ToString("dd/MM/yyyy") ?? "");
     }
 
     /// <summary>Colonne masquée sur ce poste (voir ColumnChooser). La colonne d'emplacement, dont le titre

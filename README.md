@@ -207,7 +207,7 @@ Chaque catégorie de filtre à périodicité mensuelle (G4 plissé, G4 plan, G3,
 Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
 `F_sheet`), enregistrement d'un remplacement réalisé via une boîte de dialogue
 (échéance recalculée automatiquement en lecture seule), **case à cocher
-"Réalisé" directement dans la grille** pour le mois en cours (voir plus bas),
+"Réalisé" directement dans la grille** pour le mois consulté (voir plus bas),
 impression (feuille de terrain avec cases à cocher, voir plus bas), export Excel de
 l'année, et CRUD complet.
 
@@ -382,16 +382,19 @@ plus jamais effacée en masse par l'application.
   créée en base tant que l'utilisateur ne coche pas la case) : c'est
   l'initialisation "à la volée" la plus simple et la plus robuste.
 
-Dans chaque grille de suivi (G4 plissé, G4 plan, G3, Charbon), les colonnes « Réalisé » et « Date
-du changement » portent **toujours sur le mois en cours** (date du jour), pour l'année choisie dans
-la barre latérale ; le mois concerné est rappelé au-dessus de la grille. L'ancien sélecteur « Mois
-consulté » a été supprimé. Pour enregistrer un remplacement sur un autre mois, utiliser le bouton
-« Enregistrer un remplacement », qui demande le mois. Le filtre d'affichage « Filtrer par mois »
-est inchangé.
+Chaque grille de suivi (G4 plissé, G4 plan, G3, Charbon) propose un sélecteur **« Mois consulté »**,
+indépendant du filtre d'affichage par mois existant : il détermine pour quel (mois, année) la
+colonne case à cocher / date de la grille lit et écrit le suivi. Ses options, pour l'année choisie
+dans la barre latérale (ex. 2026), sont : **Décembre (année précédente, ex. 2025)**, puis Janvier à
+Décembre de l'année choisie — Décembre N-1 est proposé en premier pour finir de pointer un
+changement fait fin décembre une fois basculé sur la nouvelle année, sans avoir à changer l'année
+consultée dans la barre latérale. Le `ComboBox` affiche le nom du mois en toutes lettres suivi de
+son année propre (`PeriodicFilterListViewModel.ConsultedMonthOptions`) ; en changeant d'année, la
+même position dans la liste reste sélectionnée (par défaut le mois calendaire du jour).
 - **Cocher** la case "Réalisé" d'une ligne fixe
   automatiquement la date de changement à la date du jour (éditable ensuite
   dans la colonne "Date du changement" juste à côté) et crée si besoin la
-  ligne de suivi pour (mois en cours, année consultée).
+  ligne de suivi pour le mois consulté.
 - **Décocher** la case réinitialise le statut et **vide la date** : par choix
   délibéré, on supprime la ligne de suivi du mois plutôt que de garder une
   ligne "réalisée sans date", ambiguë. L'historique des autres mois/années
