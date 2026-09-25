@@ -246,6 +246,10 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
   plus grande valeur entre Besoin mars et Besoin septembre, moins Inventaire (vide si aucun filtre
   n'est rattaché, 0 si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
   est validée ; elle n'est donc plus saisie dans la fenêtre « Modifier » de l'Inventaire.
+- **Bouton « Vider la colonne Inventaire » (Inventaire)** : efface la valeur d'inventaire des lignes
+  affichées (toutes, ou celles de la famille choisie dans le filtre), après confirmation indiquant le
+  nombre de lignes et une sauvegarde de la base à côté du fichier
+  (`filtres.db.avant-vidage-inventaire-<date>.bak`). Désactivé en lecture seule.
 - **Quantité à commander (Commande)** : même valeur calculée que la « Quantité » de l'Inventaire
   (max(Besoin mars, Besoin septembre) − Inventaire, 0 si négatif, vide si aucun filtre rattaché),
   reprise à l'impression et dans le PDF. Elle n'est plus saisie dans « Modifier » ; l'ancienne
