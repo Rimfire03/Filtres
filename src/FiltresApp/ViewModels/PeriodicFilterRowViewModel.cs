@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 
 namespace FiltresApp.ViewModels;
 
@@ -31,6 +32,26 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
     public string LinkToolTip => IsLinkedToOrder
         ? $"Rattaché à la ligne « {LinkedOrderLine} » de Commande / Inventaire"
         : "Rattaché à aucune ligne de Commande / Inventaire";
+
+    /// <summary>True si la Dimension contient "laver" (filtre lavable, réutilisé plutôt que remplacé) :
+    /// ces filtres ne peuvent jamais être rattachés à une ligne de Commande / Inventaire (voir
+    /// OrderListViewModel.LoadLinkCandidates, qui les exclut des candidats), donc la fonction "Lié" n'a
+    /// pas de sens pour eux et est masquée dans la grille.</summary>
+    public bool IsWashable => Filter.Dimension?.Contains("laver", StringComparison.OrdinalIgnoreCase) == true;
+
+    /// <summary>Famille déduite de la Dimension pour le regroupement de la grille (voir
+    /// <see cref="PeriodicFilterListViewModel.ShowDimensionFamilyGrouping"/>, écran "Filtres G3"
+    /// uniquement) : chaîne vide sur les autres écrans, pour qu'aucun bandeau de groupe ne s'affiche
+    /// (voir PeriodicFilterView.xaml, en-tête de groupe masqué quand le nom est vide).</summary>
+    public string DimensionFamilyLabel
+    {
+        get
+        {
+            if (!_owner.ShowDimensionFamilyGrouping) return "";
+            if (IsWashable) return "Filtres à laver";
+            return DimensionFormatService.Normalize(Filter.Dimension) is not null ? "Filtres à remplacer" : "Sans dimension";
+        }
+    }
 
     public int Id => Filter.Id;
     public string Location => Filter.Location;

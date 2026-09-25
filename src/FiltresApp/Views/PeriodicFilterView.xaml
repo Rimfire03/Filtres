@@ -7,6 +7,16 @@
              d:DataContext="{d:DesignInstance vm:PeriodicFilterListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Regroupement par famille déduite de la Dimension (voir DimensionFamilyLabel) : n'a d'effet
+             visuel que sur l'écran "Filtres G3" (ShowDimensionFamilyGrouping), les autres écrans ayant
+             toujours un nom de groupe vide (bandeau masqué, voir GroupStyle plus bas). -->
+        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="DimensionFamilyLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -34,7 +44,8 @@
             <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Filters}" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                  svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Resources>
                 <!-- Menu contextuel "Changé tous les 15 jours" : uniquement proposé sur l'écran
@@ -67,6 +78,9 @@
             </DataGrid.Resources>
             <DataGrid.Columns>
                 <!-- Puce verte / rouge : filtre rattaché ou non à une ligne de Commande / Inventaire. -->
+                <!-- Masquée pour les filtres lavables ("à laver") : ils ne peuvent jamais être rattachés
+                     à une ligne de Commande / Inventaire (voir PeriodicFilterRowViewModel.IsWashable et
+                     OrderListViewModel.LoadLinkCandidates, qui les exclut des candidats). -->
                 <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -77,6 +91,9 @@
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsLinkedToOrder}" Value="True">
                                                 <Setter Property="Fill" Value="#22C55E"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsWashable}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -109,6 +126,25 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <!-- Bandeau masqué quand le nom de groupe est vide (toujours le cas hors
+                                 écran "Filtres G3", voir DimensionFamilyLabel) : aucun changement visuel
+                                 sur les autres écrans, qui restent une liste plate non groupée. -->
+                            <Border x:Name="GroupHeaderBorder" Background="{StaticResource BrushSidebar}" Padding="10,5" Margin="0,6,0,2">
+                                <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Name}" Value="">
+                                    <Setter TargetName="GroupHeaderBorder" Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
         </DataGrid>
     </Grid>
 </UserControl>

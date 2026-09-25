@@ -135,6 +135,10 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         var candidates = new List<LinkCandidate>();
         foreach (var f in App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList())
         {
+            // Filtres lavables ("à laver", G3) : jamais rattachables, exclus des candidats (voir
+            // PeriodicFilterRowViewModel.IsWashable, qui masque aussi leur puce "Lié").
+            if (f.Dimension?.Contains("laver", StringComparison.OrdinalIgnoreCase) == true) continue;
+
             var category = CategoryLabels.GetValueOrDefault(f.Category, f.Category.ToString());
             var isLinked = linkedPeriodic.Contains(f.Id);
             var elsewhere = periodicElsewhere.GetValueOrDefault(f.Id);

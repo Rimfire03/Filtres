@@ -18,6 +18,12 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     public bool ShowHourCounter => _category == FilterCategory.Charbon;
     public bool ShowK7Reference => _category == FilterCategory.G3;
 
+    /// <summary>Regroupement automatique par famille déduite de la Dimension, demandé uniquement pour
+    /// l'écran "Filtres G3" (voir <see cref="PeriodicFilterRowViewModel.DimensionFamilyLabel"/>) :
+    /// "Filtres à laver" (Dimension contient "laver"), "Filtres à remplacer" (Dimension reconnue comme
+    /// une dimension physique, voir <see cref="DimensionFormatService"/>), "Sans dimension" sinon.</summary>
+    public bool ShowDimensionFamilyGrouping => _category == FilterCategory.G3;
+
     /// <summary>Option "Changé tous les 15 jours" (menu contextuel + colonne indicateur de la grille) :
     /// demandée uniquement pour l'écran "Filtres G4 plissés".</summary>
     public bool ShowChangedEvery15DaysOption => _category == FilterCategory.G4Plisse;
@@ -336,7 +342,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// <summary>Colonnes de la grille (même ordre, mêmes titres que PeriodicFilterView.xaml).</summary>
     private IEnumerable<(string Key, string Header, Func<PeriodicFilterRowViewModel, string> Value)> PrintableColumns()
     {
-        yield return ("Lié", "Lié", f => f.IsLinkedToOrder ? "Oui" : "Non");
+        yield return ("Lié", "Lié", f => f.IsWashable ? "" : f.IsLinkedToOrder ? "Oui" : "Non");
         yield return (_locationColumnLabel, _locationColumnLabel, f => f.Location);
         yield return ("Dimension", "Dimension", f => f.Dimension);
         yield return ("Type", "Type", f => f.MediaType);
