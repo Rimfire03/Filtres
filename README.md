@@ -238,7 +238,7 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 - **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Besoin mars (calculé),
   Besoin septembre (calculé), **Inventaire**, Quantité. Dans cet écran, **« Quantité » est calculée** :
   plus grande valeur entre Besoin mars et Besoin septembre, moins Inventaire (vide si aucun filtre
-  n'est rattaché, négative si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
+  n'est rattaché, 0 si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
   est validée ; elle n'est donc plus saisie dans la fenêtre « Modifier » de l'Inventaire. La quantité
   saisie (« Quantité à commander » de l'écran Commande) est inchangée. Les colonnes « Besoin » ont été déplacées
   depuis Commande ; elles restent calculées à partir des filtres rattachés à la ligne (bouton

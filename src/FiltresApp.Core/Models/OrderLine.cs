@@ -116,10 +116,10 @@ public class OrderLine
     public int? NeedMars => FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedMars(LinkedFilters);
 
     /// <summary>Colonne "Quantité" de l'écran Inventaire : plus grand des deux besoins calculés moins la
-    /// quantité relevée à l'inventaire. Vide tant qu'aucun filtre n'est rattaché ; négatif si le stock
-    /// dépasse le besoin.</summary>
+    /// quantité relevée à l'inventaire. Vide tant qu'aucun filtre n'est rattaché ; 0 si le stock dépasse
+    /// le besoin.</summary>
     [NotMapped]
     public int? InventoryQuantity => NeedMars is null && NeedSeptembre is null
         ? null
-        : Math.Max(NeedMars ?? 0, NeedSeptembre ?? 0) - (Inventaire ?? 0);
+        : Math.Max(0, Math.Max(NeedMars ?? 0, NeedSeptembre ?? 0) - (Inventaire ?? 0));
 }
