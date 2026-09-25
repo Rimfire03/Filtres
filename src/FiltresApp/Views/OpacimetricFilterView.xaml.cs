@@ -43,6 +43,11 @@ public partial class OpacimetricFilterView : UserControl
             }
         }
 
+        menu.Items.Add(new Separator());
+        var clear = new MenuItem { Header = "Effacer le type", IsEnabled = App.IsWritable && !string.IsNullOrEmpty(row.FilterType) };
+        clear.Click += (_, _) => vm.SetFilterType(row, null);
+        menu.Items.Add(clear);
+
         menu.IsOpen = true;
         e.Handled = true;
     }

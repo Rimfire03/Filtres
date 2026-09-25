@@ -446,7 +446,8 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
 
     /// <summary>Applique le type choisi dans le menu rapide, sauvegarde immédiatement, et met à jour la
     /// ligne affichée sans recharger toute la grille (pas de <see cref="Load"/> : perdrait la sélection).</summary>
-    public void SetFilterType(OpacimetricFilterRowViewModel row, string newType)
+    /// <param name="newType">Nouveau type, ou null pour effacer la cellule.</param>
+    public void SetFilterType(OpacimetricFilterRowViewModel row, string? newType)
     {
         if (!App.GuardWritable()) return;
         var tracked = App.Db.OpacimetricFilters.First(f => f.Id == row.Id);
