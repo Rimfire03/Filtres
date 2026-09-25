@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+.vs/
+src/FiltresApp/bin/**/settings.json
+src/FiltresApp/bin/**/data/filtres.db-shm
+src/FiltresApp/bin/**/data/filtres.db-wal
+filtres.7z

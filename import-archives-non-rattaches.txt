@@ -1,0 +1,988 @@
+﻿Rapport des lignes d'archives non rattachées à un filtre existant
+====================================================================
+Généré le 25/09/2026 13:53
+
+Ces lignes n'ont PAS créé de nouveau filtre en base (consigne explicite : ne jamais créer
+de filtre qui n'existe pas déjà). Vérifiez-les manuellement : filtre renommé/déplacé,
+filtre supprimé depuis, ou emplacement ambigu (plusieurs filtres existants au même endroit).
+
+--- Année 2014 ---
+  Fichier : FILTRES  2014.xlsm
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+( peu utilisée )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( n'est pas utilisée )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12" Dimension="592 x 592 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité (courants faibles et forts)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="460 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="A changer" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 8" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="EXTRACTION BLANCHISSERIE
+( au dessus ORION )" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER RDC  - K7  Sce Social" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MORGUE YZEURE CLIM" Dimension="A laver (315*300mm)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud)" Dimension="1030X200" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="ACCEL. PART. VC  Simulation" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CTA  JEAMMET  EXT" Dimension="495X940X15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER
+DIALYSE Batteries terminales étages 0 et 1" Dimension="530x530x22" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)" Dimension="A découper" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1" Dimension="dimension à couper           1000 x 450" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper           580 x 250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           580x250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 CTA 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 EXT 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="885x290x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="885x290x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA   CARBILLET
+Ancienne salle fumeurs
+Dans faux plafond" Dimension="332x315x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  acc,part n°2  SOUFFLAGE
+   ( tous les 15 j  )" Dimension="710x793x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2015 ---
+  Fichier : FILTRES 2015.xlsm
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(   LOCAL MENAGE 2  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(  LOCAL MATERIEL PRÊT  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( n'est pas utilisée )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12" Dimension="592 x 592 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité (courants faibles et forts)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="460 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="A changer" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 8" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="EXTRACTION BLANCHISSERIE
+( au dessus ORION )" Dimension="A NETTOYER
+Durant la maintenance Orion" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER RDC  - K7  Sce Social" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MORGUE YZEURE CLIM" Dimension="A laver (315*300mm)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud)" Dimension="1030X200" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER
+DIALYSE Batteries terminales étages 0 et 1" Dimension="530x530x22" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)" Dimension="A découper" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1" Dimension="dimension à couper           1000 x 450" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper           580 x 250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           580x250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 CTA 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 EXT 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="885x290x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="885x290x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA   CARBILLET
+Ancienne salle fumeurs
+Dans faux plafond" Dimension="332x315x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  acc,part n°2  SOUFFLAGE
+   ( tous les 15 j  )" Dimension="710x793x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2016 ---
+  Fichier : FILTRES 2016.xlsm
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(   LOCAL MENAGE 2  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(  LOCAL MATERIEL PRÊT  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( n'est pas utilisée )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12" Dimension="592 x 592 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="A.PARE1 Salle Plan Blanc" Dimension="1095x195" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité (courants faibles et forts)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="460 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="430 x 240" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 8" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim salle prelevements morgue" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="EXTRACTION BLANCHISSERIE
+( au dessus ORION )" Dimension="A NETTOYER
+Durant la maintenance Orion" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER RDC  - K7  Sce Social" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MORGUE YZEURE CLIM" Dimension="A laver (315*300mm)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud)" Dimension="1030X200" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER
+DIALYSE Batteries terminales étages 0 et 1" Dimension="530x530x22" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)" Dimension="A découper" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1" Dimension="dimension à couper           1000 x 450" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper           580 x 250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           580x250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 CTA 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 EXT 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA   CARBILLET
+Ancienne salle fumeurs
+Dans faux plafond" Dimension="332x315x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  acc,part n°2  SOUFFLAGE
+   ( tous les 15 j  )" Dimension="710x793x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2017 ---
+  Fichier : FILTRES 2017.xlsm
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(   LOCAL MENAGE 2  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(  LOCAL MATERIEL PRÊT  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( démonté )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12" Dimension="592 x 592 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="A.PARE1 Salle Plan Blanc" Dimension="1095x195" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE/CUISINES  ETAGE 0 PMTL" Dimension="470 x 470" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE/CUISINES  ETAGE 0 PMTL" Dimension="400 x 400" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE/CUISINES  ETAGE 0 PMTL" Dimension="330 x 330" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 2 VC Maternité (courants faibles et forts)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="460 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CALMETTE 3 VC Unité Mère Enfant" Dimension="525 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="430 x 240" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim salle prelevements morgue" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER RDC  - K7  Sce Social" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="LABORATOIRE 2eme ETAGE  PMTL" Dimension="470 x 470" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="LABORATOIRE 2eme ETAGE  PMTL" Dimension="400 x 400" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 1er ETAGE    PMTL" Dimension="470 x 470" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 1er ETAGE    PMTL" Dimension="400 x 400" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 2eme ETAGE  PMTL" Dimension="470 x 470" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 2eme ETAGE  PMTL" Dimension="400 x 400" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PHARMACIE 1er ETAGE   PMTL" Dimension="400 x 400" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="PHARMACIE 1er ETAGE  PMTL" Dimension="470 x 470" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="POLE ENERGIE PMTL" Dimension="470 x 470" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="POLE ENERGIE PMTL" Dimension="400 x 400" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud)" Dimension="955X195" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice (plus accessible)" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)" Dimension="A découper" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1" Dimension="dimension à couper           1000 x 450" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper           580 x 250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           580x250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 CTA 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE LT3 EXT 12" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA   CARBILLET
+Ancienne salle fumeurs
+Dans faux plafond" Dimension="332x315x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  acc,part n°2  SOUFFLAGE
+   ( tous les 15 j  )" Dimension="710x793x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2018 ---
+  Fichier : Filtres 2018.xlsm
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(   LOCAL MENAGE 2  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(  LOCAL MATERIEL PRÊT  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( démonté )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 4 hotte ARTIMED
+(le vendredi à 14h de préférence)" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="A.PARE1 Salle Plan Blanc" Dimension="1095x195" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="430 x 240" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim salle prelevements morgue" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER RDC  - K7  Sce Social" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="LABORATOIRE 2eme ETAGE  PMTL" Dimension="470 x 470" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="LABORATOIRE 2eme ETAGE  PMTL" Dimension="400 x 400" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 1er ETAGE    PMTL" Dimension="470 x 470" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 1er ETAGE    PMTL" Dimension="400 x 400" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 2eme ETAGE  PMTL" Dimension="470 x 470" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAGASIN 2eme ETAGE  PMTL" Dimension="400 x 400" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PHARMACIE 1er ETAGE   PMTL" Dimension="400 x 400" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="PHARMACIE 1er ETAGE  PMTL" Dimension="470 x 470" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud+ CHAMBRE ISOLEMENT a laver)" Dimension="955X195" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice (plus accessible)" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)filtre modifié)" Dimension="A découper" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1  !!! Filtre modifié à fabriquer" Dimension="440 x440 x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper           580 x 250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           580x250" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Extr Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CEDRES Combles Soufflage Chambres" Dimension="980x885x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA  URC" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2019 ---
+  Fichier : Filtres 2019.xlsm
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(   LOCAL MENAGE 2  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 2 OBSTETRIE:Hotte ARTIMED  
+(  LOCAL MATERIEL PRÊT  )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( démonté )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="A.PARE1 Salle Plan Blanc" Dimension="1095x195" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="430 x 240" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud+ CHAMBRE ISOLEMENT a laver)" Dimension="955X195" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice (plus accessible)" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)filtre modifié)" Dimension="A découper
+450 x 290" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1  !!! Filtre modifié à fabriquer" Dimension="440 x440 x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper       23.5 x 23.5" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           23.5 X 23.5" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA  URC" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2020 ---
+  Fichier : Filtres 2020.xlsm
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( démonté )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT CTA 12" Dimension="610 x 610 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="A.PARE1 Salle Plan Blanc" Dimension="1095x195" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="430 x 240" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="JAMMET     LOCAL INFO" Dimension="A NETTOYER" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud+ CHAMBRE ISOLEMENT a laver)" Dimension="955X195" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 VC Scanner" Dimension="535x520x13" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+ Aerotherme Ascenseur" Dimension="540x515x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Blanchisserie
+Aerotherme Jice (plus accessible)" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Extraction Blanchisserie
+Vers Jice" Dimension="740x410x15" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)filtre modifié)" Dimension="A découper
+450 x 290" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1  !!! Filtre modifié à fabriquer" Dimension="440 x440 x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper       23.5 x 23.5" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           23.5 X 23.5" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle d'apaisement" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="JAMMET  
+Salle repos" Dimension="498x148x10" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA  URC" Dimension="592x592x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="TILLEULSChambre  Soufflage
+   ( TOUS LES 15 J.  )" Dimension="1020x600x45" -> Aucun filtre existant avec cet emplacement.
+
+--- Année 2021 ---
+  Fichier : Filtres 2021.xlsm
+    [Charbon] Emplacement="CALMETTE 3 Nouveaux Nés:Hotte ARTIMED 
+( démontée )" Dimension="440 x 345 x 25" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="Accelerateur particules n°1" Dimension="592 x 287 x 292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="A.PARE1 Salle Plan Blanc" Dimension="1095x195" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BOUDET 0 
+Condenseur Clim Morgue (à couper)" Dimension="940 x 720" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CPC VMC (ancienne salle fumeurs rdc)" Dimension="230x230" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 Clim Sythostatique" Dimension="430 x 240" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 clim imminu-viro-sérologie" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  24" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo  Hémato 16" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 17" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo 21" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo coté HORLOGE" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Labo Salle 9" Dimension="1190 x 185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="DESBRET 0 Clim Onduleur Labo" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="MAS K7 CLIMATISATION" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="TOULOUSE VENTILO CONVECTEUR
+(salle à manger sud+ CHAMBRE ISOLEMENT a laver)" Dimension="955X195" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 1 CTA Scanner 2" Dimension="535x520x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Nord" Dimension="500x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="A. PARE 7 CTA Pédiatrie Sud" Dimension="625x400x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="BLANCHISSERIE
+Aerotherme Jice (plus accessible)" Dimension="745x740x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CHAUFFERIE 0 Aerotherme" Dimension="515x445x20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="CUISINES 0 CTA Plonge" Dimension="1025x365x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC ( Aile A)filtre modifié)" Dimension="A découper
+450 x 290" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°1  !!! Filtre modifié à fabriquer" Dimension="440 x440 x25" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC (combles local info ) N°2" Dimension="dimension à couper       23.5 x 23.5" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="J HAMBURGER VMC combles local traitement eau" Dimension="dimension à couper           23.5 X 23.5" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="MERCIER 2 VC Onduleur" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="Salle Miroir Cedres  Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="salle serveur Desbret Air Neuf" Dimension="12,4(diam) x 20" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 0 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 1 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 2 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1  CLIM Repro IMAGERIE" Dimension="685x350x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="A. PARE 1 CTA Autoclaves Stérilisation" Dimension="1065x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+
+--- Année 2022 ---
+  Fichier : Filtres 2022.xlsm
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré 1 CTA  Salle Interventionnelle Imagerie" Dimension="610 x 610 x 150" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x305x292" -> Aucun filtre existant avec cet emplacement.
+    [F7-H13 (opacimétrique)] Emplacement="xxxxxxxxxxxxxxxxxxxxxxxxxxxx" Dimension="610x610x292" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CARBILLET SALLE DE JEUX CAR0/042" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="PASTEUR 0 Clim Atelier Biomédical" Dimension="410 x 180" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 0 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 1 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 2 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+
+--- Année 2023 ---
+  Fichier : Filtres 2023.xlsm
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="BLANCHISSERIE" Dimension="1190X185" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CARBILLET SALLE DE JEUX CAR0/042" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1  VC USI (ch801;802;805:806 et 807)" Dimension="1060 x 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC  USI (Surveillance)" Dimension="1265x210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CURIE 1 VC USI (ch803 et 804)" Dimension="870 X 210" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="HAMBURGER rdc salle serveur" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 0 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 1 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plan] Emplacement="TILLEULS VC 2 Salle à manger" Dimension="535x220x13" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+
+--- Année 2024 ---
+  Fichier : Filtres 2024.xlsm
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CEDRES 3  Clim Secrétariat" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Loge" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="CONCIERGERIE 0 Clim Vaquemestre" Dimension="A laver" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="Pasteur 0 Autocom pour Electricien" Dimension="440 x 340" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="BOUDET 0 Armoire Clim Morgue" Dimension="500x660x45" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="CTA  Balnéo soufflage
+S-st MAS Extension" Dimension="332x332x48" -> Aucun filtre existant avec cet emplacement.
+    [G4Plisse] Emplacement="PMTL INTRO CTA LABORATOIRE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G4Plisse] Emplacement="PMTL INTRO CTA PHARMACIE" Dimension="592x287x45" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+
+--- Année 2025 ---
+  Fichier : Filtres 2025.xlsm
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="A. Paré LT3 CTA 12 Stérilisation" Dimension="592 x 592 x 292" -> Emplacement ambigu : 2 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA  Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 287 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="MERCIER 3 CTA Réa" Dimension="592 x 592 x 292" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 02  Pharmacie" Dimension="592 x 287 x 292 ( A+)" -> Emplacement ambigu : 4 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-1 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292 (A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 04-2 URC" Dimension="592 x 592 x 292" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( B)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [F7-H13 (opacimétrique)] Emplacement="PMTL CTA 07  Recycleur Labo L2" Dimension="592 x 592 x 292 ( A+)" -> Emplacement ambigu : 3 filtres existants partagent cet emplacement, dimension insuffisante pour départager.
+    [G3] Emplacement="ACCEL PART K7 
+attente couché consultation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCEL PART K7  
+attente couché simulation" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+    [G3] Emplacement="ACCL PART K7 attente couché traitement" Dimension="A laver (400x400x14)" -> Aucun filtre existant avec cet emplacement.
+
+
+Note sur la feuille "Liste K7" : le modèle de données actuel (K7Location) ne porte qu'une
+seule date de dernier changement (pas d'historique multi-année comme FilterReplacement /
+OpacimetricReplacement) : aucune donnée n'a donc été importée pour cette feuille (uniquement
+un comptage informatif des correspondances trouvées, affiché dans la sortie console de
+l'import). Voir README pour plus de détails.

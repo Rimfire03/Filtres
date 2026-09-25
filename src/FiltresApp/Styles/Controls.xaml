@@ -1,0 +1,150 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Colors.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="Window">
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="Background" Value="{StaticResource BrushBackground}"/>
+        <Setter Property="TextElement.Foreground" Value="{StaticResource BrushTextPrimary}"/>
+    </Style>
+
+    <Style x:Key="HeaderText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+
+    <Style x:Key="SectionText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushTextSecondary}"/>
+    </Style>
+
+    <!-- En-tête de colonne DataGrid qui passe à la ligne au lieu d'être tronqué (WPF ne wrap pas
+         le texte d'en-tête par défaut, il faut personnaliser le HeaderTemplate). -->
+    <Style x:Key="WrappingColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center"
+                               Padding="4,6" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    </Style>
+
+    <Style x:Key="BaseButton" TargetType="Button">
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="Background" Value="{StaticResource BrushPrimary}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.88"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}"/>
+
+    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+    </Style>
+
+    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <Style TargetType="DatePicker">
+        <Setter Property="Padding" Value="6,4"/>
+    </Style>
+
+    <!-- Lignes et colonnes nettement visibles sur TOUS les DataGrid de l'application (style global,
+         non dupliqué par écran) : GridLinesVisibility="All" + bordures de cellules horizontales et
+         verticales dans un gris moyen cohérent (BrushGridLine, Colors.xaml), plus marqué que le simple
+         soulignement gris clair précédent. -->
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushGridLine}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="RowHeaderWidth" Value="0"/>
+        <Setter Property="GridLinesVisibility" Value="All"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BrushGridLine}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{StaticResource BrushGridLine}"/>
+        <Setter Property="AlternatingRowBackground" Value="#FAFAFA"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="AutoGenerateColumns" Value="False"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Setter Property="RowHeight" Value="32"/>
+        <Setter Property="FontSize" Value="12.5"/>
+    </Style>
+
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="#F9FAFB"/>
+        <Setter Property="Padding" Value="8,8"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushGridLine}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+    </Style>
+
+    <!-- Style réutilisable pour centrer horizontalement (et verticalement) le contenu des cellules
+         DataGridTextColumn, appliqué à toutes les colonnes des grilles sauf la première (colonne
+         d'identification de la ligne : emplacement/lieu/désignation/centrale selon l'écran), qui
+         reste alignée à gauche par défaut. -->
+    <Style x:Key="CenteredCellStyle" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Équivalent de CenteredCellStyle pour DataGridCheckBoxColumn (l'élément généré est une CheckBox,
+         pas un TextBlock : DataGridCheckBoxColumn ne centre pas son contenu par défaut). -->
+    <Style x:Key="CenteredCheckBoxCellStyle" TargetType="CheckBox">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="CardBorder" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource BrushSurface}"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+</ResourceDictionary>

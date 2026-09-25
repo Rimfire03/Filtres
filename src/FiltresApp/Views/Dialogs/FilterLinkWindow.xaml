@@ -1,0 +1,78 @@
+<Window x:Class="FiltresApp.Views.Dialogs.FilterLinkWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Rattacher des filtres"
+        Height="660" Width="820"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <Style x:Key="LinkedElsewhereRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLinkedElsewhere}" Value="True">
+                    <Setter Property="Background" Value="#FDE8E8"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TitleText" Style="{StaticResource HeaderText}" Grid.Row="0"
+                   Text="Rattacher des filtres à cette ligne de commande"/>
+
+        <TextBlock Grid.Row="1" Margin="0,4,0,8" TextWrapping="Wrap" Foreground="Gray"
+                   Text="Choisissez les filtres (G4 plissé, G4 plan, G3, Charbon) concernés par cette ligne. Le besoin de commande (mars / septembre) sera recalculé automatiquement à partir de leur périodicité et de leur quantité en place. Un filtre déjà rattaché à une autre ligne (surligné en rouge ci-dessous) sera déplacé vers celle-ci si vous le cochez."/>
+
+        <TextBlock x:Name="DimensionInfoText" Grid.Row="2" Margin="0,0,0,8" TextWrapping="Wrap" FontStyle="Italic" Foreground="Gray"/>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBox x:Name="SearchBox" Width="400" HorizontalAlignment="Left"
+                     ToolTip="Filtrer par catégorie / emplacement / dimension / média"
+                     TextChanged="SearchBox_TextChanged"/>
+            <CheckBox x:Name="ShowAllCheckBox" Content="Afficher tous les filtres (toutes dimensions)"
+                      Margin="16,0,0,0" VerticalAlignment="Center" Checked="ShowAllCheckBox_Changed" Unchecked="ShowAllCheckBox_Changed"/>
+        </StackPanel>
+
+        <TextBlock x:Name="NoMatchText" Grid.Row="4" Margin="0,0,0,8" TextWrapping="Wrap"
+                   Foreground="{StaticResource BrushDanger}" FontWeight="SemiBold" Visibility="Collapsed"
+                   Text="Aucun filtre de dimension correspondante trouvé pour cette ligne de commande. Cochez « Afficher tous les filtres » ci-dessus pour choisir parmi tous les filtres, toutes dimensions confondues."/>
+
+        <DataGrid x:Name="Grid" Grid.Row="5" AutoGenerateColumns="False" IsReadOnly="False"
+                  ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}"
+                  RowStyle="{StaticResource LinkedElsewhereRowStyle}">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Rattaché" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="70" ElementStyle="{StaticResource CenteredCheckBoxCellStyle}"/>
+                <DataGridTextColumn Header="Catégorie" Binding="{Binding CategoryLabel}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Emplacement" Binding="{Binding Location}" Width="2*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Média" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Rattachement existant" Width="1.6*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding LinkedElsewhereLabel, StringFormat='Déjà rattaché à : {0}'}"
+                                       Foreground="{StaticResource BrushDangerDark}" FontWeight="SemiBold"
+                                       TextWrapping="Wrap" TextAlignment="Center"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding IsLinkedElsewhere, Converter={StaticResource BoolToVis}}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <TextBlock x:Name="SelectionCountText" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="Gray"/>
+            <Button Content="Annuler" Style="{StaticResource SecondaryButton}" Click="Cancel_Click" Width="90"/>
+            <Button Content="Enregistrer" Style="{StaticResource PrimaryButton}" Click="Ok_Click" Width="110"/>
+        </StackPanel>
+    </Grid>
+</Window>

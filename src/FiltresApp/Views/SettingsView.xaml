@@ -1,0 +1,63 @@
+<UserControl x:Class="FiltresApp.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <ScrollViewer Margin="24">
+        <StackPanel MaxWidth="700" HorizontalAlignment="Left">
+            <TextBlock Text="Paramètres" Style="{StaticResource HeaderText}"/>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Emplacement de la base de données" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Chemin relatif au dossier de l'exécutable pour rester portable, ou chemin absolu." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowseDatabasePathCommand}"/>
+                        <TextBox Text="{Binding DatabasePath, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Dossier d'export PDF" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Remplace le chemin réseau codé en dur de l'ancienne macro Excel (exportcmd)." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowsePdfExportPathCommand}"/>
+                        <TextBox Text="{Binding PdfExportPath, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left" Margin="0,0,0,24"/>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Génère un classeur .xlsx (une feuille par catégorie : G4 plissés, G4 plan, G3, F7-H13, Charbon) pour l'année sélectionnée, dans le même dossier que les exports PDF." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock DockPanel.Dock="Left" Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding YearContext.Year}" HorizontalAlignment="Left" Width="120"/>
+                    </DockPanel>
+                    <Button Content="Exporter l'année en Excel" Style="{StaticResource PrimaryButton}" Command="{Binding ExportExcelYearCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding ExportStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Text="Importer depuis Excel" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Remplace toutes les données actuelles par celles du classeur Excel sélectionné (.xlsm / .xlsx)." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
+                    <DockPanel Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowseImportSourceCommand}"/>
+                        <TextBox Text="{Binding ImportSourcePath, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+                    <Button Content="Lancer l'import" Style="{StaticResource DangerButton}" Command="{Binding ImportFromExcelCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

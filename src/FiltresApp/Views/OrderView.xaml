@@ -1,0 +1,39 @@
+<UserControl x:Class="FiltresApp.Views.OrderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             d:DataContext="{d:DesignInstance vm:OrderListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}"/>
+            <Button Content="Rattacher des filtres..." Style="{StaticResource SecondaryButton}" Command="{Binding LinkFiltersCommand}"/>
+            <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+            <Button Content="Exporter en PDF" Style="{StaticResource SecondaryButton}" Command="{Binding ExportPdfCommand}" Visibility="{Binding AllowPdfExport, Converter={StaticResource BoolToVis}}"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" IsReadOnly="True"
+                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="2.5*"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Quantité à commander" Binding="{Binding Quantite}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Filtres liés" Binding="{Binding LinkedFilterCountDisplay}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Besoin mars (calculé)" Binding="{Binding NeedMars}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Besoin septembre (calculé)" Binding="{Binding NeedSeptembre}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="2*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
