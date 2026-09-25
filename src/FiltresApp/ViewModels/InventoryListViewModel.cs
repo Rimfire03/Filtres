@@ -83,6 +83,10 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
     }
 
+    /// <summary>Ne recharge pas toute la liste (même raisonnement que
+    /// OrderListViewModel.SetFamilyChoice/Delete) : la ligne est simplement retirée de
+    /// <see cref="Lines"/>, et la sélection se fixe sur la ligne suivante (précédente si c'était la
+    /// dernière), pour que la vue ne saute pas tout en haut.</summary>
     [RelayCommand]
     private void Delete()
     {
@@ -92,7 +96,11 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
         App.Db.OrderLines.Remove(tracked);
         App.Db.SaveChanges();
-        Load();
+
+        var index = Lines.IndexOf(SelectedLine);
+        var next = index >= 0 && index + 1 < Lines.Count ? Lines[index + 1] : index > 0 ? Lines[index - 1] : null;
+        if (index >= 0) Lines.RemoveAt(index);
+        SelectedLine = next;
     }
 
     /// <summary>Saisie directe dans la cellule "Inventaire" de la grille. Retourne false (saisie à annuler)

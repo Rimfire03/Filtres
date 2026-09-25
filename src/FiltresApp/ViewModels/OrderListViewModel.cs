@@ -275,6 +275,9 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         SaveLinks(line, selected);
     }
 
+    /// <summary>Ne recharge pas toute la liste (voir <see cref="SetFamilyChoice"/>, même raisonnement) :
+    /// la ligne est simplement retirée de <see cref="Lines"/>, et la sélection se fixe sur la ligne
+    /// suivante (précédente si c'était la dernière), pour que la vue ne saute pas tout en haut.</summary>
     [RelayCommand]
     private void Delete()
     {
@@ -284,7 +287,11 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
         App.Db.OrderLines.Remove(tracked);
         App.Db.SaveChanges();
-        Load();
+
+        var index = Lines.IndexOf(SelectedLine);
+        var next = index >= 0 && index + 1 < Lines.Count ? Lines[index + 1] : index > 0 ? Lines[index - 1] : null;
+        if (index >= 0) Lines.RemoveAt(index);
+        SelectedLine = next;
     }
 
     /// <summary>Colonnes imprimées / exportées en PDF : la colonne "Filtres liés" de la grille n'y figure
