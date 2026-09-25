@@ -109,6 +109,13 @@ Recommandations :
   fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
 - Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
 
+## Icône de l'application
+
+L'icône (hélice) est dans `src\FiltresApp\Assets` : `app.ico` (hélice noire sur carré blanc arrondi,
+tailles 16 à 256 px, lisible sur fond clair comme sombre) sert d'icône à l'exécutable, à la fenêtre
+et à la barre des tâches ; `app-logo-white.png` (hélice blanche) est affichée à côté du titre de la
+barre latérale. À ne pas confondre avec le logo de l'entreprise ci-dessous, choisi dans Paramètres.
+
 ## Logo de l'entreprise
 
 Écran **Paramètres** → carte « Logo de l'entreprise » : « Choisir un logo... » (PNG, JPG, BMP ou

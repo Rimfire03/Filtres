@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:FiltresApp.ViewModels"
         xmlns:app="clr-namespace:FiltresApp"
-        Title="Suivi maintenance Filtres" Height="800" Width="1300"
+        Title="Suivi maintenance Filtres" Icon="/Assets/app.ico" Height="800" Width="1300"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:MainViewModel/>
@@ -22,7 +22,10 @@
                             Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
                         <Image Source="{Binding LogoImage}" MaxHeight="60" MaxWidth="200" Stretch="Uniform"/>
                     </Border>
-                    <TextBlock Text="Filtres à air" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/app-logo-white.png" Width="26" Height="26" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Filtres à air" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}" VerticalAlignment="Center"/>
+                    </StackPanel>
                     <TextBlock Text="Suivi de maintenance" FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0"/>
                     <DockPanel Margin="0,14,0,0">
                         <TextBlock DockPanel.Dock="Left" Text="Année :" Foreground="#D1D5DB" VerticalAlignment="Center" Margin="0,0,8,0"/>
