@@ -1,4 +1,3 @@
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Services;
@@ -11,7 +10,6 @@ public partial class SettingsViewModel : ObservableObject
 {
     [ObservableProperty] private string _databasePath;
     [ObservableProperty] private string _pdfExportPath;
-    [ObservableProperty] private string _importSourcePath = string.Empty;
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private string _exportStatusMessage = string.Empty;
 
@@ -24,6 +22,7 @@ public partial class SettingsViewModel : ObservableObject
     private UpdateInfo? _pendingUpdate;
 
     public string CurrentVersion => App.CurrentVersion;
+    public int DatabaseVersion => App.DatabaseVersion;
 
     /// <summary>Année à exporter en Excel (voir bouton "Exporter l'année en Excel" ci-dessous),
     /// partagée avec le sélecteur d'année global de la barre latérale.</summary>
@@ -137,52 +136,25 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void BrowseImportSource()
-    {
-        var dialog = new OpenFileDialog
-        {
-            Filter = "Classeur Excel (*.xlsm;*.xlsx)|*.xlsm;*.xlsx"
-        };
-        if (dialog.ShowDialog() == true) ImportSourcePath = dialog.FileName;
-    }
-
-    [RelayCommand]
     private void SaveSettings()
     {
         App.Settings.DatabasePath = DatabasePath;
         App.Settings.PdfExportPath = PdfExportPath;
         App.Settings.Save();
 
-        App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
-        StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
-    }
-
-    [RelayCommand]
-    private void ImportFromExcel()
-    {
-        if (string.IsNullOrWhiteSpace(ImportSourcePath) || !File.Exists(ImportSourcePath))
-        {
-            StatusMessage = "Merci de choisir un fichier Excel (.xlsm/.xlsx) valide.";
-            return;
-        }
-
-        if (!App.Dialogs.ShowConfirm("Importer depuis Excel",
-                "Cette opération va REMPLACER toutes les données actuelles de l'application par celles du fichier Excel sélectionné. Continuer ?"))
-        {
-            return;
-        }
-
         try
         {
-            var result = App.Importer.Import(ImportSourcePath, App.Settings.ResolvedDatabasePath);
             App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
-            StatusMessage = $"Import terminé : {result.Total} lignes importées.";
-            if (result.Warnings.Count > 0)
-                StatusMessage += $" Avertissements : {string.Join("; ", result.Warnings)}";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Erreur pendant l'import : {ex.Message}";
+            // L'ancienne base est déjà fermée : on ne peut pas continuer sans base ouverte.
+            System.Windows.MessageBox.Show($"Impossible d'ouvrir la base de données :\n{App.Settings.ResolvedDatabasePath}\n\n{ex.Message}\n\nL'application va se fermer.",
+                "Base de données", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Stop);
+            System.Windows.Application.Current.Shutdown();
+            return;
         }
+        OnPropertyChanged(nameof(DatabaseVersion));
+        StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
     }
 }

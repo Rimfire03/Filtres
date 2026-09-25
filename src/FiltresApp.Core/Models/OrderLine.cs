@@ -26,16 +26,23 @@ public class OrderLine
     public string? Dimension { get; set; }
     public int? Quantite { get; set; }
 
-    /// <summary>Unité de la quantité (ex. "pièce(s)", "m²"). Provient à l'origine de la feuille
-    /// "inventaire" ; conservée sur l'entité fusionnée pour ne perdre aucune information après la fusion
-    /// Inventaire / Commande chmy.</summary>
-    public string? Unite { get; set; }
-
+    /// <summary>Affichée comme "Référence fournisseur" dans les écrans Commande et Inventaire.</summary>
     public string? Notes { get; set; }
+
+    public string? Destination { get; set; }
+
+    public int? OrderFamilyId { get; set; }
+    public OrderFamily? Family { get; set; }
+
+    [NotMapped]
+    public string FamilyName => Family?.Nom ?? string.Empty;
+
+    /// <summary>Quantité relevée à l'inventaire, saisie directement dans la grille de l'écran Inventaire.</summary>
+    public int? Inventaire { get; set; }
 
     /// <summary>Marqueur technique (non affiché en UI) : identifiant de l'<see cref="InventoryLine"/>
     /// d'origine si cette ligne provient de la migration "fusion Inventaire / Commande chmy" (voir
-    /// DbContextFactory.EnsureDatabaseCreated). Sert uniquement à rendre cette migration idempotente (ne
+    /// la migration 2 de DbContextFactory). Sert uniquement à rendre cette migration idempotente (ne
     /// pas dupliquer les lignes à chaque démarrage).</summary>
     public int? MigratedFromInventoryLineId { get; set; }
 

@@ -11,6 +11,20 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Versions" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Style="{StaticResource SectionText}">
+                        <Run Text="Version du logiciel :"/>
+                        <Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource SectionText}" Margin="0,2,0,0">
+                        <Run Text="Version de la base de données :"/>
+                        <Run Text="{Binding DatabaseVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Emplacement de la base de données" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBlock Text="Chemin relatif au dossier de l'exécutable pour rester portable, ou chemin absolu." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
                     <DockPanel>
@@ -31,15 +45,12 @@
                 </StackPanel>
             </Border>
 
-            <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left" Margin="0,0,0,24"/>
+            <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left"/>
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,24" Foreground="{StaticResource BrushPrimary}"/>
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Margin="0,0,0,8" Style="{StaticResource SectionText}">
-                        <Run Text="Version actuelle :"/>
-                        <Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
-                    </TextBlock>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
                               IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal">
@@ -66,18 +77,6 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Text="Importer depuis Excel" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Remplace toutes les données actuelles par celles du classeur Excel sélectionné (.xlsm / .xlsx)." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
-                    <DockPanel Margin="0,0,0,8">
-                        <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowseImportSourceCommand}"/>
-                        <TextBox Text="{Binding ImportSourcePath, UpdateSourceTrigger=PropertyChanged}"/>
-                    </DockPanel>
-                    <Button Content="Lancer l'import" Style="{StaticResource DangerButton}" Command="{Binding ImportFromExcelCommand}" HorizontalAlignment="Left"/>
-                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
-                </StackPanel>
-            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

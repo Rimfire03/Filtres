@@ -5,7 +5,7 @@ using FiltresApp.Core.Models;
 namespace FiltresApp.Core.Services;
 
 /// <summary>Génère un export .xlsx de l'année sélectionnée (une feuille par catégorie de filtre),
-/// via ClosedXML (déjà utilisé par <see cref="ExcelImportService"/> pour la lecture). Le dossier de
+/// via ClosedXML. Le dossier de
 /// destination réutilise <see cref="AppSettings.PdfExportPath"/> : il s'agit du même dossier "exports"
 /// déjà configurable dans les Paramètres, pas besoin d'un réglage séparé pour un simple changement de
 /// format de fichier.</summary>

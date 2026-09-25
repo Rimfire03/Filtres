@@ -22,10 +22,13 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private ObservableCollection<OrderLine> _lines = new();
     [ObservableProperty] private OrderLine? _selectedLine;
 
+    public OrderFamilyFilter FamilyFilter { get; }
+
     public OrderListViewModel(OrderDocumentType type, string title)
     {
         _type = type;
         Title = title;
+        FamilyFilter = new OrderFamilyFilter(Load);
         Load();
     }
 
@@ -37,12 +40,17 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         [FilterCategory.Charbon] = "Charbon"
     };
 
-    public void Reload() => Load();
+    public void Reload()
+    {
+        FamilyFilter.Refresh();
+        Load();
+    }
 
     private void Load()
     {
         Lines = new ObservableCollection<OrderLine>(
-            App.Db.OrderLines
+            FamilyFilter.Apply(App.Db.OrderLines)
+                .Include(l => l.Family)
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
@@ -53,7 +61,13 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Add()
     {
-        var entity = new OrderLine { DocumentType = _type, Ordre = (Lines.Count == 0 ? 0 : Lines.Max(l => l.Ordre)) + 1 };
+        if (!App.GuardWritable()) return;
+        var entity = new OrderLine
+        {
+            DocumentType = _type,
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == _type).Max(l => (int?)l.Ordre) ?? 0) + 1,
+            OrderFamilyId = FamilyFilter.DefaultFamilyId
+        };
         if (!EditEntity(entity, true)) return;
         App.Db.OrderLines.Add(entity);
         App.Db.SaveChanges();
@@ -63,6 +77,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Edit()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
         if (!EditEntity(tracked, false)) return;
@@ -74,11 +89,12 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     {
         var fields = new List<EditField>
         {
-            EditField.Text("Désignation", () => entity.Designation, v => entity.Designation = v, required: true),
-            EditField.NullableText("Dimension", () => entity.Dimension, v => entity.Dimension = v),
-            EditField.NullableInt("Quantité à commander", () => entity.Quantite, v => entity.Quantite = v),
-            EditField.NullableText("Unité", () => entity.Unite, v => entity.Unite = v),
-            EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v)
+            FamilyFilter.CreateEditField(entity),
+            EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
+            EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
+            EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
+            EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
+            EditField.NullableInt("Quantité à commander", () => entity.Quantite, v => entity.Quantite = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
     }
@@ -94,6 +110,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void LinkFilters()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
 
         var allFilters = App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList();
@@ -130,6 +147,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Delete()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         if (!App.Dialogs.ShowConfirm("Supprimer", $"Supprimer '{SelectedLine.Designation}' ?")) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
@@ -139,31 +157,33 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     }
 
     private static string[] BuildHeaders() =>
-        new[] { "Désignation", "Dimension", "Quantité à commander", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Notes" };
+        new[] { "Famille", "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Quantité à commander" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
+        l.FamilyName,
         l.Designation,
+        l.Destination ?? "",
         l.Dimension ?? "",
-        l.Quantite?.ToString() ?? "",
+        l.Notes ?? "",
         l.LinkedFilterCount > 0 ? l.LinkedFilterCount.ToString() : "",
         l.NeedMars?.ToString() ?? "",
         l.NeedSeptembre?.ToString() ?? "",
-        l.Notes ?? ""
+        l.Quantite?.ToString() ?? ""
     };
 
     [RelayCommand]
     private void Print()
     {
         var rows = Lines.Select(BuildRow).ToList();
-        App.Printer.PrintTable(Title, BuildHeaders(), rows);
+        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
     }
 
     [RelayCommand]
     private void ExportPdf()
     {
         var rows = Lines.Select(BuildRow).ToList();
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title, BuildHeaders(), rows);
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

@@ -109,7 +109,8 @@
         <Setter Property="CanUserAddRows" Value="False"/>
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="SelectionMode" Value="Single"/>
-        <Setter Property="RowHeight" Value="32"/>
+        <!-- Hauteur minimale seulement : la ligne s'agrandit quand un texte passe à la ligne. -->
+        <Setter Property="MinRowHeight" Value="32"/>
         <Setter Property="FontSize" Value="12.5"/>
     </Style>
 
@@ -130,6 +131,40 @@
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="2,4"/>
+    </Style>
+
+    <!-- Zone de saisie directement dans une cellule de grille (un clic suffit pour saisir) : fond bleuté
+         léger pour signaler que la cellule est modifiable, cadre visible au survol et pendant la saisie. -->
+    <Style x:Key="InlineEditTextBox" TargetType="TextBox">
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Background" Value="#F0F7FF"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="ToolTip" Value="Cliquer pour saisir, Entrée pour valider, Échap pour annuler"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="#93C5FD"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="BorderBrush" Value="#3B82F6"/>
+                <Setter Property="Background" Value="White"/>
+            </Trigger>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="ToolTip" Value="{x:Null}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Colonnes alignées à gauche (première colonne des grilles) : même retour à la ligne automatique. -->
+    <Style x:Key="WrappingCellStyle" TargetType="TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="4,4"/>
     </Style>
 
     <!-- Équivalent de CenteredCellStyle pour DataGridCheckBoxColumn (l'élément généré est une CheckBox,

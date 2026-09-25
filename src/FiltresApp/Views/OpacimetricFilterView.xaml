@@ -1,7 +1,9 @@
 <UserControl x:Class="FiltresApp.Views.OpacimetricFilterView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:OpacimetricFilterListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
@@ -15,16 +17,16 @@
         <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}"/>
-            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}"/>
-            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}"/>
-            <Button Content="Enregistrer un remplacement" Style="{StaticResource PrimaryButton}" Command="{Binding MarkReplacementCommand}"/>
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Enregistrer un remplacement" Style="{StaticResource PrimaryButton}" Command="{Binding MarkReplacementCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <Button Content="Exporter l'année en Excel" Style="{StaticResource SecondaryButton}" Command="{Binding ExportExcelYearCommand}"/>
             <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Filters}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Filters}" svc:ColumnChooser.Key="Filtres F7 à H13" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Resources>
                 <!-- Menu contextuel minimal (cette vue n'en avait pas encore) : uniquement "Consulter
@@ -40,7 +42,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" Width="2.5*"/>
+                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.8*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="100" ElementStyle="{StaticResource CenteredCellStyle}"/>

@@ -10,10 +10,8 @@ autonome (aucune installation requise).
 FiltresApp.sln
 src/
   FiltresApp.Core/        Modèles, DbContext EF Core, services métier (calcul
-                           des échéances, import Excel, export PDF)
+                           des échéances, export PDF/Excel)
   FiltresApp/              Application WPF (MVVM, CommunityToolkit.Mvvm)
-  FiltresApp.ImportCli/    Petit outil console pour (ré)importer un classeur
-                           Excel en ligne de commande
 ```
 
 ## Prérequis pour builder
@@ -69,7 +67,8 @@ qu'aucune version de .NET ne soit installée sur la machine cible.
 ## Emplacement des données (mode portable)
 
 - `settings.json` est créé au premier lancement **à côté de l'exécutable**
-  (jamais dans le registre ni dans `%AppData%`). Il contient :
+  (jamais dans le registre ni dans `%AppData%`). Seule exception : le choix des
+  colonnes affichées et leurs largeurs, propres à chaque ordinateur (voir « Affichage des grilles »). Il contient :
   - `DatabasePath` : chemin (relatif ou absolu) vers le fichier SQLite.
     Par défaut `data\filtres.db`, relatif au dossier de l'exe.
   - `PdfExportPath` : dossier de destination des exports PDF (remplace le
@@ -81,27 +80,96 @@ qu'aucune version de .NET ne soit installée sur la machine cible.
   classeur Excel source réel (voir ci-dessous), afin que l'utilisateur
   retrouve immédiatement toutes ses données actuelles.
 
-## Réimporter les données depuis Excel
+## Utilisation à plusieurs (base sur disque réseau)
 
-Deux façons équivalentes :
+La base est prévue pour être placée sur un disque réseau partagé. Pour éviter toute corruption ou
+perte de données quand plusieurs personnes ont l'application ouverte en même temps, l'accès suit la
+règle **« un seul rédacteur, plusieurs lecteurs »** :
 
-1. **Depuis l'application** : écran *Paramètres* → *Importer depuis Excel* →
-   choisir le fichier `.xlsm`/`.xlsx` → *Lancer l'import*. Attention : cette
-   opération **remplace** toutes les données actuellement en base.
+- Le **premier** poste qui ouvre la base obtient l'accès en **lecture/écriture**. Il garde ouvert en
+  exclusivité un fichier `filtres.db.lock` créé à côté de la base (qui contient le nom de
+  l'utilisateur et du poste).
+- Les postes suivants s'ouvrent en **lecture seule** : dès l'ouverture, un message s'affiche
+  « Données en lecture seule : fichier actuellement utilisé par @nom_de_session_windows », puis un
+  bandeau jaune reste en haut de la fenêtre pour le rappeler ; les boutons de modification (ajouter, modifier, supprimer,
+  enregistrer un remplacement, case « Réalisé »...) sont désactivés, et la connexion
+  SQLite elle-même est ouverte en lecture seule (aucune écriture possible, même par erreur).
+  La consultation, l'impression et les exports PDF/Excel restent disponibles.
+- Les postes en lecture seule voient les modifications du rédacteur en changeant d'écran (les
+  données sont relues à chaque chargement).
+- Quand le rédacteur ferme l'application, le verrou est libéré ; un autre utilisateur doit alors
+  **relancer** l'application pour obtenir l'accès en écriture. Le verrou est aussi libéré
+  automatiquement par Windows si l'application plante ou si le poste est éteint : il n'y a jamais de
+  fichier `.lock` à supprimer à la main.
 
-2. **En ligne de commande** (utile pour scripter/régénérer la base de
-   référence) :
-   ```powershell
-   $env:PATH = "$env:LOCALAPPDATA\Microsoft\dotnet;$env:PATH"
-   dotnet run --project src\FiltresApp.ImportCli\FiltresApp.ImportCli.csproj -- `
-     "chemin\vers\Filtres.xlsm" "chemin\vers\filtres.db"
-   ```
+Recommandations :
+- Placer la base sur un vrai partage réseau Windows (SMB), **jamais** dans un dossier synchronisé
+  (OneDrive, Dropbox, Google Drive...) : la synchronisation corromprait le fichier SQLite.
+- Les utilisateurs doivent avoir les droits en écriture sur le dossier de la base (création du
+  fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
+- Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
 
-L'import lit uniquement les **valeurs** des feuilles (pas les macros/ActiveX).
-Les colonnes "changement prévu en [mois]" ne sont pas importées : la
-prochaine échéance est recalculée par l'application
-(`MaintenanceScheduleService`) à partir de la périodicité et du dernier
-changement réalisé, plutôt que de dépendre des formules Excel d'origine.
+## Version de la base de données et mises à jour automatiques
+
+La base porte un numéro de version (stocké dans le fichier SQLite, `PRAGMA user_version`, plus la
+version du logiciel qui l'a mise à jour en dernier dans la table `DbInfo`). Les deux versions —
+logiciel et base — sont affichées en haut de l'écran **Paramètres**.
+
+- **Après une mise à jour du logiciel**, si la base est dans une version inférieure à celle attendue,
+  le premier poste qui l'ouvre **en écriture** **propose la mise à jour** au lancement (liste des
+  modifications à appliquer, réponse Oui/Non). Si l'utilisateur refuse, le démarrage s'arrête avec un
+  message explicite (la base reste inchangée) ; il suffit de relancer et d'accepter. Pour une base
+  créée avant ce système (version 0), la liste affiche toutes les étapes à partir de 1 : les étapes 1 à 5
+  sont déjà présentes et ne modifient rien. Avant toute modification, une copie complète est faite à
+  côté du fichier : `filtres.db.avant-maj-v<ancienne version>-<date>.bak` (à supprimer à la main une fois la
+  mise à jour validée). Chaque étape est appliquée dans une transaction : en cas d'erreur, la base
+  reste à la dernière version réussie et le démarrage s'arrête avec le détail de l'erreur.
+- **Démarrage bloqué avec un message explicite** si le poste n'a pas la bonne version :
+  - logiciel **trop ancien** pour la base (déjà mise à jour par une version plus récente) : le
+    message indique la version de la base, la version du logiciel qui l'a mise à jour et demande
+    d'installer la dernière version. Rien n'est modifié dans la base ;
+  - logiciel **plus récent** que la base alors que ce poste est en **lecture seule** (le poste qui a
+    l'accès en écriture utilise encore l'ancienne version) : le message indique qui détient l'accès
+    en écriture et explique que la base sera mise à jour au prochain lancement du logiciel à jour sur
+    un poste en écriture.
+- En pratique : **mettre à jour tous les postes**, puis lancer d'abord le logiciel sur un poste quand
+  personne d'autre ne l'a ouvert.
+- Les versions du logiciel antérieures à ce système ne contrôlent pas la version de la base : elles
+  ne sont pas bloquées et doivent être mises à jour en priorité.
+
+Pour les développeurs : les évolutions du schéma se déclarent dans la liste `Migrations` de
+`DbContextFactory` (`src\FiltresApp.Core\Services\DbContextFactory.cs`). Ne jamais modifier ni
+renuméroter une migration déjà publiée, toujours en ajouter une nouvelle à la fin, et écrire les
+modifications de données en SQL brut (pas via le modèle EF, qui aura évolué). Une base neuve est créée
+directement à la dernière version. Les versions 1 à 5 reprennent les mises à jour faites avant ce
+système (idempotentes) ; la version 6 ajoute la colonne « Destination » ; la version 7 supprime la
+colonne « Unité » et son contenu (récupérable dans la sauvegarde `.bak` faite avant la mise à jour).
+
+## Import Excel (supprimé)
+
+Le système d'import a été **supprimé** : bouton « Importer depuis Excel » de l'écran Paramètres,
+outil en ligne de commande `FiltresApp.ImportCli`, et services `ExcelImportService` /
+`ArchiveImportService`. Les données déjà importées (classeur courant et archives 2014-2025) restent
+en base ; elles se gèrent désormais uniquement depuis l'application. Les sections historiques plus
+bas qui décrivent ces imports sont conservées pour mémoire. Le code supprimé reste consultable dans
+l'historique git.
+
+## Affichage des grilles
+
+- **Retour à la ligne** : un texte plus long que la largeur de sa cellule passe à la ligne, et la
+  hauteur de la ligne s'adapte automatiquement (32 px minimum).
+- **Colonnes affichées, au choix de chaque ordinateur** : clic droit sur n'importe quel en-tête de
+  colonne → cocher/décocher les colonnes à afficher, ou « Afficher toutes les colonnes ». Au moins
+  une colonne reste toujours visible. Le choix est mémorisé séparément pour chaque écran, sur
+  l'ordinateur (et la session Windows) de l'utilisateur, dans
+  `%LocalAppData%\FiltresApp\grilles.json` : il n'est pas partagé avec les autres postes, même si
+  l'exécutable et la base sont sur le disque réseau. Disponible sur les écrans de filtres, Liste K7,
+  Inventaire, Commande et dans la fenêtre « Rattacher des filtres ». Les impressions et exports
+  gardent toutes les colonnes.
+- **Largeur des colonnes mémorisée** : quand l'utilisateur élargit ou rétrécit une colonne à la souris,
+  la largeur est enregistrée au même endroit (par écran et par ordinateur) et restaurée à la prochaine
+  ouverture. Clic droit sur un en-tête → « Réinitialiser les largeurs » pour revenir aux largeurs
+  d'origine.
 
 ## Fonctionnalités par écran
 
@@ -124,6 +192,51 @@ proposent en plus un export PDF vers le dossier configuré dans les Paramètres
 Inventaire / Commande chmy (voir plus bas), ces deux écrans affichent et
 modifient les mêmes lignes.**
 
+> L'onglet « Commande chmy » s'appelle désormais simplement **« Commande »** dans
+> l'application (titre de l'écran et des impressions/exports compris). Le reste de ce
+> README conserve l'ancien nom dans les sections historiques ; la feuille du classeur
+> Excel source s'appelait « Commande chmy ».
+
+**Colonnes des écrans Commande et Inventaire** (même table `OrderLine`, seuls les libellés
+affichés ont changé, les données existantes sont conservées telles quelles) :
+
+| Libellé affiché         | Champ en base   | Remarque                                     |
+|-------------------------|-----------------|----------------------------------------------|
+| Dimension               | `Designation`   | ex-« Désignation »                           |
+| Destination             | `Destination`   | nouveau champ, vide pour les lignes existantes (colonne ajoutée automatiquement au démarrage du poste rédacteur) |
+| Type                    | `Dimension`     | ex-« Dimension »                             |
+| Référence fournisseur   | `Notes`         | ex-« Notes », placée après Type              |
+
+- **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés, Besoin mars,
+  Besoin septembre, **Quantité à commander en dernier**.
+- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, **Inventaire**, Quantité.
+  La colonne « Inventaire » (nombre entier, migration v8) se saisit **directement dans la grille** :
+  un clic dans la cellule (fond bleuté) suffit pour taper la valeur ; elle est enregistrée avec
+  Entrée, Tab ou en cliquant ailleurs, Échap annule la saisie en cours, et une cellule vidée efface
+  la valeur. Une saisie qui n'est pas un nombre entier est refusée avec un message. En lecture seule,
+  la cellule n'est pas modifiable. La valeur figure aussi dans la fenêtre « Modifier », l'impression
+  et l'export PDF de l'Inventaire. La colonne
+  « Unité » a été supprimée (écran, fenêtres d'édition de Commande et Inventaire, impression, export
+  PDF et base de données, migration v7).
+- Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les
+  mêmes libellés.
+
+**Familles (Inventaire et Commande)** — migration v9, table `OrderFamilies` et champ
+`OrderLine.OrderFamilyId`. Les familles sont communes aux deux écrans (mêmes lignes).
+
+- Barre « Famille » en haut de chaque écran : liste déroulante pour **filtrer** (« Toutes les
+  familles », « Sans famille », puis chaque famille), et boutons « + Nouvelle famille »,
+  « Renommer la famille » et « Supprimer la famille » (ces deux derniers agissent sur la famille
+  choisie dans le filtre). Chaque écran garde son propre filtre.
+- Une colonne « Famille » (première colonne) et un champ « Famille » dans la fenêtre
+  d'ajout/modification. Une ligne ajoutée pendant qu'une famille est filtrée reçoit cette famille
+  par défaut.
+- Supprimer une famille ne supprime aucune ligne : ses lignes passent en « Sans famille » (après
+  confirmation indiquant leur nombre). Deux familles ne peuvent pas porter le même nom.
+- L'impression et l'export PDF suivent le filtre en cours, avec la famille ajoutée au titre et une
+  colonne « Famille ».
+- En lecture seule, le filtre reste utilisable ; la gestion des familles est désactivée.
+
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de
 l'application (interface, code et données), voir plus bas.
 
@@ -137,7 +250,7 @@ et "Rattacher des filtres...") :
   centrale selon l'écran — pas nécessairement la toute première colonne déclarée quand une case à
   cocher technique de sélection la précède, ex. "Rattaché" dans `FilterLinkWindow`) reste alignée
   à **gauche** (comportement par défaut).
-- **Toutes les autres colonnes** (dimension, média, quantité, périodicité, dates, compteurs,
+- **Toutes les autres colonnes** (dimension, type, quantité, périodicité, dates, compteurs,
   case à cocher, etc.) ont leur contenu **centré** horizontalement et verticalement, pour une
   lecture plus homogène des valeurs courtes. Ceci est appliqué via deux styles réutilisables
   définis une seule fois dans `Styles/Controls.xaml` plutôt que dupliqués dans chaque écran :
@@ -310,7 +423,7 @@ afin de calculer automatiquement son besoin de commande semestriel.
 - **Rattachement manuel, pas de matching automatique** : bouton "Rattacher des
   filtres..." sur l'écran → ouvre un sélecteur (`FilterLinkWindow`) listant
   tous les filtres des 4 catégories concernées (catégorie / emplacement /
-  dimension / média / qté en place / périodicité affichés pour identification,
+  dimension / type / qté en place / périodicité affichés pour identification,
   avec un champ de recherche libre étant donné le volume : ~275+50+100+10
   filtres selon les catégories) et des cases à cocher. L'utilisateur choisit
   explicitement lesquels rattacher ; aucun algorithme ne devine le
@@ -667,6 +780,9 @@ identifiées).
     seul le rattachement `K7FamilyId`/`IsFamilyHeader` a été ajouté).
 
 ### Import des archives 2014-2025
+
+> Historique : l'outil d'import décrit ci-dessous a depuis été supprimé (voir « Import Excel
+> (supprimé) »).
 
 En plus du classeur "courant" (`Filtres 2026.xlsm`, importé intégralement via `ExcelImportService`,
 voir plus haut), 12 classeurs d'archives annuels (2014 à 2025,

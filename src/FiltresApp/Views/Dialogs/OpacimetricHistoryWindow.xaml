@@ -30,7 +30,7 @@
         <DataGrid x:Name="ReplacementsGrid" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Date du changement" Binding="{Binding DateLabel}" Width="1.6*"/>
+                <DataGridTextColumn Header="Date du changement" Binding="{Binding DateLabel}" Width="1.6*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Quantité changée" Binding="{Binding Quantity}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>

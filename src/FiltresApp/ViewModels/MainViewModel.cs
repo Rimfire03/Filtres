@@ -27,7 +27,7 @@ public partial class MainViewModel : ObservableObject
             new("Charbon", "⬛", () => new PeriodicFilterListViewModel(FilterCategory.Charbon, "Charbon", "Emplacement de l'appareil")),
             new("Liste K7", "🗂", () => new K7ListViewModel()),
             new("Inventaire", "📦", () => new InventoryListViewModel()),
-            new("Commande chmy", "🧾", () => new OrderListViewModel(OrderDocumentType.CommandeChmy, "Commande chmy")),
+            new("Commande", "🧾", () => new OrderListViewModel(OrderDocumentType.CommandeChmy, "Commande")),
             new("Paramètres", "⚙", () => new SettingsViewModel())
             // "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement le 25/09/2026,
             // données et code compris (voir README, section "Suppression définitive de « pour devis » et
@@ -41,7 +41,7 @@ public partial class MainViewModel : ObservableObject
     {
         var vm = value?.GetOrCreateViewModel();
         // Recharge les données à chaque fois qu'on (re)sélectionne l'écran : nécessaire notamment pour
-        // que "Inventaire" et "Commande chmy" (qui partagent désormais les mêmes lignes en base, voir
+        // que "Inventaire" et "Commande" (qui partagent désormais les mêmes lignes en base, voir
         // README) reflètent immédiatement les ajouts/modifications faits depuis l'autre écran.
         if (vm is IReloadable reloadable) reloadable.Reload();
         CurrentViewModel = vm;

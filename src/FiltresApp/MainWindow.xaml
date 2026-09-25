@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+        xmlns:app="clr-namespace:FiltresApp"
         Title="Suivi maintenance filtres à air" Height="800" Width="1300"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>
@@ -61,6 +62,12 @@
             </DockPanel>
         </Border>
 
-        <ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" Background="{StaticResource BrushBackground}"/>
+        <DockPanel Grid.Column="1">
+            <Border DockPanel.Dock="Top" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="0,0,0,1" Padding="16,10"
+                    Visibility="{Binding Source={x:Static app:App.IsReadOnly}, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="{x:Static app:App.ReadOnlyMessage}" TextWrapping="Wrap" Foreground="#92400E" FontWeight="SemiBold"/>
+            </Border>
+            <ContentControl Content="{Binding CurrentViewModel}" Background="{StaticResource BrushBackground}"/>
+        </DockPanel>
     </Grid>
 </Window>

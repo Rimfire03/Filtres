@@ -1,12 +1,15 @@
 <UserControl x:Class="FiltresApp.Views.InventoryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:InventoryListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,20 +18,43 @@
         <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}"/>
-            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}"/>
-            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}"/>
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <Button Content="Exporter en PDF" Style="{StaticResource SecondaryButton}" Command="{Binding ExportPdfCommand}"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" IsReadOnly="True">
+        <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
+            <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
+                      DisplayMemberPath="Label" Width="220" VerticalContentAlignment="Center"/>
+            <Button Content="+ Nouvelle famille" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                    Command="{Binding FamilyFilter.AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Renommer la famille" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding FamilyFilter.RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding FamilyFilter.DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+        </DockPanel>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Lines}" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="2.5*"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Famille" Binding="{Binding FamilyName}" Width="1.2*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Inventaire" Width="0.8*" SortMemberPath="Inventaire">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Inventaire, Mode=OneWay}" Style="{StaticResource InlineEditTextBox}"
+                                     IsReadOnly="{x:Static app:App.IsReadOnly}"
+                                     GotKeyboardFocus="InventaireBox_GotKeyboardFocus" LostKeyboardFocus="InventaireBox_LostKeyboardFocus"
+                                     PreviewKeyDown="InventaireBox_PreviewKeyDown"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="2*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

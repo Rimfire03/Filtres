@@ -15,9 +15,22 @@ public partial class App : Application
     public static PrintService Printer { get; private set; } = null!;
     public static PdfExportService PdfExport { get; private set; } = null!;
     public static ExcelExportService ExcelExport { get; private set; } = null!;
-    public static ExcelImportService Importer { get; private set; } = null!;
     public static YearContext YearContext { get; private set; } = null!;
     public static UpdateService Updater { get; } = new();
+
+    private static DbWriteLock? _writeLock;
+    private static string? _writeLockPath;
+
+    /// <summary>Vrai si un autre poste détenait déjà l'accès en écriture au démarrage (voir
+    /// <see cref="DbWriteLock"/>) : ce poste peut consulter les données mais pas les modifier.</summary>
+    public static bool IsReadOnly { get; private set; }
+    public static bool IsWritable => !IsReadOnly;
+
+    /// <summary>Poste qui détient l'accès en écriture, affiché dans le bandeau "lecture seule".</summary>
+    public static string? WriteLockOwner { get; private set; }
+
+    /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
+    public static int DatabaseVersion { get; private set; }
 
     /// <summary>Version courante de l'application (définie par &lt;Version&gt; dans le .csproj),
     /// comparée à la dernière release GitHub par <see cref="Updater"/>.</summary>
@@ -48,9 +61,13 @@ public partial class App : Application
                 return;
             }
 
-            DbFactory = new DbContextFactory(Settings.ResolvedDatabasePath);
-            DbFactory.EnsureDatabaseCreated();
-            Db = DbFactory.Create();
+            OpenDatabase(Settings.ResolvedDatabasePath);
+        }
+        catch (DatabaseVersionException ex)
+        {
+            MessageBox.Show(ex.Message, "Démarrage impossible : version de la base de données", MessageBoxButton.OK, MessageBoxImage.Stop);
+            Shutdown(-1);
+            return;
         }
         catch (Exception ex)
         {
@@ -65,12 +82,14 @@ public partial class App : Application
         Printer = new PrintService();
         PdfExport = new PdfExportService();
         ExcelExport = new ExcelExportService();
-        Importer = new ExcelImportService();
         YearContext = CreateYearContext();
 
         var mainWindow = new MainWindow();
         MainWindow = mainWindow;
         mainWindow.Show();
+
+        if (IsReadOnly)
+            MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);
 
         if (Settings.AutoUpdateEnabled) _ = CheckForUpdateOnStartupAsync();
     }
@@ -118,7 +137,7 @@ public partial class App : Application
             switch (choice)
             {
                 case MessageBoxResult.Yes:
-                    return true; // EnsureDatabaseCreated() créera le fichier vide juste après
+                    return true; // EnsureDatabaseUpToDate() créera la base juste après
 
                 case MessageBoxResult.No:
                     var dialog = new Microsoft.Win32.OpenFileDialog
@@ -144,7 +163,78 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         Db?.Dispose();
+        _writeLock?.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>Prend l'accès en écriture si aucun autre poste ne l'a déjà, sinon ouvre la base en
+    /// lecture seule.</summary>
+    private static void OpenDatabase(string path)
+    {
+        // Rechargement du même fichier par le rédacteur : on garde le verrou pour ne pas le céder.
+        if (_writeLock is null || !string.Equals(_writeLockPath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            _writeLock?.Dispose();
+            _writeLock = DbWriteLock.TryAcquire(path);
+            _writeLockPath = path;
+        }
+        IsReadOnly = _writeLock is null;
+        WriteLockOwner = IsReadOnly ? DbWriteLock.ReadOwner(path) : null;
+
+        DbFactory = new DbContextFactory(path, IsReadOnly);
+        CheckDatabaseVersion(path);
+        DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
+        DatabaseVersion = DbFactory.GetDatabaseVersion();
+        Db = DbFactory.Create();
+    }
+
+    /// <summary>Bloque l'ouverture si ce logiciel et la base ne sont pas à la même version : logiciel trop
+    /// ancien pour une base déjà mise à jour, ou poste en lecture seule qui ne peut pas mettre la base à
+    /// jour lui-même.</summary>
+    private static void CheckDatabaseVersion(string path)
+    {
+        if (!File.Exists(path)) return; // base neuve, créée directement à la dernière version
+
+        var dbVersion = DbFactory.GetDatabaseVersion();
+        var expected = DbContextFactory.LatestVersion;
+
+        if (dbVersion > expected)
+        {
+            var by = DbFactory.GetLastMigratedByAppVersion();
+            throw new DatabaseVersionException(
+                $"Cette version du logiciel ({CurrentVersion}) est trop ancienne pour ouvrir la base de données.\n\n" +
+                $"Version de la base : {dbVersion}" + (by is null ? "" : $" (mise à jour par le logiciel version {by})") + "\n" +
+                $"Version de base gérée par ce logiciel : {expected}\n\n" +
+                "Installez la dernière version du logiciel sur ce poste" + (by is null ? "" : $" ({by} ou plus récente)") +
+                ", puis relancez-le. Rien n'a été modifié dans la base.");
+        }
+
+        if (dbVersion < expected && !IsReadOnly)
+        {
+            var changes = string.Join("\n", DbContextFactory.PendingMigrations(dbVersion).Select(c => "  • " + c));
+            var accepted = MessageBox.Show(
+                $"La base de données est en version {dbVersion} ; cette version du logiciel ({CurrentVersion}) a besoin de la version {expected}.\n\n" +
+                $"Modifications à appliquer :\n{changes}\n\n" +
+                "Une copie de sauvegarde complète de la base sera faite à côté du fichier avant la mise à jour. " +
+                "Après la mise à jour, les postes équipés d'une version plus ancienne du logiciel ne pourront plus l'ouvrir.\n\n" +
+                "Mettre à jour la base maintenant ?",
+                "Mise à jour de la base de données", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+            if (accepted != MessageBoxResult.Yes)
+                throw new DatabaseVersionException(
+                    $"La base de données n'a pas été mise à jour : elle reste en version {dbVersion}, et cette version du logiciel ({CurrentVersion}) " +
+                    $"ne peut pas l'ouvrir sans la mettre en version {expected}.\n\n" +
+                    "Relancez le logiciel et acceptez la mise à jour, ou utilisez sur ce poste la version du logiciel qui correspond à la base.");
+        }
+
+        if (dbVersion < expected && IsReadOnly)
+        {
+            var owner = WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner;
+            throw new DatabaseVersionException(
+                $"La base de données doit être mise à jour (version {dbVersion} → {expected}) pour cette version du logiciel ({CurrentVersion}), " +
+                $"mais elle est actuellement ouverte en écriture par {owner}, qui utilise une version plus ancienne du logiciel.\n\n" +
+                "La mise à jour de la base se fera automatiquement au prochain lancement du logiciel à jour sur un poste " +
+                $"ayant l'accès en écriture. Demandez à {owner} de fermer le logiciel (et de le mettre à jour), puis relancez-le ici.");
+        }
     }
 
     /// <summary>Recrée le contexte de base de données courant (après changement de chemin
@@ -152,11 +242,25 @@ public partial class App : Application
     public static void ReloadDatabase(string newPath)
     {
         Db?.Dispose();
-        DbFactory = new DbContextFactory(newPath);
-        DbFactory.EnsureDatabaseCreated();
-        Db = DbFactory.Create();
+        OpenDatabase(newPath);
         YearContext = CreateYearContext();
     }
+
+    /// <summary>À appeler avant toute modification de données : sur un poste en lecture seule, prévient
+    /// l'utilisateur et retourne false.</summary>
+    public static bool GuardWritable()
+    {
+        if (IsWritable) return true;
+        Dialogs.ShowMessage("Lecture seule", ReadOnlyMessage + "\n\nAucune modification n'a été enregistrée.");
+        return false;
+    }
+
+    public static string ReadOnlyTitle =>
+        "Données en lecture seule : fichier actuellement utilisé par " +
+        (WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner);
+
+    public static string ReadOnlyMessage =>
+        ReadOnlyTitle + ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
 
     /// <summary>Construit le contexte d'année partagé par les écrans de suivi : année courante par
     /// défaut, plus toutes les années déjà présentes dans l'historique de remplacements en base.</summary>
@@ -166,3 +270,6 @@ public partial class App : Application
         return new YearContext(DateTime.Today.Year, yearsInData);
     }
 }
+
+/// <summary>Logiciel et base de données à des versions incompatibles : le démarrage est bloqué.</summary>
+public class DatabaseVersionException(string message) : Exception(message);

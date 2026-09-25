@@ -5,9 +5,8 @@ using FiltresApp.Core.Models;
 namespace FiltresApp.Core.Services;
 
 /// <summary>Reconstitue les familles K7 (<see cref="K7Family"/>) à partir du texte libre de la colonne
-/// LIEU déjà présent en base, utilisée à la fois par <see cref="DbContextFactory"/> (migration ponctuelle
-/// de la base existante, voir README) et par <see cref="ExcelImportService"/> (pour qu'un futur réimport
-/// complet reconstitue les mêmes familles).
+/// LIEU déjà présent en base, utilisée par <see cref="DbContextFactory"/> (migration ponctuelle de la base
+/// existante, voir README).
 /// <para>Dans le classeur Excel d'origine, une ligne "titre de famille" ressemble à
 /// "AP  RDC periodicités  1/4/7/10" (nom + mot "periodicité(s)" + liste de mois séparés par "/") et
 /// précède les lignes de détail de cette famille jusqu'à la prochaine ligne de titre. Les lignes de
