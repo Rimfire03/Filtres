@@ -51,6 +51,10 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
         }
     }
 
+    /// <summary>Ordre d'affichage des groupes de <see cref="DimensionFamilyLabel"/> (voir
+    /// PeriodicFilterView.xaml, SortDescription sur la grille groupée) : filtres à remplacer en premier.</summary>
+    public int DimensionFamilyRank => Filter.DimensionFamilyRank;
+
     public int Id => Filter.Id;
     public string Location => Filter.Location;
     public string Dimension => Filter.Dimension;

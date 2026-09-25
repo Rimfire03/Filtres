@@ -4,14 +4,22 @@
              xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
              xmlns:app="clr-namespace:FiltresApp"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              d:DataContext="{d:DesignInstance vm:PeriodicFilterListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
     <UserControl.Resources>
         <!-- Regroupement par famille déduite de la Dimension (voir DimensionFamilyLabel) : n'a d'effet
              visuel que sur l'écran "Filtres G3" (ShowDimensionFamilyGrouping), les autres écrans ayant
-             toujours un nom de groupe vide (bandeau masqué, voir GroupStyle plus bas). -->
+             toujours un nom de groupe vide (bandeau masqué, voir GroupStyle plus bas). Tri par
+             DimensionFamilyRank pour que "Filtres à remplacer" apparaisse toujours avant "Filtres à
+             laver" (sinon avant "Sans dimension") ; sans effet sur les autres écrans, où ce rang vaut
+             toujours 0 (Location reste le seul critère de tri, comme avant ce regroupement). -->
         <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="DimensionFamilyRank"/>
+                <scm:SortDescription PropertyName="Location"/>
+            </CollectionViewSource.SortDescriptions>
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="DimensionFamilyLabel"/>
             </CollectionViewSource.GroupDescriptions>

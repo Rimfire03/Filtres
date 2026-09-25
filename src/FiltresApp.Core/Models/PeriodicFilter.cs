@@ -57,6 +57,11 @@ public class PeriodicFilter
         ? "Filtres à laver"
         : DimensionFormatService.Normalize(Dimension) is not null ? "Filtres à remplacer" : "Sans dimension";
 
+    /// <summary>Ordre d'affichage des groupes de <see cref="DimensionFamilyLabel"/> (écran G3) : filtres
+    /// à remplacer en premier, puis à laver, puis sans dimension.</summary>
+    [NotMapped]
+    public int DimensionFamilyRank => IsWashable ? 1 : DimensionFormatService.Normalize(Dimension) is not null ? 0 : 2;
+
     [NotMapped]
     public string PeriodicityDisplay => string.Join("/", GetPeriodicityMonths());
 
