@@ -77,8 +77,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
             EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
-            EditField.NullableInt("Inventaire", () => entity.Inventaire, v => entity.Inventaire = v),
-            EditField.NullableInt("Quantité", () => entity.Quantite, v => entity.Quantite = v)
+            EditField.NullableInt("Inventaire", () => entity.Inventaire, v => entity.Inventaire = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
     }
@@ -124,7 +123,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.NeedMars?.ToString() ?? "", l.NeedSeptembre?.ToString() ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
+        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.NeedMars?.ToString() ?? "", l.NeedSeptembre?.ToString() ?? "", l.Inventaire?.ToString() ?? "", l.InventoryQuantity?.ToString() ?? ""
     };
 
     private List<string[]> BuildPrintRows() =>

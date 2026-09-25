@@ -53,11 +53,20 @@ public partial class InventoryView : UserControl
             vm.SetInventaire(line, box.Text);
             // Réaffiche la valeur enregistrée (normalisée, ou l'ancienne si la saisie a été refusée).
             RestoreSavedValue(box);
+            RefreshQuantity(box);
         }
         finally
         {
             _committing = false;
         }
+    }
+
+    /// <summary>La Quantité dépend de l'Inventaire : la ligne n'étant pas notifiante, on relit sa cellule.</summary>
+    private void RefreshQuantity(TextBox box)
+    {
+        var row = DataGridRow.GetRowContainingElement(box);
+        if (row is not null && QuantityColumn.GetCellContent(row) is TextBlock cell)
+            BindingOperations.GetBindingExpression(cell, TextBlock.TextProperty)?.UpdateTarget();
     }
 
     private static void RestoreSavedValue(TextBox box) =>

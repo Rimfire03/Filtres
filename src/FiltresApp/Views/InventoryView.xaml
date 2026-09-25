@@ -60,7 +60,8 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Calculée : max(Besoin mars, Besoin septembre) - Inventaire (OrderLine.InventoryQuantity). -->
+                <DataGridTextColumn x:Name="QuantityColumn" Header="Quantité" Binding="{Binding InventoryQuantity}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
                 <GroupStyle>

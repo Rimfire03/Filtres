@@ -236,7 +236,11 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
   **Quantité à commander en dernier**. La colonne « Filtres liés » reste dans la grille mais n'est jamais
   imprimée ni exportée en PDF.
 - **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Besoin mars (calculé),
-  Besoin septembre (calculé), **Inventaire**, Quantité. Les colonnes « Besoin » ont été déplacées
+  Besoin septembre (calculé), **Inventaire**, Quantité. Dans cet écran, **« Quantité » est calculée** :
+  plus grande valeur entre Besoin mars et Besoin septembre, moins Inventaire (vide si aucun filtre
+  n'est rattaché, négative si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
+  est validée ; elle n'est donc plus saisie dans la fenêtre « Modifier » de l'Inventaire. La quantité
+  saisie (« Quantité à commander » de l'écran Commande) est inchangée. Les colonnes « Besoin » ont été déplacées
   depuis Commande ; elles restent calculées à partir des filtres rattachés à la ligne (bouton
   « Rattacher des filtres... » de l'écran Commande).
   La colonne « Inventaire » (nombre entier, migration v8) se saisit **directement dans la grille** :
