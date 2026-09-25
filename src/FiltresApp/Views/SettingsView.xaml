@@ -11,6 +11,20 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Versions" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Style="{StaticResource SectionText}">
+                        <Run Text="Version du logiciel :"/>
+                        <Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource SectionText}" Margin="0,2,0,0">
+                        <Run Text="Version de la base de données :"/>
+                        <Run Text="{Binding DatabaseVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Emplacement de la base de données" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBlock Text="Chemin relatif au dossier de l'exécutable pour rester portable, ou chemin absolu." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
                     <DockPanel>
@@ -37,10 +51,6 @@
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Margin="0,0,0,8" Style="{StaticResource SectionText}">
-                        <Run Text="Version actuelle :"/>
-                        <Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
-                    </TextBlock>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
                               IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal">

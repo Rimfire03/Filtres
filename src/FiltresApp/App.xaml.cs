@@ -29,6 +29,9 @@ public partial class App : Application
     /// <summary>Poste qui détient l'accès en écriture, affiché dans le bandeau "lecture seule".</summary>
     public static string? WriteLockOwner { get; private set; }
 
+    /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
+    public static int DatabaseVersion { get; private set; }
+
     /// <summary>Version courante de l'application (définie par &lt;Version&gt; dans le .csproj),
     /// comparée à la dernière release GitHub par <see cref="Updater"/>.</summary>
     public static string CurrentVersion
@@ -59,6 +62,12 @@ public partial class App : Application
             }
 
             OpenDatabase(Settings.ResolvedDatabasePath);
+        }
+        catch (DatabaseVersionException ex)
+        {
+            MessageBox.Show(ex.Message, "Version du logiciel incompatible avec la base", MessageBoxButton.OK, MessageBoxImage.Stop);
+            Shutdown(-1);
+            return;
         }
         catch (Exception ex)
         {
@@ -128,7 +137,7 @@ public partial class App : Application
             switch (choice)
             {
                 case MessageBoxResult.Yes:
-                    return true; // EnsureDatabaseCreated() créera le fichier vide juste après
+                    return true; // EnsureDatabaseUpToDate() créera la base juste après
 
                 case MessageBoxResult.No:
                     var dialog = new Microsoft.Win32.OpenFileDialog
@@ -173,8 +182,42 @@ public partial class App : Application
         WriteLockOwner = IsReadOnly ? DbWriteLock.ReadOwner(path) : null;
 
         DbFactory = new DbContextFactory(path, IsReadOnly);
-        DbFactory.EnsureDatabaseCreated();
+        CheckDatabaseVersion(path);
+        DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
+        DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
+    }
+
+    /// <summary>Bloque l'ouverture si ce logiciel et la base ne sont pas à la même version : logiciel trop
+    /// ancien pour une base déjà mise à jour, ou poste en lecture seule qui ne peut pas mettre la base à
+    /// jour lui-même.</summary>
+    private static void CheckDatabaseVersion(string path)
+    {
+        if (!File.Exists(path)) return; // base neuve, créée directement à la dernière version
+
+        var dbVersion = DbFactory.GetDatabaseVersion();
+        var expected = DbContextFactory.LatestVersion;
+
+        if (dbVersion > expected)
+        {
+            var by = DbFactory.GetLastMigratedByAppVersion();
+            throw new DatabaseVersionException(
+                $"Cette version du logiciel ({CurrentVersion}) est trop ancienne pour ouvrir la base de données.\n\n" +
+                $"Version de la base : {dbVersion}" + (by is null ? "" : $" (mise à jour par le logiciel version {by})") + "\n" +
+                $"Version de base gérée par ce logiciel : {expected}\n\n" +
+                "Installez la dernière version du logiciel sur ce poste" + (by is null ? "" : $" ({by} ou plus récente)") +
+                ", puis relancez-le. Rien n'a été modifié dans la base.");
+        }
+
+        if (dbVersion < expected && IsReadOnly)
+        {
+            var owner = WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner;
+            throw new DatabaseVersionException(
+                $"La base de données doit être mise à jour (version {dbVersion} → {expected}) pour cette version du logiciel ({CurrentVersion}), " +
+                $"mais elle est actuellement ouverte en écriture par {owner}, qui utilise une version plus ancienne du logiciel.\n\n" +
+                "La mise à jour de la base se fera automatiquement au prochain lancement du logiciel à jour sur un poste " +
+                $"ayant l'accès en écriture. Demandez à {owner} de fermer le logiciel (et de le mettre à jour), puis relancez-le ici.");
+        }
     }
 
     /// <summary>Recrée le contexte de base de données courant (après changement de chemin
@@ -210,3 +253,6 @@ public partial class App : Application
         return new YearContext(DateTime.Today.Year, yearsInData);
     }
 }
+
+/// <summary>Logiciel et base de données à des versions incompatibles : le démarrage est bloqué.</summary>
+public class DatabaseVersionException(string message) : Exception(message);

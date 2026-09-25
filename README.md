@@ -109,6 +109,37 @@ Recommandations :
   fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
 - Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
 
+## Version de la base de données et mises à jour automatiques
+
+La base porte un numéro de version (stocké dans le fichier SQLite, `PRAGMA user_version`, plus la
+version du logiciel qui l'a mise à jour en dernier dans la table `DbInfo`). Les deux versions —
+logiciel et base — sont affichées en haut de l'écran **Paramètres**.
+
+- **Après une mise à jour du logiciel**, le premier poste qui ouvre la base **en écriture** la met à
+  jour automatiquement au lancement. Avant toute modification, une copie complète est faite à côté du
+  fichier : `filtres.db.avant-maj-v<ancienne version>-<date>.bak` (à supprimer à la main une fois la
+  mise à jour validée). Chaque étape est appliquée dans une transaction : en cas d'erreur, la base
+  reste à la dernière version réussie et le démarrage s'arrête avec le détail de l'erreur.
+- **Démarrage bloqué avec un message explicite** si le poste n'a pas la bonne version :
+  - logiciel **trop ancien** pour la base (déjà mise à jour par une version plus récente) : le
+    message indique la version de la base, la version du logiciel qui l'a mise à jour et demande
+    d'installer la dernière version. Rien n'est modifié dans la base ;
+  - logiciel **plus récent** que la base alors que ce poste est en **lecture seule** (le poste qui a
+    l'accès en écriture utilise encore l'ancienne version) : le message indique qui détient l'accès
+    en écriture et explique que la base sera mise à jour au prochain lancement du logiciel à jour sur
+    un poste en écriture.
+- En pratique : **mettre à jour tous les postes**, puis lancer d'abord le logiciel sur un poste quand
+  personne d'autre ne l'a ouvert.
+- Les versions du logiciel antérieures à ce système ne contrôlent pas la version de la base : elles
+  ne sont pas bloquées et doivent être mises à jour en priorité.
+
+Pour les développeurs : les évolutions du schéma se déclarent dans la liste `Migrations` de
+`DbContextFactory` (`src\FiltresApp.Core\Services\DbContextFactory.cs`). Ne jamais modifier ni
+renuméroter une migration déjà publiée, toujours en ajouter une nouvelle à la fin, et écrire les
+modifications de données en SQL brut (pas via le modèle EF, qui aura évolué). Une base neuve est créée
+directement à la dernière version. Les versions 1 à 5 reprennent les mises à jour faites avant ce
+système (idempotentes) ; la version 6 ajoute la colonne « Destination ».
+
 ## Import Excel (supprimé)
 
 Le système d'import a été **supprimé** : bouton « Importer depuis Excel » de l'écran Paramètres,

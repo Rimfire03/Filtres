@@ -22,6 +22,7 @@ public partial class SettingsViewModel : ObservableObject
     private UpdateInfo? _pendingUpdate;
 
     public string CurrentVersion => App.CurrentVersion;
+    public int DatabaseVersion => App.DatabaseVersion;
 
     /// <summary>Année à exporter en Excel (voir bouton "Exporter l'année en Excel" ci-dessous),
     /// partagée avec le sélecteur d'année global de la barre latérale.</summary>
@@ -141,7 +142,19 @@ public partial class SettingsViewModel : ObservableObject
         App.Settings.PdfExportPath = PdfExportPath;
         App.Settings.Save();
 
-        App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
+        try
+        {
+            App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
+        }
+        catch (Exception ex)
+        {
+            // L'ancienne base est déjà fermée : on ne peut pas continuer sans base ouverte.
+            System.Windows.MessageBox.Show($"Impossible d'ouvrir la base de données :\n{App.Settings.ResolvedDatabasePath}\n\n{ex.Message}\n\nL'application va se fermer.",
+                "Base de données", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Stop);
+            System.Windows.Application.Current.Shutdown();
+            return;
+        }
+        OnPropertyChanged(nameof(DatabaseVersion));
         StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
     }
 }

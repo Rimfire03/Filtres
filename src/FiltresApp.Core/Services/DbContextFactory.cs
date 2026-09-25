@@ -1,6 +1,7 @@
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace FiltresApp.Core.Services;
 
@@ -19,28 +20,104 @@ public class DbContextFactory
 
     public FiltresDbContext Create() => new(_dbPath, _readOnly);
 
-    public void EnsureDatabaseCreated()
+    /// <summary>Migrations du schéma, dans l'ordre. La version atteinte est enregistrée dans la base
+    /// (<c>PRAGMA user_version</c>) : au lancement, le poste rédacteur applique uniquement celles qui
+    /// manquent. Règles : ne jamais modifier ni renuméroter une migration publiée, toujours en ajouter
+    /// une nouvelle à la fin, et écrire les données en SQL brut (le modèle EF évolue, pas la migration).
+    /// Les migrations 1 à 5 reprennent les mises à jour appliquées avant l'existence de ce système ;
+    /// elles sont idempotentes car les bases existantes les ont déjà (en partie) reçues.</summary>
+    private static readonly (int Version, string Description, Action<FiltresDbContext> Apply)[] Migrations =
     {
-        // Mise à jour du schéma réservée au poste rédacteur (voir DbWriteLock).
+        (1, "Rattachement filtres / lignes de commande", EnsureOrderLinePeriodicFilterTable),
+        (2, "Fusion Inventaire / Commande", ctx =>
+        {
+            EnsureInventoryOrderMergeSchema(ctx);
+            MigrateInventoryLinesIntoOrderLines(ctx);
+        }),
+        (3, "Familles K7", ctx =>
+        {
+            EnsureK7FamilySchema(ctx);
+            K7FamilyReconstructionService.ReconstructIfNeeded(ctx);
+        }),
+        (4, "Suppression « pour devis » et « filtres à refacturer »", RemovePourDevisAndRefacturingData),
+        (5, "Option « changé tous les 15 jours »", EnsureChangedEvery15DaysColumn),
+        (6, "Colonne Destination (Commande / Inventaire)", EnsureOrderLineDestinationColumn),
+    };
+
+    /// <summary>Version de base attendue par cette version de l'application.</summary>
+    public static int LatestVersion => Migrations[^1].Version;
+
+    /// <summary>Version actuelle du fichier de base (0 = base antérieure au système de version).</summary>
+    public int GetDatabaseVersion()
+    {
+        using var ctx = Create();
+        return ReadVersion(ctx);
+    }
+
+    /// <summary>Version de l'application qui a mis la base à jour en dernier, pour les messages d'erreur.</summary>
+    public string? GetLastMigratedByAppVersion()
+    {
+        using var ctx = Create();
+        if (!GetColumns(ctx, "DbInfo").Contains("Value")) return null;
+        return ctx.Database.SqlQueryRaw<string>("""SELECT "Value" AS "Value" FROM "DbInfo" WHERE "Key" = 'AppVersion'""").FirstOrDefault();
+    }
+
+    /// <summary>Crée la base si besoin, sinon applique les migrations manquantes (sauvegarde préalable du
+    /// fichier). Réservé au poste rédacteur (voir DbWriteLock).</summary>
+    public void EnsureDatabaseUpToDate(string appVersion)
+    {
         if (_readOnly) return;
 
         using var ctx = Create();
-        // EnsureCreated() ne crée le schéma complet qu'au tout premier lancement (fichier SQLite
-        // inexistant) : sur une base déjà existante, il ne fait rien, même si le modèle EF Core a
-        // évolué depuis (l'application n'utilise pas `dotnet ef migrations`, voir README). La table de
-        // liaison "OrderLinePeriodicFilters" (rattachement manuel filtre <-> ligne de commande) a été
-        // ajoutée après la mise en production initiale : on la crée donc explicitement ici si elle
-        // n'existe pas encore, par un simple `CREATE TABLE IF NOT EXISTS`, qui ne touche à aucune des
-        // tables/données déjà en base.
-        ctx.Database.EnsureCreated();
-        EnsureOrderLinePeriodicFilterTable(ctx);
-        EnsureInventoryOrderMergeSchema(ctx);
-        EnsureOrderLineDestinationColumn(ctx);
-        MigrateInventoryLinesIntoOrderLines(ctx);
-        EnsureK7FamilySchema(ctx);
-        K7FamilyReconstructionService.ReconstructIfNeeded(ctx);
-        RemovePourDevisAndRefacturingData(ctx);
-        EnsureChangedEvery15DaysColumn(ctx);
+        if (ctx.Database.EnsureCreated())
+        {
+            // Base neuve : EnsureCreated vient de créer directement le schéma le plus récent.
+            WriteVersion(ctx, LatestVersion, appVersion);
+            return;
+        }
+
+        var current = ReadVersion(ctx);
+        var pending = Migrations.Where(m => m.Version > current).ToList();
+        if (pending.Count == 0) return;
+
+        Backup(ctx, current);
+        var reached = current;
+        foreach (var migration in pending)
+        {
+            using var transaction = ctx.Database.BeginTransaction();
+            try
+            {
+                migration.Apply(ctx);
+                WriteVersion(ctx, migration.Version, appVersion);
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Échec de la mise à jour de la base vers la version {migration.Version} ({migration.Description}) : {ex.Message}\n" +
+                    $"La base est restée en version {reached} ; une sauvegarde faite juste avant la mise à jour se trouve à côté du fichier.", ex);
+            }
+            reached = migration.Version;
+            ctx.ChangeTracker.Clear();
+        }
+    }
+
+    private static int ReadVersion(FiltresDbContext ctx) =>
+        ctx.Database.SqlQueryRaw<int>("SELECT user_version AS \"Value\" FROM pragma_user_version").First();
+
+    private static void WriteVersion(FiltresDbContext ctx, int version, string appVersion)
+    {
+        // PRAGMA n'accepte pas de paramètre ; version est un entier issu du code.
+        ctx.Database.ExecuteSqlRaw("PRAGMA user_version = " + version + ";");
+        ctx.Database.ExecuteSqlRaw("""CREATE TABLE IF NOT EXISTS "DbInfo" ("Key" TEXT NOT NULL PRIMARY KEY, "Value" TEXT NOT NULL);""");
+        ctx.Database.ExecuteSqlRaw("""INSERT OR REPLACE INTO "DbInfo" ("Key", "Value") VALUES ('AppVersion', {0});""", appVersion);
+    }
+
+    /// <summary>Copie cohérente de la base (VACUUM INTO) avant toute migration, à côté du fichier.</summary>
+    private void Backup(FiltresDbContext ctx, int fromVersion)
+    {
+        var backupPath = $"{_dbPath}.avant-maj-v{fromVersion}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
+        ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
     }
 
     /// <summary>Colonne "Destination" des écrans Commande et Inventaire, vide pour les lignes existantes.</summary>
@@ -90,6 +167,7 @@ public class DbContextFactory
         try
         {
             using var cmd = conn.CreateCommand();
+            cmd.Transaction = ctx.Database.CurrentTransaction?.GetDbTransaction();
             cmd.CommandText = $"PRAGMA table_info(\"{table}\")";
             using var reader = cmd.ExecuteReader();
             while (reader.Read()) cols.Add(reader.GetString(1));
@@ -134,22 +212,17 @@ public class DbContextFactory
         var nextOrdre = (ctx.OrderLines.Where(o => o.DocumentType == OrderDocumentType.CommandeChmy)
             .Select(o => (int?)o.Ordre).Max() ?? 0) + 1;
 
+        // SQL brut et non ctx.OrderLines.Add : les colonnes ajoutées par les migrations suivantes
+        // n'existent pas encore à ce stade.
+        var documentType = (int)OrderDocumentType.CommandeChmy;
         foreach (var inv in toMigrate)
         {
-            ctx.OrderLines.Add(new OrderLine
-            {
-                DocumentType = OrderDocumentType.CommandeChmy,
-                Ordre = nextOrdre++,
-                Designation = inv.Designation,
-                Dimension = inv.Dimension,
-                Quantite = inv.Quantite,
-                Unite = inv.Unite,
-                Notes = inv.Notes,
-                MigratedFromInventoryLineId = inv.Id
-            });
+            var ordre = nextOrdre++;
+            ctx.Database.ExecuteSqlInterpolated($"""
+                INSERT INTO "OrderLines" ("DocumentType", "Ordre", "Designation", "Dimension", "Quantite", "Unite", "Notes", "MigratedFromInventoryLineId")
+                VALUES ({documentType}, {ordre}, {inv.Designation}, {inv.Dimension}, {inv.Quantite}, {inv.Unite}, {inv.Notes}, {inv.Id});
+                """);
         }
-
-        ctx.SaveChanges();
     }
 
     /// <summary>Familles K7 (voir README) : crée la table "K7Families" et ajoute à "K7Locations" les

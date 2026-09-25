@@ -38,7 +38,7 @@ public class OrderLine
 
     /// <summary>Marqueur technique (non affiché en UI) : identifiant de l'<see cref="InventoryLine"/>
     /// d'origine si cette ligne provient de la migration "fusion Inventaire / Commande chmy" (voir
-    /// DbContextFactory.EnsureDatabaseCreated). Sert uniquement à rendre cette migration idempotente (ne
+    /// la migration 2 de DbContextFactory). Sert uniquement à rendre cette migration idempotente (ne
     /// pas dupliquer les lignes à chaque démarrage).</summary>
     public int? MigratedFromInventoryLineId { get; set; }
 
