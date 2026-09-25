@@ -87,8 +87,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
             EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
-            EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
-            EditField.NullableInt("Quantité à commander", () => entity.Quantite, v => entity.Quantite = v)
+            EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
     }
@@ -221,7 +220,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         l.Destination ?? "",
         l.Dimension ?? "",
         l.Notes ?? "",
-        l.Quantite?.ToString() ?? ""
+        l.InventoryQuantity?.ToString() ?? ""
     };
 
     [RelayCommand]

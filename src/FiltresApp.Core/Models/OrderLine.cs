@@ -115,7 +115,8 @@ public class OrderLine
     [NotMapped]
     public int? NeedMars => FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedMars(LinkedFilters);
 
-    /// <summary>Colonne "Quantité" de l'écran Inventaire : plus grand des deux besoins calculés moins la
+    /// <summary>Colonne "Quantité" de l'écran Inventaire et "Quantité à commander" de l'écran Commande :
+    /// plus grand des deux besoins calculés moins la
     /// quantité relevée à l'inventaire. Vide tant qu'aucun filtre n'est rattaché ; 0 si le stock dépasse
     /// le besoin.</summary>
     [NotMapped]

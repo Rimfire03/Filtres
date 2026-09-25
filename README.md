@@ -245,8 +245,11 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
   Besoin septembre (calculé), **Inventaire**, Quantité. Dans cet écran, **« Quantité » est calculée** :
   plus grande valeur entre Besoin mars et Besoin septembre, moins Inventaire (vide si aucun filtre
   n'est rattaché, 0 si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
-  est validée ; elle n'est donc plus saisie dans la fenêtre « Modifier » de l'Inventaire. La quantité
-  saisie (« Quantité à commander » de l'écran Commande) est inchangée. Les colonnes « Besoin » ont été déplacées
+  est validée ; elle n'est donc plus saisie dans la fenêtre « Modifier » de l'Inventaire.
+- **Quantité à commander (Commande)** : même valeur calculée que la « Quantité » de l'Inventaire
+  (max(Besoin mars, Besoin septembre) − Inventaire, 0 si négatif, vide si aucun filtre rattaché),
+  reprise à l'impression et dans le PDF. Elle n'est plus saisie dans « Modifier » ; l'ancienne
+  quantité saisie (champ `OrderLine.Quantite`) reste en base mais n'est plus affichée. Les colonnes « Besoin » ont été déplacées
   depuis Commande ; elles restent calculées à partir des filtres rattachés à la ligne (bouton
   « Rattacher des filtres... » de l'écran Commande).
   La colonne « Inventaire » (nombre entier, migration v8) se saisit **directement dans la grille** :
