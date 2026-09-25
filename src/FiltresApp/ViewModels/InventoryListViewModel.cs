@@ -11,7 +11,7 @@ namespace FiltresApp.ViewModels;
 /// n'est plus adossé à une entité <see cref="InventoryLine"/> distincte : il lit/écrit exactement les
 /// mêmes lignes <see cref="OrderLine"/> (type <see cref="OrderDocumentType.CommandeChmy"/>) que
 /// <see cref="OrderListViewModel"/>, avec une mise en page différente mettant en avant les colonnes de
-/// stock (quantité, unité) plutôt que le rattachement filtre / besoin calculé. Une ligne ajoutée ici
+/// stock (quantité) plutôt que le rattachement filtre / besoin calculé. Une ligne ajoutée ici
 /// apparaît donc automatiquement dans "Commande chmy" et réciproquement (et vice versa au prochain
 /// changement d'écran, voir <see cref="IReloadable"/>).</summary>
 public partial class InventoryListViewModel : ObservableObject, IReloadable
@@ -72,8 +72,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
             EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
-            EditField.NullableInt("Quantité", () => entity.Quantite, v => entity.Quantite = v),
-            EditField.NullableText("Unité", () => entity.Unite, v => entity.Unite = v)
+            EditField.NullableInt("Quantité", () => entity.Quantite, v => entity.Quantite = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
     }
@@ -90,11 +89,11 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Quantité", "Unité" };
+    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Quantité" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Quantite?.ToString() ?? "", l.Unite ?? ""
+        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Quantite?.ToString() ?? ""
     };
 
     [RelayCommand]

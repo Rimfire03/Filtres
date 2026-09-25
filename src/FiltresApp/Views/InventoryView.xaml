@@ -31,7 +31,6 @@
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

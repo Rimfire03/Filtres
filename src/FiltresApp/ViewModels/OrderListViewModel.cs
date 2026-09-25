@@ -80,7 +80,6 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
             EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
-            EditField.NullableText("Unité", () => entity.Unite, v => entity.Unite = v),
             EditField.NullableInt("Quantité à commander", () => entity.Quantite, v => entity.Quantite = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);

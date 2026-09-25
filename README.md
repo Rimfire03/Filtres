@@ -119,7 +119,7 @@ logiciel et base — sont affichées en haut de l'écran **Paramètres**.
   le premier poste qui l'ouvre **en écriture** **propose la mise à jour** au lancement (liste des
   modifications à appliquer, réponse Oui/Non). Si l'utilisateur refuse, le démarrage s'arrête avec un
   message explicite (la base reste inchangée) ; il suffit de relancer et d'accepter. Pour une base
-  créée avant ce système (version 0), la liste affiche toutes les étapes 1 à 6 : les étapes 1 à 5
+  créée avant ce système (version 0), la liste affiche toutes les étapes à partir de 1 : les étapes 1 à 5
   sont déjà présentes et ne modifient rien. Avant toute modification, une copie complète est faite à
   côté du fichier : `filtres.db.avant-maj-v<ancienne version>-<date>.bak` (à supprimer à la main une fois la
   mise à jour validée). Chaque étape est appliquée dans une transaction : en cas d'erreur, la base
@@ -142,7 +142,8 @@ Pour les développeurs : les évolutions du schéma se déclarent dans la liste 
 renuméroter une migration déjà publiée, toujours en ajouter une nouvelle à la fin, et écrire les
 modifications de données en SQL brut (pas via le modèle EF, qui aura évolué). Une base neuve est créée
 directement à la dernière version. Les versions 1 à 5 reprennent les mises à jour faites avant ce
-système (idempotentes) ; la version 6 ajoute la colonne « Destination ».
+système (idempotentes) ; la version 6 ajoute la colonne « Destination » ; la version 7 supprime la
+colonne « Unité » et son contenu (récupérable dans la sauvegarde `.bak` faite avant la mise à jour).
 
 ## Import Excel (supprimé)
 
@@ -208,7 +209,9 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 
 - **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés, Besoin mars,
   Besoin septembre, **Quantité à commander en dernier**.
-- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Quantité, Unité.
+- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Quantité. La colonne
+  « Unité » a été supprimée (écran, fenêtres d'édition de Commande et Inventaire, impression, export
+  PDF et base de données, migration v7).
 - Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les
   mêmes libellés.
 

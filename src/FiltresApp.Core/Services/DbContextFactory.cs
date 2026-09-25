@@ -42,6 +42,7 @@ public class DbContextFactory
         (4, "Suppression « pour devis » et « filtres à refacturer »", RemovePourDevisAndRefacturingData),
         (5, "Option « changé tous les 15 jours »", EnsureChangedEvery15DaysColumn),
         (6, "Colonne Destination (Commande / Inventaire)", EnsureOrderLineDestinationColumn),
+        (7, "Suppression de la colonne Unité (Inventaire) et de son contenu", DropOrderLineUniteColumn),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -123,6 +124,12 @@ public class DbContextFactory
     {
         var backupPath = $"{_dbPath}.avant-maj-v{fromVersion}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
+    }
+
+    private static void DropOrderLineUniteColumn(FiltresDbContext ctx)
+    {
+        if (GetColumns(ctx, "OrderLines").Contains("Unite"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" DROP COLUMN "Unite";""");
     }
 
     /// <summary>Colonne "Destination" des écrans Commande et Inventaire, vide pour les lignes existantes.</summary>
