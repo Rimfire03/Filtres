@@ -38,7 +38,7 @@
             <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
             <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
                       Width="220" VerticalContentAlignment="Center"/>
-            <TextBlock Text="Famille déduite des filtres rattachés à la ligne (bouton « Rattacher des filtres... » de l'écran Commande)."
+            <TextBlock Text="Famille déduite des filtres rattachés à la ligne, ou choisie manuellement dans « Modifier »."
                        Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
         </DockPanel>
 

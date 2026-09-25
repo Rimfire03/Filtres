@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using FiltresApp.Core.Models;
+using FiltresApp.Services;
 
 namespace FiltresApp.ViewModels;
 
@@ -37,6 +38,41 @@ public partial class OrderFamilyFilter : ObservableObject
             .OrderBy(l => Array.IndexOf(FamilyOrder, l.FamilyGroupLabel))
             .ThenBy(l => l.Ordre)
             .ToList();
+
+    /// <summary>Choix de famille manuel pour une nouvelle ligne : celle du filtre en cours si c'est une famille
+    /// de filtres, sinon automatique.</summary>
+    public int? DefaultFamilyOverride
+    {
+        get
+        {
+            foreach (var category in Enum.GetValues<FilterCategory>())
+                if (OrderLine.FamilyLabelFor(category) == Selected) return (int)category;
+            return Selected == OrderLine.NoFamilyLabel ? OrderLine.NoFamilyOverride : null;
+        }
+    }
+
+    /// <summary>Champ "Famille" de la fenêtre Ajouter / Modifier : "Automatique" (famille déduite des filtres
+    /// rattachés, rappelée entre parenthèses) ou une famille choisie manuellement.</summary>
+    public static EditField CreateEditField(OrderLine entity, string automaticLabel)
+    {
+        var categories = Enum.GetValues<FilterCategory>();
+        var names = new List<string> { $"Automatique (d'après les filtres rattachés : {automaticLabel})" };
+        names.AddRange(categories.Select(OrderLine.FamilyLabelFor));
+        names.Add(OrderLine.NoFamilyLabel);
+
+        var noFamilyIndex = names.Count - 1;
+        var currentIndex = entity.FamilyOverride switch
+        {
+            null => 0,
+            OrderLine.NoFamilyOverride => noFamilyIndex,
+            int c => Array.IndexOf(categories, (FilterCategory)c) + 1
+        };
+
+        return EditField.ComboField("Famille", names, () => currentIndex, v => entity.FamilyOverride =
+            v <= 0 ? null
+            : v == noFamilyIndex ? OrderLine.NoFamilyOverride
+            : (int)categories[v - 1]);
+    }
 
     /// <summary>Ajouté au titre des impressions / exports quand un filtre est actif.</summary>
     public string TitleSuffix => Selected == AllLabel ? "" : " - " + Selected;

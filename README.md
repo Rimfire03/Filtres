@@ -243,9 +243,19 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 - Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les
   mêmes libellés.
 
-**Familles (Inventaire et Commande)** — générées automatiquement, rien à saisir. La famille d'une
-ligne est déduite de la catégorie des filtres qui lui sont rattachés (bouton « Rattacher des
-filtres... » de l'écran Commande) :
+**Familles (Inventaire et Commande)** — automatiques par défaut, avec choix manuel possible.
+
+- **Automatique** : la famille d'une ligne est déduite de la catégorie des filtres qui lui sont
+  rattachés (bouton « Rattacher des filtres... » de l'écran Commande), voir le tableau ci-dessous.
+- **Manuel** : dans la fenêtre « Modifier » (ou « Ajouter »), le champ « Famille » propose
+  « Automatique (d'après les filtres rattachés : …) » — qui rappelle la famille calculée — ou une
+  famille au choix (Filtres G4 plissés, Filtres G4 plan, Filtres G3, Charbon, Sans famille). Un
+  choix manuel prime sur le calcul automatique, même si les filtres rattachés changent ensuite ;
+  revenir sur « Automatique » pour réactiver le calcul. Une ligne ajoutée pendant qu'une famille
+  est filtrée reçoit cette famille par défaut. Stocké dans `OrderLine.FamilyOverride` (migration
+  v11).
+
+Famille automatique :
 
 | Filtres rattachés à la ligne                       | Famille              |
 |----------------------------------------------------|----------------------|

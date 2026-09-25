@@ -59,9 +59,10 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         var entity = new OrderLine
         {
             DocumentType = _type,
-            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == _type).Max(l => (int?)l.Ordre) ?? 0) + 1
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == _type).Max(l => (int?)l.Ordre) ?? 0) + 1,
+            FamilyOverride = FamilyFilter.DefaultFamilyOverride
         };
-        if (!EditEntity(entity, true)) return;
+        if (!EditEntity(entity, true, OrderLine.NoFamilyLabel)) return;
         App.Db.OrderLines.Add(entity);
         App.Db.SaveChanges();
         Load();
@@ -73,15 +74,16 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
-        if (!EditEntity(tracked, false)) return;
+        if (!EditEntity(tracked, false, SelectedLine.AutomaticFamilyLabel)) return;
         App.Db.SaveChanges();
         Load();
     }
 
-    private bool EditEntity(OrderLine entity, bool isNew)
+    private bool EditEntity(OrderLine entity, bool isNew, string automaticFamilyLabel)
     {
         var fields = new List<EditField>
         {
+            OrderFamilyFilter.CreateEditField(entity, automaticFamilyLabel),
             EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),

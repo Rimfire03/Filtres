@@ -43,11 +43,27 @@ public class OrderLine
         _ => category.ToString()
     };
 
-    /// <summary>Famille (séparateur des grilles Inventaire et Commande), déduite de la catégorie des filtres
-    /// rattachés : "Sans famille" si aucun, "Plusieurs familles" s'ils sont de catégories différentes.
-    /// Nécessite FilterLinks et leurs PeriodicFilter chargés.</summary>
+    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Sans famille".</summary>
+    public const int NoFamilyOverride = -1;
+
+    /// <summary>Famille choisie manuellement (fenêtre Modifier) : null = automatique (d'après les filtres
+    /// rattachés), <see cref="NoFamilyOverride"/> = "Sans famille", sinon valeur de <see cref="FilterCategory"/>.</summary>
+    public int? FamilyOverride { get; set; }
+
+    /// <summary>Famille affichée (séparateur des grilles Inventaire et Commande) : le choix manuel s'il y en
+    /// a un, sinon la famille automatique.</summary>
     [NotMapped]
-    public string FamilyGroupLabel
+    public string FamilyGroupLabel => FamilyOverride switch
+    {
+        null => AutomaticFamilyLabel,
+        NoFamilyOverride => NoFamilyLabel,
+        int category => FamilyLabelFor((FilterCategory)category)
+    };
+
+    /// <summary>Famille déduite de la catégorie des filtres rattachés : "Sans famille" si aucun, "Plusieurs
+    /// familles" s'ils sont de catégories différentes. Nécessite FilterLinks et leurs PeriodicFilter chargés.</summary>
+    [NotMapped]
+    public string AutomaticFamilyLabel
     {
         get
         {
