@@ -34,7 +34,7 @@
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
             <TextBox x:Name="SearchBox" Width="400" HorizontalAlignment="Left"
-                     ToolTip="Filtrer par catégorie / emplacement / dimension / média"
+                     ToolTip="Filtrer par catégorie / emplacement / dimension / type"
                      TextChanged="SearchBox_TextChanged"/>
             <CheckBox x:Name="ShowAllCheckBox" Content="Afficher tous les filtres (toutes dimensions)"
                       Margin="16,0,0,0" VerticalAlignment="Center" Checked="ShowAllCheckBox_Changed" Unchecked="ShowAllCheckBox_Changed"/>
@@ -52,7 +52,7 @@
                 <DataGridTextColumn Header="Catégorie" Binding="{Binding CategoryLabel}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Emplacement" Binding="{Binding Location}" Width="2*" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Média" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTemplateColumn Header="Rattachement existant" Width="1.6*">

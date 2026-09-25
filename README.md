@@ -137,7 +137,7 @@ et "Rattacher des filtres...") :
   centrale selon l'écran — pas nécessairement la toute première colonne déclarée quand une case à
   cocher technique de sélection la précède, ex. "Rattaché" dans `FilterLinkWindow`) reste alignée
   à **gauche** (comportement par défaut).
-- **Toutes les autres colonnes** (dimension, média, quantité, périodicité, dates, compteurs,
+- **Toutes les autres colonnes** (dimension, type, quantité, périodicité, dates, compteurs,
   case à cocher, etc.) ont leur contenu **centré** horizontalement et verticalement, pour une
   lecture plus homogène des valeurs courtes. Ceci est appliqué via deux styles réutilisables
   définis une seule fois dans `Styles/Controls.xaml` plutôt que dupliqués dans chaque écran :
@@ -310,7 +310,7 @@ afin de calculer automatiquement son besoin de commande semestriel.
 - **Rattachement manuel, pas de matching automatique** : bouton "Rattacher des
   filtres..." sur l'écran → ouvre un sélecteur (`FilterLinkWindow`) listant
   tous les filtres des 4 catégories concernées (catégorie / emplacement /
-  dimension / média / qté en place / périodicité affichés pour identification,
+  dimension / type / qté en place / périodicité affichés pour identification,
   avec un champ de recherche libre étant donné le volume : ~275+50+100+10
   filtres selon les catégories) et des cases à cocher. L'utilisateur choisit
   explicitement lesquels rattacher ; aucun algorithme ne devine le

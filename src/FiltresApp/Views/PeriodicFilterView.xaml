@@ -67,7 +67,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{Binding LocationColumnLabel}" Binding="{Binding Location}" Width="2.2*" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Média" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
