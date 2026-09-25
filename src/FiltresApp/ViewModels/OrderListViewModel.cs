@@ -104,18 +104,24 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void LinkFilters()
     {
+        if (SelectedLine is not null) OpenLinkWindow(SelectedLine);
+    }
+
+    /// <summary>Fenêtre complète "Rattacher des filtres..." pour une ligne (bouton, ou menu rapide).</summary>
+    public void OpenLinkWindow(OrderLine line)
+    {
         if (!App.GuardWritable()) return;
-        if (SelectedLine is null) return;
+        SelectedLine = line;
 
         var allFilters = App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList();
-        var linkedIds = SelectedLine.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
+        var linkedIds = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
 
         // Filtres déjà rattachés à une AUTRE ligne de commande (n'importe laquelle) : sert à l'indicateur
         // rouge du sélecteur, pour prévenir l'utilisateur avant qu'il ne déplace un rattachement existant.
         var linkedElsewhereByFilterId = App.Db.OrderLinePeriodicFilters
             .AsNoTracking()
             .Include(l => l.OrderLine)
-            .Where(l => l.OrderLineId != SelectedLine.Id)
+            .Where(l => l.OrderLineId != line.Id)
             .GroupBy(l => l.PeriodicFilterId)
             .ToDictionary(g => g.Key, g => g.First().OrderLine?.Designation ?? $"ligne #{g.First().OrderLineId}");
 
@@ -124,18 +130,72 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
                 f,
                 CategoryLabels.GetValueOrDefault(f.Category, f.Category.ToString()),
                 isSelected: linkedIds.Contains(f.Id),
-                dimensionMatches: DimensionMatchService.Matches(SelectedLine, f),
+                dimensionMatches: DimensionMatchService.Matches(line, f),
                 linkedElsewhereLabel: linkedElsewhereByFilterId.GetValueOrDefault(f.Id)))
             .ToList();
 
         var selectedIds = App.Dialogs.PickFilterLinks(items);
         if (selectedIds is null) return;
 
-        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == SelectedLine.Id);
+        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == line.Id);
         FilterLinkService.SetLinks(App.Db, tracked, selectedIds);
 
         App.Db.SaveChanges();
         Load();
+    }
+
+    public record QuickLinkOption(int FilterId, string Label, bool IsLinked);
+
+    /// <summary>Nombre maximal de filtres de dimension correspondante proposés dans le menu rapide.</summary>
+    public const int QuickLinkMaxSuggestions = 20;
+
+    /// <summary>Menu rapide (clic droit sur "Filtres liés") : filtres déjà rattachés à la ligne, puis
+    /// filtres de dimension correspondante (même comparaison approximative que la fenêtre complète),
+    /// limités à <see cref="QuickLinkMaxSuggestions"/>. Le second élément indique combien de suggestions
+    /// ont été omises.</summary>
+    public (List<QuickLinkOption> Options, int Omitted) GetQuickLinkOptions(OrderLine line)
+    {
+        var linkedIds = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
+        var linkedElsewhere = App.Db.OrderLinePeriodicFilters
+            .AsNoTracking()
+            .Where(l => l.OrderLineId != line.Id)
+            .Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.PeriodicFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+
+        var filters = App.Db.PeriodicFilters.AsNoTracking()
+            .OrderBy(f => f.Category).ThenBy(f => f.Location)
+            .ToList();
+
+        string Label(PeriodicFilter f)
+        {
+            var label = $"{CategoryLabels.GetValueOrDefault(f.Category, f.Category.ToString())} — {f.Location} ({f.Dimension})";
+            return linkedElsewhere.TryGetValue(f.Id, out var other) ? $"{label} — déjà rattaché à « {other} »" : label;
+        }
+
+        var options = filters.Where(f => linkedIds.Contains(f.Id))
+            .Select(f => new QuickLinkOption(f.Id, Label(f), true))
+            .ToList();
+        var suggestions = filters.Where(f => !linkedIds.Contains(f.Id) && DimensionMatchService.Matches(line, f)).ToList();
+        options.AddRange(suggestions.Take(QuickLinkMaxSuggestions).Select(f => new QuickLinkOption(f.Id, Label(f), false)));
+        return (options, Math.Max(0, suggestions.Count - QuickLinkMaxSuggestions));
+    }
+
+    /// <summary>Coche / décoche un filtre depuis le menu rapide. Un filtre rattaché à une autre ligne lui
+    /// est retiré (un filtre = une seule ligne), comme dans la fenêtre complète.</summary>
+    public void SetQuickLink(OrderLine line, int filterId, bool link)
+    {
+        if (!App.GuardWritable()) return;
+        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == line.Id);
+        var ids = tracked.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
+        if (link) ids.Add(filterId);
+        else ids.Remove(filterId);
+
+        FilterLinkService.SetLinks(App.Db, tracked, ids);
+        App.Db.SaveChanges();
+        Load();
+        SelectedLine = Lines.FirstOrDefault(l => l.Id == line.Id);
     }
 
     [RelayCommand]

@@ -232,6 +232,12 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 | Type                    | `Dimension`     | ex-« Dimension »                             |
 | Référence fournisseur   | `Notes`         | ex-« Notes », placée après Type              |
 
+- **Menu rapide de rattachement (Commande)** : clic droit sur une cellule « Filtres liés » → liste
+  cochable des filtres déjà rattachés à la ligne, puis des filtres de dimension correspondante
+  (même comparaison approximative que la fenêtre complète, 20 au maximum). Cocher rattache, décocher
+  retire ; un filtre déjà rattaché à une autre ligne est signalé (« déjà rattaché à … ») et lui est
+  retiré s'il est coché. Dernière entrée : « Rattacher des filtres... (tous les filtres) » pour la
+  fenêtre complète. Non modifiable en lecture seule.
 - **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés,
   **Quantité à commander en dernier**. La colonne « Filtres liés » reste dans la grille mais n'est jamais
   imprimée ni exportée en PDF.
