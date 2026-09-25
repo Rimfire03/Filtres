@@ -160,6 +160,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ImportFromExcel()
     {
+        if (!App.GuardWritable()) return;
         if (string.IsNullOrWhiteSpace(ImportSourcePath) || !File.Exists(ImportSourcePath))
         {
             StatusMessage = "Merci de choisir un fichier Excel (.xlsm/.xlsx) valide.";

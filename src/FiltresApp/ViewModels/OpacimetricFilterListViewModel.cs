@@ -44,6 +44,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
     [RelayCommand]
     private void AddFilter()
     {
+        if (!App.GuardWritable()) return;
         var entity = new OpacimetricFilter();
         if (!EditEntity(entity, true)) return;
         App.Db.OpacimetricFilters.Add(entity);
@@ -54,6 +55,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
     [RelayCommand]
     private void EditFilter()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
         var tracked = App.Db.OpacimetricFilters.Include(f => f.Replacements).First(f => f.Id == SelectedFilter.Id);
         if (!EditEntity(tracked, false)) return;
@@ -76,6 +78,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
     [RelayCommand]
     private void DeleteFilter()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
         if (!App.Dialogs.ShowConfirm("Supprimer", $"Supprimer définitivement '{SelectedFilter.Location}' ?")) return;
         var tracked = App.Db.OpacimetricFilters.First(f => f.Id == SelectedFilter.Id);
@@ -87,6 +90,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
     [RelayCommand]
     private void MarkReplacement()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
         var picked = App.Dialogs.PickSimpleReplacement(SelectedFilter.QuantityInPlace);
         if (picked is null) return;

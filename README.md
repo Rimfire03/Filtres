@@ -81,6 +81,36 @@ qu'aucune version de .NET ne soit installée sur la machine cible.
   classeur Excel source réel (voir ci-dessous), afin que l'utilisateur
   retrouve immédiatement toutes ses données actuelles.
 
+## Utilisation à plusieurs (base sur disque réseau)
+
+La base est prévue pour être placée sur un disque réseau partagé. Pour éviter toute corruption ou
+perte de données quand plusieurs personnes ont l'application ouverte en même temps, l'accès suit la
+règle **« un seul rédacteur, plusieurs lecteurs »** :
+
+- Le **premier** poste qui ouvre la base obtient l'accès en **lecture/écriture**. Il garde ouvert en
+  exclusivité un fichier `filtres.db.lock` créé à côté de la base (qui contient le nom de
+  l'utilisateur et du poste).
+- Les postes suivants s'ouvrent en **lecture seule** : un bandeau jaune en haut de la fenêtre indique
+  qui détient l'accès en écriture, les boutons de modification (ajouter, modifier, supprimer,
+  enregistrer un remplacement, case « Réalisé », import Excel...) sont désactivés, et la connexion
+  SQLite elle-même est ouverte en lecture seule (aucune écriture possible, même par erreur).
+  La consultation, l'impression et les exports PDF/Excel restent disponibles.
+- Les postes en lecture seule voient les modifications du rédacteur en changeant d'écran (les
+  données sont relues à chaque chargement).
+- Quand le rédacteur ferme l'application, le verrou est libéré ; un autre utilisateur doit alors
+  **relancer** l'application pour obtenir l'accès en écriture. Le verrou est aussi libéré
+  automatiquement par Windows si l'application plante ou si le poste est éteint : il n'y a jamais de
+  fichier `.lock` à supprimer à la main.
+- L'outil en ligne de commande `FiltresApp.ImportCli` respecte le même verrou : il refuse d'importer
+  si l'application est ouverte en écriture sur un poste.
+
+Recommandations :
+- Placer la base sur un vrai partage réseau Windows (SMB), **jamais** dans un dossier synchronisé
+  (OneDrive, Dropbox, Google Drive...) : la synchronisation corromprait le fichier SQLite.
+- Les utilisateurs doivent avoir les droits en écriture sur le dossier de la base (création du
+  fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
+- Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
+
 ## Réimporter les données depuis Excel
 
 Deux façons équivalentes :

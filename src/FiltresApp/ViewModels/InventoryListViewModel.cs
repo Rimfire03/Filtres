@@ -41,6 +41,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Add()
     {
+        if (!App.GuardWritable()) return;
         var entity = new OrderLine
         {
             DocumentType = OrderDocumentType.CommandeChmy,
@@ -55,6 +56,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Edit()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
         if (!EditEntity(tracked, false)) return;
@@ -78,6 +80,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Delete()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         if (!App.Dialogs.ShowConfirm("Supprimer", $"Supprimer '{SelectedLine.Designation}' ?")) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);

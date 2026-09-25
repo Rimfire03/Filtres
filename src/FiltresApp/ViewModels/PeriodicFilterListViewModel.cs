@@ -98,6 +98,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
     [RelayCommand]
     private void AddFilter()
     {
+        if (!App.GuardWritable()) return;
         var entity = new PeriodicFilter { Category = _category };
         if (!EditEntity(entity, isNew: true)) return;
 
@@ -109,6 +110,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
     [RelayCommand]
     private void EditFilter()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == SelectedFilter.Id);
         if (!EditEntity(tracked, isNew: false)) return;
@@ -145,6 +147,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
     [RelayCommand]
     private void DeleteFilter()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
         if (!App.Dialogs.ShowConfirm("Supprimer", $"Supprimer définitivement '{SelectedFilter.Location}' ?")) return;
 
@@ -157,6 +160,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
     [RelayCommand]
     private void MarkReplacement()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
 
         var defaultMonth = SelectedFilter.NextDueDate?.Month ?? DateTime.Today.Month;
@@ -191,6 +195,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
     /// ce qui permet de changer d'année sans perdre l'historique.</summary>
     public void SetReplacementDone(PeriodicFilter filter, bool done)
     {
+        if (!App.GuardWritable()) return;
         var year = YearContext.Year;
         var month = ConsultedMonth;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
@@ -222,6 +227,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
     /// uniquement) et sauvegarde immédiatement en base.</summary>
     public void SetChangedEvery15Days(PeriodicFilter filter, bool value)
     {
+        if (!App.GuardWritable()) return;
         var tracked = App.Db.PeriodicFilters.First(f => f.Id == filter.Id);
         tracked.ChangedEvery15Days = value;
         App.Db.SaveChanges();
@@ -243,6 +249,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
 
     public void SetReplacementDate(PeriodicFilter filter, DateOnly? date)
     {
+        if (!App.GuardWritable()) return;
         var year = YearContext.Year;
         var month = ConsultedMonth;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);

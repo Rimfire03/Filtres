@@ -7,18 +7,23 @@ namespace FiltresApp.Core.Services;
 public class DbContextFactory
 {
     private readonly string _dbPath;
+    private readonly bool _readOnly;
 
-    public DbContextFactory(string dbPath)
+    public DbContextFactory(string dbPath, bool readOnly = false)
     {
         _dbPath = dbPath;
+        _readOnly = readOnly;
         var dir = Path.GetDirectoryName(dbPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
     }
 
-    public FiltresDbContext Create() => new(_dbPath);
+    public FiltresDbContext Create() => new(_dbPath, _readOnly);
 
     public void EnsureDatabaseCreated()
     {
+        // Mise à jour du schéma réservée au poste rédacteur (voir DbWriteLock).
+        if (_readOnly) return;
+
         using var ctx = Create();
         // EnsureCreated() ne crée le schéma complet qu'au tout premier lancement (fichier SQLite
         // inexistant) : sur une base déjà existante, il ne fait rien, même si le modèle EF Core a

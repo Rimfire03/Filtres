@@ -1,4 +1,5 @@
 using FiltresApp.Core.Models;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.Core.Data;
@@ -6,10 +7,12 @@ namespace FiltresApp.Core.Data;
 public class FiltresDbContext : DbContext
 {
     private readonly string _dbPath;
+    private readonly bool _readOnly;
 
-    public FiltresDbContext(string dbPath)
+    public FiltresDbContext(string dbPath, bool readOnly = false)
     {
         _dbPath = dbPath;
+        _readOnly = readOnly;
     }
 
     public DbSet<PeriodicFilter> PeriodicFilters => Set<PeriodicFilter>();
@@ -24,7 +27,19 @@ public class FiltresDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source={_dbPath}");
+        // Journal SQLite par défaut (DELETE) volontairement conservé : le mode WAL ne fonctionne pas sur
+        // un disque réseau. Le délai d'attente couvre les lectures qui tombent pendant une écriture.
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = _dbPath,
+            Mode = _readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate,
+            DefaultTimeout = 30
+        }.ToString();
+        optionsBuilder.UseSqlite(connectionString);
+
+        // Contexte partagé pour toute la session : sans suivi, chaque requête relit la base et voit donc
+        // les modifications enregistrées entre-temps par le poste rédacteur.
+        if (_readOnly) optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

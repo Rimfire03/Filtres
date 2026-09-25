@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
@@ -74,7 +75,7 @@
                         <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowseImportSourceCommand}"/>
                         <TextBox Text="{Binding ImportSourcePath, UpdateSourceTrigger=PropertyChanged}"/>
                     </DockPanel>
-                    <Button Content="Lancer l'import" Style="{StaticResource DangerButton}" Command="{Binding ImportFromExcelCommand}" HorizontalAlignment="Left"/>
+                    <Button Content="Lancer l'import" Style="{StaticResource DangerButton}" Command="{Binding ImportFromExcelCommand}" IsEnabled="{x:Static app:App.IsWritable}" HorizontalAlignment="Left"/>
                     <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>

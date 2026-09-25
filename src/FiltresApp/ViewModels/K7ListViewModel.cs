@@ -52,6 +52,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Add()
     {
+        if (!App.GuardWritable()) return;
         var entity = new K7Location();
         if (!EditEntity(entity, true)) return;
         App.Db.K7Locations.Add(entity);
@@ -62,6 +63,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Edit()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLocation is null) return;
         var tracked = App.Db.K7Locations.First(l => l.Id == SelectedLocation.Id);
         if (!EditEntity(tracked, false)) return;
@@ -90,6 +92,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Delete()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLocation is null) return;
         if (!App.Dialogs.ShowConfirm("Supprimer", $"Supprimer '{SelectedLocation.Lieu}' ?")) return;
         var tracked = App.Db.K7Locations.First(l => l.Id == SelectedLocation.Id);
@@ -114,6 +117,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void AddFamily()
     {
+        if (!App.GuardWritable()) return;
         var entity = new K7Family();
         if (!EditFamilyFields(entity, true)) return;
         App.Db.K7Families.Add(entity);
@@ -124,6 +128,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void EditFamily()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFamily is null) return;
         var tracked = App.Db.K7Families.First(f => f.Id == SelectedFamily.Id);
         if (!EditFamilyFields(tracked, false)) return;
@@ -147,6 +152,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void DeleteFamily()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedFamily is null) return;
 
         var locationsInFamily = App.Db.K7Locations.Count(l => l.K7FamilyId == SelectedFamily.Id);

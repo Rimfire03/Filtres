@@ -53,6 +53,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Add()
     {
+        if (!App.GuardWritable()) return;
         var entity = new OrderLine { DocumentType = _type, Ordre = (Lines.Count == 0 ? 0 : Lines.Max(l => l.Ordre)) + 1 };
         if (!EditEntity(entity, true)) return;
         App.Db.OrderLines.Add(entity);
@@ -63,6 +64,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Edit()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);
         if (!EditEntity(tracked, false)) return;
@@ -94,6 +96,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void LinkFilters()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
 
         var allFilters = App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList();
@@ -130,6 +133,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void Delete()
     {
+        if (!App.GuardWritable()) return;
         if (SelectedLine is null) return;
         if (!App.Dialogs.ShowConfirm("Supprimer", $"Supprimer '{SelectedLine.Designation}' ?")) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == SelectedLine.Id);

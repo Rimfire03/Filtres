@@ -18,6 +18,9 @@ var dbPath = args.Length > 1 ? args[1] : Path.Combine(AppContext.BaseDirectory, 
 Console.WriteLine($"Import depuis : {xlsmPath}");
 Console.WriteLine($"Base de données cible : {dbPath}");
 
+using var writeLock = AcquireWriteLockOrReport(dbPath);
+if (writeLock is null) return 1;
+
 try
 {
     var importer = new ExcelImportService();
@@ -78,6 +81,9 @@ static int RunArchiveImport(string[] args)
         Console.WriteLine($"  {year} : {path}");
     Console.WriteLine();
 
+    using var writeLock = AcquireWriteLockOrReport(dbPath);
+    if (writeLock is null) return 1;
+
     try
     {
         var importer = new ArchiveImportService();
@@ -108,6 +114,18 @@ static int RunArchiveImport(string[] args)
         Console.Error.WriteLine(ex.StackTrace);
         return 1;
     }
+}
+
+static DbWriteLock? AcquireWriteLockOrReport(string dbPath)
+{
+    var writeLock = DbWriteLock.TryAcquire(dbPath);
+    if (writeLock is null)
+    {
+        var owner = DbWriteLock.ReadOwner(dbPath);
+        Console.Error.WriteLine("Import annulé : la base est ouverte en écriture par l'application" +
+            (owner is null ? "." : $" ({owner}).") + " Fermez l'application sur ce poste puis relancez l'import.");
+    }
+    return writeLock;
 }
 
 static void WriteUnmatchedReport(string reportPath, ArchiveImportReport report)
