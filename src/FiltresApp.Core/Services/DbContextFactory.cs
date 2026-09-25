@@ -51,6 +51,7 @@ public class DbContextFactory
         (13, "Logo de l'entreprise (stockage dans la base)", AddSharedAssetsTable),
         (14, "Familles des filtres F7 à H13", AddOpacimetricFamilies),
         (15, "Rattachement des filtres F7 à H13 à Commande / Inventaire", AddOrderLineOpacimetricFilters),
+        (16, "Familles Commande / Inventaire : Type des filtres F7 à H13 au lieu de « Filtres F7 à H13 »", AddOrderLineFamilyOverrideTypeColumn),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -143,6 +144,15 @@ public class DbContextFactory
         var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
+    }
+
+    /// <summary>La famille "Filtres F7 à H13" (FamilyOverride = 100) n'existe plus : les lignes qui l'avaient
+    /// repassent en automatique ; 100 désigne désormais un Type F7 à H13 choisi (FamilyOverrideType).</summary>
+    private static void AddOrderLineFamilyOverrideTypeColumn(FiltresDbContext ctx)
+    {
+        if (!GetColumns(ctx, "OrderLines").Contains("FamilyOverrideType"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "FamilyOverrideType" TEXT NULL;""");
+        ctx.Database.ExecuteSqlRaw("""UPDATE "OrderLines" SET "FamilyOverride" = NULL WHERE "FamilyOverride" = 100 AND "FamilyOverrideType" IS NULL;""");
     }
 
     private static void AddOrderLineOpacimetricFilters(FiltresDbContext ctx)

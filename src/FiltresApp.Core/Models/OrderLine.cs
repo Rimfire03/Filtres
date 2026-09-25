@@ -43,19 +43,26 @@ public class OrderLine
         _ => category.ToString()
     };
 
-    /// <summary>Famille des lignes rattachées à des filtres F7 à H13.</summary>
-    public const string OpacimetricFamilyLabel = "Filtres F7 à H13";
+    /// <summary>Libellé de catégorie des filtres F7 à H13 (fenêtre de rattachement). Ce n'est pas une
+    /// famille : dans Commande / Inventaire, la famille d'un filtre F7 à H13 est son Type.</summary>
+    public const string OpacimetricCategoryLabel = "Filtres F7 à H13";
 
     /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Sans famille".</summary>
     public const int NoFamilyOverride = -1;
 
-    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Filtres F7 à H13".</summary>
-    public const int OpacimetricFamilyOverride = 100;
+    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force comme famille un Type de filtre F7 à H13,
+    /// indiqué dans <see cref="FamilyOverrideType"/>.</summary>
+    public const int OpacimetricTypeOverride = 100;
 
-    /// <summary>Famille choisie manuellement (fenêtre Modifier) : null = automatique (d'après les filtres
-    /// rattachés), <see cref="NoFamilyOverride"/> = "Sans famille", <see cref="OpacimetricFamilyOverride"/> =
-    /// "Filtres F7 à H13", sinon valeur de <see cref="FilterCategory"/>.</summary>
+    /// <summary>Famille choisie manuellement (fenêtre Modifier / colonne Famille) : null = automatique
+    /// (d'après les filtres rattachés), <see cref="NoFamilyOverride"/> = "Sans famille",
+    /// <see cref="OpacimetricTypeOverride"/> = Type F7 à H13 (<see cref="FamilyOverrideType"/>), sinon valeur
+    /// de <see cref="FilterCategory"/>.</summary>
     public int? FamilyOverride { get; set; }
+
+    /// <summary>Type F7 à H13 choisi comme famille quand <see cref="FamilyOverride"/> vaut
+    /// <see cref="OpacimetricTypeOverride"/>.</summary>
+    public string? FamilyOverrideType { get; set; }
 
     public const string AutomaticFamilyChoice = "Automatique";
 
@@ -71,26 +78,25 @@ public class OrderLine
     {
         null => AutomaticFamilyLabel,
         NoFamilyOverride => NoFamilyLabel,
-        OpacimetricFamilyOverride => OpacimetricFamilyLabel,
+        OpacimetricTypeOverride => string.IsNullOrWhiteSpace(FamilyOverrideType) ? AutomaticFamilyLabel : FamilyOverrideType.Trim(),
         int category => FamilyLabelFor((FilterCategory)category)
     };
 
-    /// <summary>Famille déduite de la catégorie des filtres rattachés : "Sans famille" si aucun, "Plusieurs
-    /// familles" si plusieurs catégories/familles différentes. Un filtre F7 à H13 rattaché compte pour le
-    /// nom de sa propre famille (<see cref="OpacimetricFilter.Family"/>) si elle a été attribuée, sinon
-    /// pour le libellé générique <see cref="OpacimetricFamilyLabel"/> : ainsi, dès qu'une famille est
-    /// attribuée à un filtre F7 à H13 (écran dédié) et que ce filtre est rattaché à une ligne, cette
-    /// famille apparaît comme groupe dans Inventaire et Commande, avec la ligne dedans.
-    /// Nécessite FilterLinks (avec PeriodicFilter) et OpacimetricLinks (avec OpacimetricFilter et sa
-    /// Family) chargés.</summary>
+    /// <summary>Famille déduite des filtres rattachés : catégorie pour les filtres à périodicité, Type pour
+    /// les filtres F7 à H13 (un filtre F7 à H13 sans Type n'apporte pas de famille). "Sans famille" si
+    /// aucune, "Plusieurs familles" si elles diffèrent. Nécessite FilterLinks (avec PeriodicFilter) et
+    /// OpacimetricLinks (avec OpacimetricFilter) chargés.</summary>
     [NotMapped]
     public string AutomaticFamilyLabel
     {
         get
         {
             var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category))
-                .Concat(OpacimetricLinks.Select(l => l.OpacimetricFilter?.Family?.Nom is string nom && nom.Length > 0 ? nom : OpacimetricFamilyLabel))
-                .Distinct()
+                .Concat(OpacimetricLinks
+                    .Select(l => l.OpacimetricFilter?.FilterType?.Trim())
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .Select(t => t!))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
             return families.Count switch
             {

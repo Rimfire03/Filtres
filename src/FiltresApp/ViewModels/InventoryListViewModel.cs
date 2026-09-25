@@ -36,7 +36,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
             App.Db.OrderLines
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
-                .Include(l => l.OpacimetricLinks).ThenInclude(ol => ol.OpacimetricFilter).ThenInclude(f => f!.Family)
+                .Include(l => l.OpacimetricLinks).ThenInclude(ol => ol.OpacimetricFilter)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy)
                 .ToList()));
@@ -49,9 +49,9 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         var entity = new OrderLine
         {
             DocumentType = OrderDocumentType.CommandeChmy,
-            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == OrderDocumentType.CommandeChmy).Max(l => (int?)l.Ordre) ?? 0) + 1,
-            FamilyOverride = FamilyFilter.DefaultFamilyOverride
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == OrderDocumentType.CommandeChmy).Max(l => (int?)l.Ordre) ?? 0) + 1
         };
+        FamilyFilter.ApplyDefaultFamily(entity);
         if (!EditEntity(entity, true, OrderLine.NoFamilyLabel)) return;
         App.Db.OrderLines.Add(entity);
         App.Db.SaveChanges();

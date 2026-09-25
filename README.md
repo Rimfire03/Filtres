@@ -345,16 +345,20 @@ Famille automatique :
 | uniquement des filtres de « Filtres G4 plan »      | Filtres G4 plan      |
 | uniquement des filtres de « Filtres G3 »           | Filtres G3           |
 | uniquement des filtres de « Charbon »              | Charbon              |
-| uniquement des filtres F7 à H13                    | Filtres F7 à H13     |
+| uniquement des filtres F7 à H13 d'un même Type     | ce Type (ex. « Poches F7 ») |
 | des filtres de plusieurs catégories                | Plusieurs familles   |
 | aucun filtre                                       | Sans famille         |
 
 **Rattachement des filtres F7 à H13** (migration v15, table `OrderLineOpacimetricFilters`) : ils se
 rattachent à une ligne de Commande / Inventaire comme les autres filtres (fenêtre « Rattacher des
 filtres... » et menu rapide du clic droit sur « Filtres liés », même comparaison approximative des
-dimensions, un filtre = une seule ligne). Une ligne qui n'a que des F7 à H13 est rangée dans la
-famille « Filtres F7 à H13 » (aussi proposée au choix manuel) ; comme pour Charbon, son besoin n'est
-pas calculé et se saisit dans la colonne « Besoin » de l'écran Commande.
+dimensions, un filtre = une seule ligne). Il n'y a **pas de famille « Filtres F7 à H13 »** : une
+ligne rattachée à des F7 à H13 prend comme famille le **Type** saisi pour ces filtres sur l'écran F7 à
+H13 (un filtre sans Type n'apporte pas de famille). Les Types existants sont aussi proposés au choix
+manuel (fenêtre « Modifier » et colonne « Famille » de Commande ; champ
+`OrderLine.FamilyOverrideType`, migration v16, qui remet en « Automatique » les lignes qui avaient été
+forcées dans l'ancienne famille « Filtres F7 à H13 »). Comme pour Charbon, le besoin de ces familles
+n'est pas calculé et se saisit dans la colonne « Besoin » de l'écran Commande.
 
 - Les lignes sont **regroupées sous un bandeau titre par famille** (même style que la Liste K7),
   dans l'ordre du tableau ci-dessus.

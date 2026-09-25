@@ -52,7 +52,7 @@ public partial class FilterPickItem : ObservableObject
     public FilterPickItem(OpacimetricFilter filter, bool isSelected, bool dimensionMatches, string? linkedElsewhereLabel)
     {
         Ref = FilterRef.Opacimetric(filter.Id);
-        CategoryLabel = OrderLine.OpacimetricFamilyLabel;
+        CategoryLabel = OrderLine.OpacimetricCategoryLabel;
         Location = filter.Location;
         Dimension = filter.Dimension;
         MediaType = filter.FilterType ?? string.Empty;

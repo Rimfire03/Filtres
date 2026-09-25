@@ -44,10 +44,11 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
 
     private void Load()
     {
+        FamilyQuickChoices = OrderFamilyFilter.QuickChoices();
         Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
             App.Db.OrderLines
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
-                .Include(l => l.OpacimetricLinks).ThenInclude(ol => ol.OpacimetricFilter).ThenInclude(f => f!.Family)
+                .Include(l => l.OpacimetricLinks).ThenInclude(ol => ol.OpacimetricFilter)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
                 .ToList()));
@@ -60,9 +61,9 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         var entity = new OrderLine
         {
             DocumentType = _type,
-            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == _type).Max(l => (int?)l.Ordre) ?? 0) + 1,
-            FamilyOverride = FamilyFilter.DefaultFamilyOverride
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == _type).Max(l => (int?)l.Ordre) ?? 0) + 1
         };
+        FamilyFilter.ApplyDefaultFamily(entity);
         if (!EditEntity(entity, true, OrderLine.NoFamilyLabel)) return;
         App.Db.OrderLines.Add(entity);
         App.Db.SaveChanges();
@@ -151,7 +152,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
             var isLinked = linkedOpacimetric.Contains(f.Id);
             var elsewhere = opacimetricElsewhere.GetValueOrDefault(f.Id);
             var matches = DimensionMatchService.Matches(line, f.Dimension);
-            candidates.Add(new LinkCandidate(FilterRef.Opacimetric(f.Id), OrderLine.OpacimetricFamilyLabel, f.Location, f.Dimension, isLinked, elsewhere, matches,
+            candidates.Add(new LinkCandidate(FilterRef.Opacimetric(f.Id), OrderLine.OpacimetricCategoryLabel, f.Location, f.Dimension, isLinked, elsewhere, matches,
                 () => new FilterPickItem(f, isLinked, matches, elsewhere)));
         }
         return candidates;
@@ -179,7 +180,8 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         SaveLinks(line, selected);
     }
 
-    public IReadOnlyList<string> FamilyQuickChoices => OrderFamilyFilter.QuickChoices;
+    /// <summary>Choix de la colonne "Famille" (Automatique, familles, Types F7 à H13), relus à chaque chargement.</summary>
+    [ObservableProperty] private List<string> _familyQuickChoices = new();
 
     /// <summary>Colonne "Famille" (masquée par défaut) : change la famille de la ligne sans ouvrir
     /// "Modifier". "Automatique" revient à la famille déduite des filtres rattachés.
@@ -193,9 +195,10 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     {
         if (choice == line.FamilyChoiceLabel || !App.GuardWritable()) return;
         var tracked = App.Db.OrderLines.First(l => l.Id == line.Id);
-        tracked.FamilyOverride = OrderFamilyFilter.OverrideForChoice(choice);
+        OrderFamilyFilter.ApplyQuickChoice(tracked, choice);
         App.Db.SaveChanges();
         line.FamilyOverride = tracked.FamilyOverride;
+        line.FamilyOverrideType = tracked.FamilyOverrideType;
 
         var index = Lines.IndexOf(line);
         if (index < 0) return;
