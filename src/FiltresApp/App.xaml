@@ -14,6 +14,7 @@
 
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
             <conv:InverseBoolConverter x:Key="InverseBool"/>
+            <conv:NullToCollapsedConverter x:Key="NullToCollapsed"/>
 
             <DataTemplate DataType="{x:Type vm:PeriodicFilterListViewModel}">
                 <views:PeriodicFilterView/>

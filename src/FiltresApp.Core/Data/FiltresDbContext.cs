@@ -24,6 +24,7 @@ public class FiltresDbContext : DbContext
     public DbSet<InventoryLine> InventoryLines => Set<InventoryLine>();
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
     public DbSet<OrderLinePeriodicFilter> OrderLinePeriodicFilters => Set<OrderLinePeriodicFilter>();
+    public DbSet<SharedAsset> SharedAssets => Set<SharedAsset>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -44,6 +45,8 @@ public class FiltresDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SharedAsset>().HasKey(a => a.Key);
+
         modelBuilder.Entity<PeriodicFilter>()
             .HasMany(f => f.Replacements)
             .WithOne(r => r.PeriodicFilter)

@@ -17,6 +17,11 @@
         <Border Grid.Column="0" Background="{StaticResource BrushSidebar}">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="16,20,16,16">
+                    <!-- Logo de l'entreprise (Paramètres), sur fond blanc pour rester lisible sur la barre sombre. -->
+                    <Border Background="White" CornerRadius="4" Padding="6" Margin="0,0,0,12" HorizontalAlignment="Left"
+                            Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
+                        <Image Source="{Binding LogoImage}" MaxHeight="60" MaxWidth="200" Stretch="Uniform"/>
+                    </Border>
                     <TextBlock Text="Filtres à air" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}"/>
                     <TextBlock Text="Suivi de maintenance" FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0"/>
                     <DockPanel Margin="0,14,0,0">

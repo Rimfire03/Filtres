@@ -51,6 +51,23 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Logo de l'entreprise" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Enregistré dans la base de données (commun à tous les postes). Affiché en haut de la barre latérale et en tête des impressions et des exports PDF. Formats PNG, JPG, BMP ou GIF, 2 Mo au maximum." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <Border BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" Padding="6" Margin="0,0,0,8" HorizontalAlignment="Left"
+                            Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
+                        <Image Source="{Binding LogoImage}" MaxHeight="80" MaxWidth="260" Stretch="Uniform"/>
+                    </Border>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Choisir un logo..." Style="{StaticResource SecondaryButton}" Command="{Binding ChooseLogoCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                        <Button Content="Retirer le logo" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Command="{Binding RemoveLogoCommand}"
+                                IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding HasLogo, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding LogoStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Rattachement des filtres" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBlock Text="Fenêtre « Rattacher des filtres... » de l'écran Commande. Décoché : tous les filtres sont affichés dès l'ouverture." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <CheckBox Content="N'afficher par défaut que les filtres de dimension correspondante (±5 mm, largeur et hauteur interchangeables)"

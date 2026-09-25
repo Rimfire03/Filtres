@@ -16,6 +16,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private NavigationItem? _selectedItem;
     [ObservableProperty] private object? _currentViewModel;
 
+    /// <summary>Logo de l'entreprise en haut de la barre latérale (null si aucun).</summary>
+    public System.Windows.Media.ImageSource? LogoImage => App.CompanyLogoImage;
+
     public MainViewModel()
     {
         NavigationItems = new ObservableCollection<NavigationItem>
@@ -34,6 +37,7 @@ public partial class MainViewModel : ObservableObject
             // « filtres à refacturer »") : il ne s'agit plus seulement d'un retrait de la navigation.
         };
 
+        App.CompanyLogoChanged += () => OnPropertyChanged(nameof(LogoImage));
         SelectedItem = NavigationItems[0];
     }
 

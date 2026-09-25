@@ -15,7 +15,8 @@ public class PdfExportService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public string ExportTable(string exportFolder, string documentTitle, string[] headers, IReadOnlyList<string[]> rows)
+    /// <param name="logo">Logo de l'entreprise (image), affiché à gauche du titre ; null = pas de logo.</param>
+    public string ExportTable(string exportFolder, string documentTitle, string[] headers, IReadOnlyList<string[]> rows, byte[]? logo = null)
     {
         Directory.CreateDirectory(exportFolder);
         var now = DateTime.Now;
@@ -30,7 +31,11 @@ public class PdfExportService
                 page.Margin(20);
                 page.DefaultTextStyle(x => x.FontSize(9));
 
-                page.Header().Text(documentTitle).FontSize(16).Bold();
+                page.Header().PaddingBottom(8).Row(row =>
+                {
+                    if (logo is not null) row.ConstantItem(120).Height(45).Image(logo).FitArea();
+                    row.RelativeItem().PaddingLeft(logo is null ? 0 : 12).AlignMiddle().Text(documentTitle).FontSize(16).Bold();
+                });
 
                 page.Content().Table(table =>
                 {

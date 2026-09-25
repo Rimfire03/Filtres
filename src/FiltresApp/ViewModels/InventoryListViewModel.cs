@@ -154,7 +154,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void ExportPdf()
     {
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, "Commande" + FamilyFilter.TitleSuffix, BuildHeaders(), BuildPrintRows());
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, "Commande" + FamilyFilter.TitleSuffix, BuildHeaders(), BuildPrintRows(), App.CompanyLogo);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

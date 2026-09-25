@@ -36,6 +36,11 @@ public class PrintService
             ColumnWidth = double.PositiveInfinity
         };
 
+        if (App.CompanyLogoImage is not null)
+        {
+            var logo = new Image { Source = App.CompanyLogoImage, MaxHeight = 50, MaxWidth = 200, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left };
+            doc.Blocks.Add(new BlockUIContainer(logo) { Margin = new Thickness(0, 0, 0, 6) });
+        }
         doc.Blocks.Add(new Paragraph(new Run(title)) { FontSize = 18, FontWeight = FontWeights.Bold });
         doc.Blocks.Add(new Paragraph(new Run($"Imprimé le {DateTime.Now:dd/MM/yyyy HH:mm}"))
         {

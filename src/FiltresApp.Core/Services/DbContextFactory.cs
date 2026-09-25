@@ -48,6 +48,7 @@ public class DbContextFactory
         (10, "Colonne Type des filtres F7 à H13", AddOpacimetricFilterTypeColumn),
         (11, "Choix manuel de la famille (Inventaire / Commande)", AddOrderLineFamilyOverrideColumn),
         (12, "Besoin saisi (Commande, familles hors G4 / G3)", AddOrderLineManualNeedColumn),
+        (13, "Logo de l'entreprise (stockage dans la base)", AddSharedAssetsTable),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -141,6 +142,15 @@ public class DbContextFactory
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
     }
+
+    private static void AddSharedAssetsTable(FiltresDbContext ctx) =>
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "SharedAssets" (
+                "Key" TEXT NOT NULL CONSTRAINT "PK_SharedAssets" PRIMARY KEY,
+                "Data" BLOB NOT NULL
+            );
+            """);
 
     private static void AddOrderLineManualNeedColumn(FiltresDbContext ctx)
     {

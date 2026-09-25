@@ -251,7 +251,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     private void ExportPdf()
     {
         var rows = OrderFamilyFilter.BuildGroupedRows(Lines, BuildRow, BuildHeaders().Length);
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows);
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, Title + FamilyFilter.TitleSuffix, BuildHeaders(), rows, App.CompanyLogo);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

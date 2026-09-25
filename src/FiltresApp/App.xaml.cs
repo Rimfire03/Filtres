@@ -32,6 +32,46 @@ public partial class App : Application
     /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
     public static int DatabaseVersion { get; private set; }
 
+    /// <summary>Logo de l'entreprise stocké dans la base (null si aucun), et son image prête à afficher.</summary>
+    public static byte[]? CompanyLogo { get; private set; }
+    public static System.Windows.Media.ImageSource? CompanyLogoImage { get; private set; }
+    public static event Action? CompanyLogoChanged;
+
+    /// <summary>Enregistre (ou retire, si null) le logo dans la base et met à jour l'affichage.</summary>
+    public static void SetCompanyLogo(byte[]? data)
+    {
+        if (data is null) CompanyLogoService.Remove(Db);
+        else CompanyLogoService.Set(Db, data);
+        LoadCompanyLogo();
+    }
+
+    private static void LoadCompanyLogo()
+    {
+        CompanyLogo = CompanyLogoService.Get(Db);
+        CompanyLogoImage = CompanyLogo is null ? null : TryCreateImage(CompanyLogo);
+        CompanyLogoChanged?.Invoke();
+    }
+
+    /// <summary>Image WPF à partir d'un fichier en mémoire, ou null si le contenu n'est pas une image lisible.</summary>
+    public static System.Windows.Media.ImageSource? TryCreateImage(byte[] data)
+    {
+        try
+        {
+            var image = new System.Windows.Media.Imaging.BitmapImage();
+            using var stream = new MemoryStream(data);
+            image.BeginInit();
+            image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            image.StreamSource = stream;
+            image.EndInit();
+            image.Freeze();
+            return image;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or FileFormatException or InvalidOperationException or ArgumentException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>Version courante de l'application (définie par &lt;Version&gt; dans le .csproj),
     /// comparée à la dernière release GitHub par <see cref="Updater"/>.</summary>
     public static string CurrentVersion
@@ -186,6 +226,7 @@ public partial class App : Application
         DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
         DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
+        LoadCompanyLogo();
     }
 
     /// <summary>Bloque l'ouverture si ce logiciel et la base ne sont pas à la même version : logiciel trop

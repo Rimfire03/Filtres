@@ -109,6 +109,14 @@ Recommandations :
   fichier `.lock` et du journal SQLite). Un poste sans ces droits s'ouvre en lecture seule.
 - Ne pas activer le mode WAL de SQLite : il ne fonctionne pas sur un disque réseau.
 
+## Logo de l'entreprise
+
+Écran **Paramètres** → carte « Logo de l'entreprise » : « Choisir un logo... » (PNG, JPG, BMP ou
+GIF, 2 Mo au maximum) et « Retirer le logo ». L'image est **stockée dans la base de données**
+(table `SharedAssets`, migration v13) : elle est donc commune à tous les postes. Elle s'affiche en
+haut de la barre latérale et en tête des impressions et des exports PDF. Modification désactivée sur
+un poste en lecture seule.
+
 ## Suppression de l'historique d'une année
 
 Écran **Paramètres** → carte « Supprimer l'historique d'une année », avec deux fonctions séparées :
