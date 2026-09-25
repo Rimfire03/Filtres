@@ -150,8 +150,10 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         Load();
     }
 
+    /// <summary>Colonnes imprimées / exportées en PDF : la colonne "Filtres liés" de la grille n'y figure
+    /// jamais.</summary>
     private static string[] BuildHeaders() =>
-        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Filtres liés", "Quantité à commander" };
+        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Quantité à commander" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
@@ -159,7 +161,6 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         l.Destination ?? "",
         l.Dimension ?? "",
         l.Notes ?? "",
-        l.LinkedFilterCount > 0 ? l.LinkedFilterCount.ToString() : "",
         l.Quantite?.ToString() ?? ""
     };
 

@@ -233,7 +233,8 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 | Référence fournisseur   | `Notes`         | ex-« Notes », placée après Type              |
 
 - **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés,
-  **Quantité à commander en dernier**.
+  **Quantité à commander en dernier**. La colonne « Filtres liés » reste dans la grille mais n'est jamais
+  imprimée ni exportée en PDF.
 - **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Besoin mars (calculé),
   Besoin septembre (calculé), **Inventaire**, Quantité. Les colonnes « Besoin » ont été déplacées
   depuis Commande ; elles restent calculées à partir des filtres rattachés à la ligne (bouton
