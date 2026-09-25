@@ -32,17 +32,14 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private int? _monthFilter;
     [ObservableProperty] private string _monthFilterLabel = "Tous les mois";
 
-    /// <summary>Mois "consulté" : celui pour lequel la colonne case à cocher / date de la grille
-    /// lit et écrit le suivi. Indépendant du filtre d'affichage par mois (<see cref="MonthFilter"/>),
-    /// qui ne fait que masquer les lignes non dues ce mois-ci.</summary>
-    [ObservableProperty] private int _consultedMonth = DateTime.Today.Month;
+    /// <summary>Mois lu et écrit par les colonnes "Réalisé" / "Date du changement" de la grille : toujours
+    /// le mois en cours, pour l'année choisie dans la barre latérale.</summary>
+    public int CurrentMonth => DateTime.Today.Month;
+
+    public string CurrentMonthLabel => $"{MonthLabels[CurrentMonth - 1]} {YearContext.Year}";
 
     public static readonly string[] MonthLabels =
         { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
-
-    /// <summary>Source du ComboBox "Mois consulté" (clé = numéro de mois 1-12, valeur = libellé).</summary>
-    public List<KeyValuePair<int, string>> MonthOptions { get; } =
-        MonthLabels.Select((label, i) => new KeyValuePair<int, string>(i + 1, label)).ToList();
 
     /// <summary>Source du ComboBox "Filtrer par mois" (clé nullable : null = "Tous les mois", sinon
     /// numéro de mois 1-12). La valeur interne stockée/filtrée reste toujours un entier 1-12 ; seul
@@ -59,12 +56,12 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         _locationColumnLabel = locationColumnLabel;
         App.YearContext.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(Services.YearContext.Year)) RefreshRows();
+            if (e.PropertyName != nameof(Services.YearContext.Year)) return;
+            OnPropertyChanged(nameof(CurrentMonthLabel));
+            RefreshRows();
         };
         Load();
     }
-
-    partial void OnConsultedMonthChanged(int value) => RefreshRows();
 
     /// <summary>Déclenché par la sélection dans le ComboBox "Filtrer par mois" (remplace les anciens
     /// boutons numérotés 1-12 : voir MonthFilterOptions).</summary>
@@ -203,14 +200,14 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    /// <summary>Case à cocher de la grille : trouve ou crée la ligne de suivi (mois consulté / année
+    /// <summary>Case à cocher de la grille : trouve ou crée la ligne de suivi (mois en cours / année
     /// consultée) et fixe la date du jour. Ne supprime jamais les lignes des autres mois/années : c'est
     /// ce qui permet de changer d'année sans perdre l'historique.</summary>
     public void SetReplacementDone(PeriodicFilter filter, bool done)
     {
         if (!App.GuardWritable()) return;
         var year = YearContext.Year;
-        var month = ConsultedMonth;
+        var month = CurrentMonth;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
         var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
 
@@ -264,7 +261,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     {
         if (!App.GuardWritable()) return;
         var year = YearContext.Year;
-        var month = ConsultedMonth;
+        var month = CurrentMonth;
         var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
         var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
 
@@ -311,20 +308,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         var headers = BuildHeaders();
         var rows = Filters.Select(BuildRow).ToList();
         App.Printer.PrintTable(Title, headers, rows);
-    }
-
-    /// <summary>Impression dédiée au mois consulté : feuille de terrain simple à cocher au marqueur
-    /// (pas un rapport de données) avec uniquement emplacement/dimension/qté en place et une grande
-    /// case à cocher vierge (voir PrintService.PrintMonth).</summary>
-    [RelayCommand]
-    private void PrintMonth()
-    {
-        var rows = Filters
-            .Where(f => f.Filter.GetPeriodicityMonths().Contains(ConsultedMonth))
-            .Select(f => (f.Location, f.Dimension, f.QuantityInPlace.ToString()))
-            .ToList();
-
-        App.Printer.PrintMonth(Title, ConsultedMonth, YearContext.Year, _locationColumnLabel, rows);
     }
 
     [RelayCommand]

@@ -200,14 +200,14 @@ Chaque catégorie de filtre à périodicité mensuelle (G4 plissé, G4 plan, G3,
 Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
 `F_sheet`), enregistrement d'un remplacement réalisé via une boîte de dialogue
 (échéance recalculée automatiquement en lecture seule), **case à cocher
-"Réalisé" directement dans la grille** pour le mois consulté (voir plus bas),
-impression générale et impression dédiée au mois consulté, export Excel de
+"Réalisé" directement dans la grille** pour le mois en cours (voir plus bas),
+impression générale, export Excel de
 l'année, et CRUD complet.
 
 Filtres F7 à H13 (colonnes : nom de la centrale, dimension, **type** — texte libre saisi dans
 « Modifier », migration v10 —, qté en place, dernier changement, nb remplacements) :
 historique de remplacements (qté + date) sans périodicité
-fixe (pas de notion de "mois consulté" pour cette feuille, voir plus bas),
+fixe (pas de case « Réalisé » par mois pour cette feuille, voir plus bas),
 CRUD, impression, export Excel de l'année.
 
 Liste K7 (lieux regroupés par famille éditable, voir plus bas), Inventaire,
@@ -333,20 +333,16 @@ plus jamais effacée en masse par l'application.
   créée en base tant que l'utilisateur ne coche pas la case) : c'est
   l'initialisation "à la volée" la plus simple et la plus robuste.
 
-Chaque grille de suivi (G4 plissé, G4 plan, G3, Charbon) propose en plus un
-sélecteur **"Mois consulté"**, indépendant du filtre d'affichage par mois
-existant : il détermine pour quel mois la nouvelle colonne case à cocher
-lit/écrit le suivi. Les deux sélecteurs de mois de l'écran ("Filtrer par
-mois" et "Mois consulté") sont des `ComboBox` affichant le nom du mois en
-toutes lettres (Janvier → Décembre, `PeriodicFilterListViewModel.MonthLabels`
-/ `MonthOptions` / `MonthFilterOptions`) ; seule la valeur interne
-mémorisée/filtrée reste un entier 1-12 (`FilterReplacement.Month`), comme
-dans l'impression du mois consulté et l'export Excel de l'année, qui
-affichaient déjà les mois en toutes lettres.
-- **Cocher** la case "Réalisé (mois consulté)" d'une ligne fixe
+Dans chaque grille de suivi (G4 plissé, G4 plan, G3, Charbon), les colonnes « Réalisé » et « Date
+du changement » portent **toujours sur le mois en cours** (date du jour), pour l'année choisie dans
+la barre latérale ; le mois concerné est rappelé au-dessus de la grille. L'ancien sélecteur « Mois
+consulté » a été supprimé. Pour enregistrer un remplacement sur un autre mois, utiliser le bouton
+« Enregistrer un remplacement », qui demande le mois. Le filtre d'affichage « Filtrer par mois »
+est inchangé.
+- **Cocher** la case "Réalisé" d'une ligne fixe
   automatiquement la date de changement à la date du jour (éditable ensuite
   dans la colonne "Date du changement" juste à côté) et crée si besoin la
-  ligne de suivi pour (mois consulté, année consultée).
+  ligne de suivi pour (mois en cours, année consultée).
 - **Décocher** la case réinitialise le statut et **vide la date** : par choix
   délibéré, on supprime la ligne de suivi du mois plutôt que de garder une
   ligne "réalisée sans date", ambiguë. L'historique des autres mois/années
@@ -373,21 +369,11 @@ s'agissait déjà du dossier d'export générique de l'application, ajouter un
 réglage séparé pour un simple changement de format de fichier n'apportait
 rien.
 
-### Impression du mois consulté
+### Impression du mois consulté (supprimée)
 
-En plus de l'impression générale existante (déjà basée sur un `FlowDocument`
-WPF, pas une impression brute de `DataGrid`), un bouton "Imprimer le mois
-consulté" génère un document dédié (`PrintService.PrintMonth`) : une **feuille
-de terrain simple** (pas un rapport de données) avec uniquement les filtres
-dus le mois consulté, sous un en-tête rappelant catégorie / mois / année, et
-seulement 4 éléments par ligne : emplacement (libellé de colonne adapté à la
-catégorie, `LocationColumnLabel`), dimension, quantité en place, et une
-**grande case à cocher vierge** (carré d'environ 1,8 cm de côté, bien plus
-grand qu'une case à cocher standard) destinée à être cochée à la main au
-marqueur/feutre une fois le changement physique effectué sur le terrain.
-Les colonnes dates/périodicité/statut de l'ancienne version ont été retirées
-de cette impression spécifique (elles restent disponibles dans l'impression
-générale et l'export Excel de l'année).
+Le bouton « Imprimer le mois consulté » (feuille de terrain avec grande case à cocher,
+`PrintService.PrintMonth`) a été supprimé avec le sélecteur « Mois consulté ». L'impression générale
+et l'export Excel de l'année restent disponibles.
 
 ## Choix d'implémentation notables
 
@@ -1027,7 +1013,7 @@ que `BrushBorder` `#E5E7EB` déjà utilisé pour les contours de cartes/champs, 
 être agressif) : les bordures de cellules horizontales **et** verticales sont donc nettes sur tous les
 écrans (filtres G4 plissés/plan, G3, Charbon, F7-H13, Liste K7, Inventaire/Commande chmy), sans qu'aucune
 vue individuelle n'ait eu besoin d'être modifiée (aucune n'écrasait le style global). Les documents
-imprimés (`PrintService`, impression générale et impression du mois consulté ci-dessus) reprennent la
+imprimés (`PrintService`, impression générale) reprennent la
 même couleur de bordure sur chaque cellule (bordure complète 0.75px au lieu du simple soulignement bas
 précédent).
 
