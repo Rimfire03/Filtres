@@ -47,7 +47,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
             App.Db.OrderLines
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
-                .Include(l => l.OpacimetricLinks)
+                .Include(l => l.OpacimetricLinks).ThenInclude(ol => ol.OpacimetricFilter).ThenInclude(f => f!.Family)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
                 .ToList()));

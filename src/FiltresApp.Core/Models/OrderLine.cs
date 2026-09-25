@@ -69,15 +69,22 @@ public class OrderLine
     };
 
     /// <summary>Famille déduite de la catégorie des filtres rattachés : "Sans famille" si aucun, "Plusieurs
-    /// familles" s'ils sont de catégories différentes ("Filtres F7 à H13" comptant comme une catégorie).
-    /// Nécessite FilterLinks (avec PeriodicFilter) et OpacimetricLinks chargés.</summary>
+    /// familles" si plusieurs catégories/familles différentes. Un filtre F7 à H13 rattaché compte pour le
+    /// nom de sa propre famille (<see cref="OpacimetricFilter.Family"/>) si elle a été attribuée, sinon
+    /// pour le libellé générique <see cref="OpacimetricFamilyLabel"/> : ainsi, dès qu'une famille est
+    /// attribuée à un filtre F7 à H13 (écran dédié) et que ce filtre est rattaché à une ligne, cette
+    /// famille apparaît comme groupe dans Inventaire et Commande, avec la ligne dedans.
+    /// Nécessite FilterLinks (avec PeriodicFilter) et OpacimetricLinks (avec OpacimetricFilter et sa
+    /// Family) chargés.</summary>
     [NotMapped]
     public string AutomaticFamilyLabel
     {
         get
         {
-            var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category)).Distinct().ToList();
-            if (OpacimetricLinks.Count > 0) families.Add(OpacimetricFamilyLabel);
+            var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category))
+                .Concat(OpacimetricLinks.Select(l => l.OpacimetricFilter?.Family?.Nom is string nom && nom.Length > 0 ? nom : OpacimetricFamilyLabel))
+                .Distinct()
+                .ToList();
             return families.Count switch
             {
                 0 => NoFamilyLabel,
