@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.ViewModels;
 
-public partial class PeriodicFilterListViewModel : ObservableObject
+public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 {
     private readonly FilterCategory _category;
     private readonly string _locationColumnLabel;
@@ -79,8 +79,21 @@ public partial class PeriodicFilterListViewModel : ObservableObject
         foreach (var row in Filters) row.RefreshAll();
     }
 
+    /// <summary>Rechargé à chaque ouverture de l'écran : le rattachement aux lignes de Commande /
+    /// Inventaire (puce verte / rouge) se modifie depuis l'écran Commande.</summary>
+    public void Reload() => Load();
+
     private void Load()
     {
+        // Ligne de Commande / Inventaire à laquelle chaque filtre est rattaché (un filtre = une ligne au plus).
+        var linkedLines = App.Db.OrderLinePeriodicFilters
+            .AsNoTracking()
+            .Where(l => l.PeriodicFilter!.Category == _category)
+            .Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.PeriodicFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+
         var all = App.Db.PeriodicFilters
             .Include(f => f.Replacements)
             .Where(f => f.Category == _category)
@@ -89,7 +102,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject
             .ToList();
 
         var filtered = MonthFilter.HasValue ? all.Where(f => f.GetPeriodicityMonths().Contains(MonthFilter.Value)) : all;
-        Filters = new ObservableCollection<PeriodicFilterRowViewModel>(filtered.Select(f => new PeriodicFilterRowViewModel(f, this)));
+        Filters = new ObservableCollection<PeriodicFilterRowViewModel>(filtered.Select(f => new PeriodicFilterRowViewModel(f, this, linkedLines.GetValueOrDefault(f.Id))));
     }
 
     [RelayCommand]

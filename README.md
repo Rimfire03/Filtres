@@ -190,6 +190,12 @@ l'historique git.
 
 ## Fonctionnalités par écran
 
+**Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3 et Charbon)** : première colonne de la
+grille, puce **verte** si le filtre est rattaché à une ligne de Commande / Inventaire (bouton
+« Rattacher des filtres... » de l'écran Commande), **rouge** sinon. Le survol de la puce indique la
+ligne concernée. Recalculée à chaque ouverture de l'écran. Les filtres F7 à H13 ne sont pas
+rattachables et n'ont donc pas de puce.
+
 Chaque catégorie de filtre à périodicité mensuelle (G4 plissé, G4 plan, G3,
 Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
 `F_sheet`), enregistrement d'un remplacement réalisé via une boîte de dialogue

@@ -68,6 +68,25 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
+                <!-- Puce verte / rouge : filtre rattaché ou non à une ligne de Commande / Inventaire. -->
+                <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Ellipse Width="11" Height="11" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding LinkToolTip}">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="#EF4444"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLinkedToOrder}" Value="True">
+                                                <Setter Property="Fill" Value="#22C55E"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="{Binding LocationColumnLabel}" Binding="{Binding Location}" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>

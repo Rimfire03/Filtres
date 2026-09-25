@@ -15,11 +15,22 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
 
     public PeriodicFilter Filter { get; }
 
-    public PeriodicFilterRowViewModel(PeriodicFilter filter, PeriodicFilterListViewModel owner)
+    public PeriodicFilterRowViewModel(PeriodicFilter filter, PeriodicFilterListViewModel owner, string? linkedOrderLine)
     {
         Filter = filter;
         _owner = owner;
+        LinkedOrderLine = linkedOrderLine;
     }
+
+    /// <summary>Dimension de la ligne de Commande / Inventaire à laquelle ce filtre est rattaché, ou null.</summary>
+    public string? LinkedOrderLine { get; }
+
+    /// <summary>Puce verte (rattaché) ou rouge (non rattaché) en tête de ligne.</summary>
+    public bool IsLinkedToOrder => LinkedOrderLine is not null;
+
+    public string LinkToolTip => IsLinkedToOrder
+        ? $"Rattaché à la ligne « {LinkedOrderLine} » de Commande / Inventaire"
+        : "Rattaché à aucune ligne de Commande / Inventaire";
 
     public int Id => Filter.Id;
     public string Location => Filter.Location;
