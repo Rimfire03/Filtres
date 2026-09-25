@@ -59,6 +59,19 @@ public partial class OrderFamilyFilter : ObservableObject
             .Append((OrderLine.NoFamilyLabel, OrderLine.NoFamilyOverride))
             .ToArray();
 
+    /// <summary>Choix proposés par la colonne "Famille" de l'écran Commande : "Automatique" puis les
+    /// familles au choix manuel.</summary>
+    public static IReadOnlyList<string> QuickChoices { get; } =
+        new[] { OrderLine.AutomaticFamilyChoice }.Concat(ManualChoices.Select(c => c.Label)).ToList();
+
+    /// <summary>Valeur de <see cref="OrderLine.FamilyOverride"/> correspondant à un choix de
+    /// <see cref="QuickChoices"/> (null = automatique).</summary>
+    public static int? OverrideForChoice(string choice)
+    {
+        var match = ManualChoices.FirstOrDefault(c => c.Label == choice);
+        return match.Label is null ? null : match.Override;
+    }
+
     /// <summary>Champ "Famille" de la fenêtre Ajouter / Modifier : "Automatique" (famille déduite des filtres
     /// rattachés, rappelée entre parenthèses) ou une famille choisie manuellement.</summary>
     public static EditField CreateEditField(OrderLine entity, string automaticLabel)

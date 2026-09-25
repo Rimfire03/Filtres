@@ -24,6 +24,14 @@ public static class ColumnChooser
     /// les colonnes réellement modifiées.</summary>
     private static readonly ConditionalWeakTable<DataGridColumn, OriginalWidth> OriginalWidths = new();
 
+    /// <summary>Sur une colonne : masquée tant que l'utilisateur ne l'a pas affichée (clic droit sur un
+    /// en-tête).</summary>
+    public static readonly DependencyProperty HiddenByDefaultProperty = DependencyProperty.RegisterAttached(
+        "HiddenByDefault", typeof(bool), typeof(ColumnChooser), new PropertyMetadata(false));
+
+    public static bool GetHiddenByDefault(DependencyObject obj) => (bool)obj.GetValue(HiddenByDefaultProperty);
+    public static void SetHiddenByDefault(DependencyObject obj, bool value) => obj.SetValue(HiddenByDefaultProperty, value);
+
     public static readonly DependencyProperty KeyProperty = DependencyProperty.RegisterAttached(
         "Key", typeof(string), typeof(ColumnChooser), new PropertyMetadata(null, OnKeyChanged));
 
@@ -52,7 +60,7 @@ public static class ColumnChooser
         foreach (var column in grid.Columns)
         {
             var columnKey = ColumnKey(grid, column);
-            column.Visibility = ColumnPreferences.IsHidden(key, columnKey) ? Visibility.Collapsed : Visibility.Visible;
+            column.Visibility = ColumnPreferences.IsHidden(key, columnKey, GetHiddenByDefault(column)) ? Visibility.Collapsed : Visibility.Visible;
 
             var original = OriginalWidths.GetValue(column, c => new OriginalWidth(c.Width)).Width;
             var saved = ColumnPreferences.GetWidth(key, columnKey);
@@ -99,7 +107,7 @@ public static class ColumnChooser
         var showAll = new MenuItem { Header = "Afficher toutes les colonnes" };
         showAll.Click += (_, _) =>
         {
-            ColumnPreferences.ShowAll(key);
+            ColumnPreferences.ShowAll(key, grid.Columns.Where(GetHiddenByDefault).Select(c => ColumnKey(grid, c)).ToList());
             foreach (var column in grid.Columns) column.Visibility = Visibility.Visible;
         };
         menu.Items.Add(showAll);

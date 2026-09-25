@@ -57,6 +57,13 @@ public class OrderLine
     /// "Filtres F7 à H13", sinon valeur de <see cref="FilterCategory"/>.</summary>
     public int? FamilyOverride { get; set; }
 
+    public const string AutomaticFamilyChoice = "Automatique";
+
+    /// <summary>Choix affiché par la colonne "Famille" de l'écran Commande : "Automatique" ou la famille
+    /// choisie manuellement.</summary>
+    [NotMapped]
+    public string FamilyChoiceLabel => FamilyOverride is null ? AutomaticFamilyChoice : FamilyGroupLabel;
+
     /// <summary>Famille affichée (séparateur des grilles Inventaire et Commande) : le choix manuel s'il y en
     /// a un, sinon la famille automatique.</summary>
     [NotMapped]

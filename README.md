@@ -278,6 +278,11 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 | Type                    | `Dimension`     | ex-« Dimension »                             |
 | Référence fournisseur   | `Notes`         | ex-« Notes », placée après Type              |
 
+- **Colonne « Famille » (Commande)** : liste déroulante dans chaque ligne pour changer rapidement la
+  famille (« Automatique » ou une famille au choix, même effet que le champ Famille de « Modifier »),
+  enregistrée dès la sélection. **Masquée par défaut** (clic droit sur un en-tête de colonne pour
+  l'afficher, choix mémorisé par poste) et **jamais imprimée** ni exportée en PDF. Le survol rappelle
+  la famille automatique de la ligne.
 - **Menu rapide de rattachement (Commande)** : clic droit sur une cellule « Filtres liés » → liste
   cochable des filtres déjà rattachés à la ligne, puis des filtres de dimension correspondante
   (même comparaison approximative que la fenêtre complète, 20 au maximum). Cocher rattache, décocher

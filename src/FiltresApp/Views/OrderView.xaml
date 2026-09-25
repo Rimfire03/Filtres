@@ -77,6 +77,23 @@
                 <!-- Clic droit sur une cellule : menu rapide de rattachement (OrderView.xaml.cs). -->
                 <DataGridTextColumn x:Name="LinkedFiltersColumn" Header="Filtres liés" Binding="{Binding LinkedFilterCountDisplay}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn x:Name="QuantityColumn" Header="Quantité à commander" Binding="{Binding InventoryQuantity}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Changement rapide de famille : masquée par défaut (clic droit sur un en-tête pour
+                     l'afficher), jamais imprimée ni exportée (colonnes d'impression fixes, voir BuildHeaders). -->
+                <DataGridTemplateColumn Header="Famille" Width="1.4*" SortMemberPath="FamilyGroupLabel" svc:ColumnChooser.HiddenByDefault="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox Margin="2" VerticalAlignment="Center"
+                                      ItemsSource="{Binding DataContext.FamilyQuickChoices, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      SelectedItem="{Binding FamilyChoiceLabel, Mode=OneWay}"
+                                      IsEnabled="{x:Static app:App.IsWritable}"
+                                      SelectionChanged="FamilyCombo_SelectionChanged">
+                                <ComboBox.ToolTip>
+                                    <TextBlock Text="{Binding AutomaticFamilyLabel, StringFormat='Famille automatique (selon les filtres rattachés) : {0}'}"/>
+                                </ComboBox.ToolTip>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
                 <GroupStyle>

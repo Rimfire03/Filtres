@@ -21,6 +21,15 @@ public partial class OrderView : UserControl
             QuantityColumn);
     }
 
+    /// <summary>Colonne "Famille" : le choix est enregistré dès la sélection. Les changements dus au
+    /// chargement de la cellule (valeur déjà enregistrée) sont ignorés par SetFamilyChoice.</summary>
+    private void FamilyCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox { IsLoaded: true, SelectedItem: string choice } combo
+            || combo.DataContext is not OrderLine line || DataContext is not OrderListViewModel vm) return;
+        vm.SetFamilyChoice(line, choice);
+    }
+
     private void NeedBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _needCell.GotFocus((TextBox)sender);
     private void NeedBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _needCell.LostFocus((TextBox)sender);
     private void NeedBox_PreviewKeyDown(object sender, KeyEventArgs e) => _needCell.PreviewKeyDown((TextBox)sender, e);

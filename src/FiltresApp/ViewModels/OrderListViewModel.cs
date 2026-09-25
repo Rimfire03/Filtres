@@ -179,6 +179,20 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         SaveLinks(line, selected);
     }
 
+    public IReadOnlyList<string> FamilyQuickChoices => OrderFamilyFilter.QuickChoices;
+
+    /// <summary>Colonne "Famille" (masquée par défaut) : change la famille de la ligne sans ouvrir
+    /// "Modifier". "Automatique" revient à la famille déduite des filtres rattachés.</summary>
+    public void SetFamilyChoice(OrderLine line, string choice)
+    {
+        if (choice == line.FamilyChoiceLabel || !App.GuardWritable()) return;
+        var tracked = App.Db.OrderLines.First(l => l.Id == line.Id);
+        tracked.FamilyOverride = OrderFamilyFilter.OverrideForChoice(choice);
+        App.Db.SaveChanges();
+        Load();
+        SelectedLine = Lines.FirstOrDefault(l => l.Id == line.Id);
+    }
+
     /// <summary>Saisie directe dans la cellule "Besoin" (lignes hors familles G4 plissé, G4 plan, G3).
     /// Retourne false (saisie à annuler) en lecture seule ou si le texte n'est pas un nombre entier.</summary>
     public bool SetManualNeed(OrderLine line, string text)

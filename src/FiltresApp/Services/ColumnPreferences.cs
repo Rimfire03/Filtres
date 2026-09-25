@@ -10,6 +10,10 @@ public record ColumnWidth(double Value, bool Star);
 public class GridPreferences
 {
     public HashSet<string> Hidden { get; set; } = new();
+
+    /// <summary>Colonnes masquées par défaut que l'utilisateur a choisi d'afficher.</summary>
+    public HashSet<string> Shown { get; set; } = new();
+
     public Dictionary<string, ColumnWidth> Widths { get; set; } = new();
 }
 
@@ -31,21 +35,36 @@ public static class ColumnPreferences
         return prefs;
     }
 
-    public static bool IsHidden(string gridKey, string columnKey) =>
-        Grids.TryGetValue(gridKey, out var prefs) && prefs.Hidden.Contains(columnKey);
+    /// <param name="hiddenByDefault">Colonne masquée tant que l'utilisateur ne l'a pas affichée.</param>
+    public static bool IsHidden(string gridKey, string columnKey, bool hiddenByDefault = false)
+    {
+        var prefs = Grids.GetValueOrDefault(gridKey);
+        if (prefs?.Hidden.Contains(columnKey) == true) return true;
+        return hiddenByDefault && prefs?.Shown.Contains(columnKey) != true;
+    }
 
     public static void SetHidden(string gridKey, string columnKey, bool hidden)
     {
         var prefs = For(gridKey);
-        if (hidden) prefs.Hidden.Add(columnKey);
-        else prefs.Hidden.Remove(columnKey);
+        if (hidden)
+        {
+            prefs.Hidden.Add(columnKey);
+            prefs.Shown.Remove(columnKey);
+        }
+        else
+        {
+            prefs.Hidden.Remove(columnKey);
+            prefs.Shown.Add(columnKey);
+        }
         Save();
     }
 
-    public static void ShowAll(string gridKey)
+    /// <summary>Affiche toutes les colonnes, y compris celles masquées par défaut (<paramref name="hiddenByDefault"/>).</summary>
+    public static void ShowAll(string gridKey, IEnumerable<string> hiddenByDefault)
     {
-        if (!Grids.TryGetValue(gridKey, out var prefs) || prefs.Hidden.Count == 0) return;
+        var prefs = For(gridKey);
         prefs.Hidden.Clear();
+        prefs.Shown.UnionWith(hiddenByDefault);
         Save();
     }
 
