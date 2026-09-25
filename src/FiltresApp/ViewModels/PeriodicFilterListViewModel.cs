@@ -302,13 +302,38 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         }).ToList();
     }
 
+    /// <summary>Seule impression de l'écran : feuille de terrain reprenant uniquement ce qui est visible
+    /// (lignes affichées après le filtre par mois, colonnes non masquées sur ce poste, dans l'ordre de la
+    /// grille), avec une grande case à cocher "Fait" par ligne.</summary>
     [RelayCommand]
     private void Print()
     {
-        var headers = BuildHeaders();
-        var rows = Filters.Select(BuildRow).ToList();
-        App.Printer.PrintTable(Title, headers, rows);
+        var columns = PrintableColumns().Where(c => !IsColumnHidden(c.Key)).ToList();
+        var headers = columns.Select(c => c.Header).ToArray();
+        var rows = Filters.Select(f => columns.Select(c => c.Value(f)).ToArray()).ToList();
+        var title = MonthFilter.HasValue ? $"{Title} - {MonthFilterLabel}" : Title;
+        App.Printer.PrintTable(title, headers, rows, includeCheckboxColumn: true);
     }
+
+    /// <summary>Colonnes de la grille (même ordre, mêmes titres que PeriodicFilterView.xaml).</summary>
+    private IEnumerable<(string Key, string Header, Func<PeriodicFilterRowViewModel, string> Value)> PrintableColumns()
+    {
+        yield return ("Lié", "Lié", f => f.IsLinkedToOrder ? "Oui" : "Non");
+        yield return (_locationColumnLabel, _locationColumnLabel, f => f.Location);
+        yield return ("Dimension", "Dimension", f => f.Dimension);
+        yield return ("Type", "Type", f => f.MediaType);
+        yield return ("Qté en place", "Qté en place", f => f.QuantityInPlace.ToString());
+        yield return ("Périodicité", "Périodicité", f => f.PeriodicityDisplay);
+        yield return ("Prochaine échéance", "Prochaine échéance", f => f.NextDueDate?.ToString("MM/yyyy") ?? "-");
+        yield return ("Dernier changement", "Dernier changement", f => f.LastDoneDate?.ToString("dd/MM/yyyy") ?? "-");
+        yield return ("Réalisé", "Réalisé", f => f.IsDoneForCurrentMonth ? "Oui" : "");
+        yield return ("Date du changement", "Date du changement", f => f.DateDoneForCurrentMonth?.ToString("dd/MM/yyyy") ?? "");
+    }
+
+    /// <summary>Colonne masquée sur ce poste (voir ColumnChooser). La colonne d'emplacement, dont le titre
+    /// est lié au ViewModel, peut être mémorisée par sa position si ce titre n'était pas encore résolu.</summary>
+    private bool IsColumnHidden(string key) =>
+        ColumnPreferences.IsHidden(Title, key) || (key == _locationColumnLabel && ColumnPreferences.IsHidden(Title, "#1"));
 
     [RelayCommand]
     private void ExportExcelYear()
@@ -316,28 +341,5 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, YearContext.Year);
         App.Dialogs.ShowMessage("Export Excel",
             $"Export de l'année {YearContext.Year} généré avec succès (toutes catégories, une feuille par catégorie).\n\nIl est stocké dans :\n{path}");
-    }
-
-    private string[] BuildHeaders()
-    {
-        var headers = new List<string> { _locationColumnLabel, "Dimension", "Type", "Qté en place", "Périodicité" };
-        if (ShowK7Reference) headers.Add("Réf. K7");
-        if (ShowHourCounter) headers.Add("Compteur h.");
-        headers.Add("Prochaine échéance");
-        headers.Add("Dernier changement");
-        return headers.ToArray();
-    }
-
-    private string[] BuildRow(PeriodicFilterRowViewModel f)
-    {
-        var row = new List<string>
-        {
-            f.Location, f.Dimension, f.MediaType, f.QuantityInPlace.ToString(), f.PeriodicityDisplay
-        };
-        if (ShowK7Reference) row.Add(f.K7Reference ?? "");
-        if (ShowHourCounter) row.Add(f.HourCounter?.ToString() ?? "");
-        row.Add(f.NextDueDate?.ToString("MM/yyyy") ?? "-");
-        row.Add(f.LastDoneDate?.ToString("dd/MM/yyyy") ?? "-");
-        return row.ToArray();
     }
 }

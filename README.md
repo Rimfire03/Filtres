@@ -201,7 +201,7 @@ Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
 `F_sheet`), enregistrement d'un remplacement réalisé via une boîte de dialogue
 (échéance recalculée automatiquement en lecture seule), **case à cocher
 "Réalisé" directement dans la grille** pour le mois en cours (voir plus bas),
-impression générale, export Excel de
+impression (feuille de terrain avec cases à cocher, voir plus bas), export Excel de
 l'année, et CRUD complet.
 
 Filtres F7 à H13 (colonnes : nom de la centrale, dimension, **type** — texte libre saisi dans
@@ -369,11 +369,21 @@ s'agissait déjà du dossier d'export générique de l'application, ajouter un
 réglage séparé pour un simple changement de format de fichier n'apportait
 rien.
 
-### Impression du mois consulté (supprimée)
+### Impression (écrans G4 plissé, G4 plan, G3 et Charbon)
 
-Le bouton « Imprimer le mois consulté » (feuille de terrain avec grande case à cocher,
-`PrintService.PrintMonth`) a été supprimé avec le sélecteur « Mois consulté ». L'impression générale
-et l'export Excel de l'année restent disponibles.
+Le bouton « Imprimer » est la seule impression de ces écrans (l'ancien bouton « Imprimer le mois
+consulté » a été supprimé avec le sélecteur « Mois consulté »). Il imprime **uniquement ce qui est
+visible** :
+
+- les lignes affichées (donc filtrées par « Filtrer par mois » si un mois est choisi ; le mois est
+  alors ajouté au titre) ;
+- les colonnes de la grille, dans le même ordre, **sauf celles masquées sur ce poste** (clic droit
+  sur un en-tête). La puce « Lié » est imprimée « Oui » / « Non », la case « Réalisé » « Oui » ou
+  vide ;
+- plus une dernière colonne « Fait » avec une **grande case à cocher vierge** (environ 1,8 cm) par
+  ligne, à cocher à la main sur le terrain.
+
+Les autres écrans gardent leur impression habituelle, et l'export Excel de l'année est inchangé.
 
 ## Choix d'implémentation notables
 
