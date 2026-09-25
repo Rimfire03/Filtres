@@ -72,6 +72,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
             EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
+            EditField.NullableInt("Inventaire", () => entity.Inventaire, v => entity.Inventaire = v),
             EditField.NullableInt("Quantité", () => entity.Quantite, v => entity.Quantite = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
@@ -89,11 +90,36 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Quantité" };
+    /// <summary>Saisie directe dans la cellule "Inventaire" de la grille. Retourne false (saisie à annuler)
+    /// si le poste est en lecture seule ou si le texte n'est pas un nombre entier.</summary>
+    public bool SetInventaire(OrderLine line, string text)
+    {
+        int? value = null;
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            if (!int.TryParse(text.Trim(), out var parsed))
+            {
+                App.Dialogs.ShowMessage("Inventaire", $"« {text.Trim()} » n'est pas un nombre entier : la valeur n'a pas été enregistrée.");
+                return false;
+            }
+            value = parsed;
+        }
+
+        if (value == line.Inventaire) return true;
+        if (!App.GuardWritable()) return false;
+
+        var tracked = App.Db.OrderLines.First(l => l.Id == line.Id);
+        tracked.Inventaire = value;
+        App.Db.SaveChanges();
+        line.Inventaire = value;
+        return true;
+    }
+
+    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Inventaire", "Quantité" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Quantite?.ToString() ?? ""
+        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Inventaire?.ToString() ?? "", l.Quantite?.ToString() ?? ""
     };
 
     [RelayCommand]

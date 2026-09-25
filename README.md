@@ -209,7 +209,13 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 
 - **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés, Besoin mars,
   Besoin septembre, **Quantité à commander en dernier**.
-- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Quantité. La colonne
+- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, **Inventaire**, Quantité.
+  La colonne « Inventaire » (nombre entier, migration v8) se saisit **directement dans la grille** :
+  un clic dans la cellule (fond bleuté) suffit pour taper la valeur ; elle est enregistrée avec
+  Entrée, Tab ou en cliquant ailleurs, Échap annule la saisie en cours, et une cellule vidée efface
+  la valeur. Une saisie qui n'est pas un nombre entier est refusée avec un message. En lecture seule,
+  la cellule n'est pas modifiable. La valeur figure aussi dans la fenêtre « Modifier », l'impression
+  et l'export PDF de l'Inventaire. La colonne
   « Unité » a été supprimée (écran, fenêtres d'édition de Commande et Inventaire, impression, export
   PDF et base de données, migration v7).
 - Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les

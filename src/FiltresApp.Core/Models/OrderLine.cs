@@ -31,6 +31,9 @@ public class OrderLine
 
     public string? Destination { get; set; }
 
+    /// <summary>Quantité relevée à l'inventaire, saisie directement dans la grille de l'écran Inventaire.</summary>
+    public int? Inventaire { get; set; }
+
     /// <summary>Marqueur technique (non affiché en UI) : identifiant de l'<see cref="InventoryLine"/>
     /// d'origine si cette ligne provient de la migration "fusion Inventaire / Commande chmy" (voir
     /// la migration 2 de DbContextFactory). Sert uniquement à rendre cette migration idempotente (ne

@@ -43,6 +43,7 @@ public class DbContextFactory
         (5, "Option « changé tous les 15 jours »", EnsureChangedEvery15DaysColumn),
         (6, "Colonne Destination (Commande / Inventaire)", EnsureOrderLineDestinationColumn),
         (7, "Suppression de la colonne Unité (Inventaire) et de son contenu", DropOrderLineUniteColumn),
+        (8, "Colonne Inventaire (écran Inventaire)", AddOrderLineInventaireColumn),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -124,6 +125,12 @@ public class DbContextFactory
     {
         var backupPath = $"{_dbPath}.avant-maj-v{fromVersion}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
+    }
+
+    private static void AddOrderLineInventaireColumn(FiltresDbContext ctx)
+    {
+        if (!GetColumns(ctx, "OrderLines").Contains("Inventaire"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "Inventaire" INTEGER NULL;""");
     }
 
     private static void DropOrderLineUniteColumn(FiltresDbContext ctx)
