@@ -26,8 +26,7 @@ public partial class SettingsViewModel : ObservableObject
     public string CurrentVersion => App.CurrentVersion;
     public int DatabaseVersion => App.DatabaseVersion;
 
-    /// <summary>Année à exporter en Excel (voir bouton "Exporter l'année en Excel" ci-dessous),
-    /// partagée avec le sélecteur d'année global de la barre latérale.</summary>
+    /// <summary>Liste des années proposées (barre latérale et export Excel).</summary>
     public YearContext YearContext => App.YearContext;
 
     // ---- Suppression de l'historique d'une année (deux fonctions séparées) ----
@@ -230,13 +229,18 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>Année à exporter en Excel : sélecteur propre à cette carte (indépendant de l'année consultée
+    /// dans la barre latérale), placé par défaut sur l'année en cours.</summary>
+    [ObservableProperty] private int _selectedExportYear = DateTime.Today.Year;
+
     [RelayCommand]
     private void ExportExcelYear()
     {
         try
         {
-            var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, YearContext.Year);
-            ExportStatusMessage = $"Export Excel de l'année {YearContext.Year} généré : {path}";
+            var year = SelectedExportYear;
+            var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, year);
+            ExportStatusMessage = $"Export Excel de l'année {year} généré : {path}";
         }
         catch (Exception ex)
         {

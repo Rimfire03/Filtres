@@ -46,6 +46,17 @@ public class PeriodicFilter
     [NotMapped]
     public DateOnly? LastDoneDate => MaintenanceScheduleService.GetLastReplacementDate(this);
 
+    /// <summary>Filtre lavable (dimension contenant "laver") : pas de remplacement ni de rattachement.</summary>
+    [NotMapped]
+    public bool IsWashable => Dimension?.Contains("laver", StringComparison.OrdinalIgnoreCase) == true;
+
+    /// <summary>Famille déduite de la dimension, utilisée pour regrouper les filtres G3 (écran et export
+    /// Excel) : à laver, à remplacer (dimension lisible) ou sans dimension.</summary>
+    [NotMapped]
+    public string DimensionFamilyLabel => IsWashable
+        ? "Filtres à laver"
+        : DimensionFormatService.Normalize(Dimension) is not null ? "Filtres à remplacer" : "Sans dimension";
+
     [NotMapped]
     public string PeriodicityDisplay => string.Join("/", GetPeriodicityMonths());
 

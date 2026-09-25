@@ -94,10 +94,10 @@
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Génère un classeur .xlsx (une feuille par catégorie : G4 plissés, G4 plan, G3, F7-H13, Charbon) pour l'année sélectionnée, dans le même dossier que les exports PDF." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <TextBlock Text="Génère un classeur .xlsx dans le même dossier que les exports PDF : une feuille par onglet de filtres (Filtres G4 plissés, Filtres G4 plan, Filtres G3, Filtres F7 à H13, Charbon), avec les familles en lignes titres. Suivi mensuel de l'année choisie pour G4 / G3 / Charbon, dates des 10 derniers changements pour F7 à H13. Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <DockPanel Margin="0,0,0,8">
-                        <TextBlock DockPanel.Dock="Left" Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding YearContext.Year}" HorizontalAlignment="Left" Width="120"/>
+                        <TextBlock DockPanel.Dock="Left" Text="Année à exporter :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding SelectedExportYear}" HorizontalAlignment="Left" Width="120"/>
                     </DockPanel>
                     <Button Content="Exporter l'année en Excel" Style="{StaticResource PrimaryButton}" Command="{Binding ExportExcelYearCommand}" HorizontalAlignment="Left"/>
                     <TextBlock Text="{Binding ExportStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>

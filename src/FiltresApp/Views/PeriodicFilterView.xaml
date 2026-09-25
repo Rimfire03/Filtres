@@ -32,7 +32,6 @@
             <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
-            <Button Content="Exporter l'année en Excel" Style="{StaticResource SecondaryButton}" Command="{Binding ExportExcelYearCommand}"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">

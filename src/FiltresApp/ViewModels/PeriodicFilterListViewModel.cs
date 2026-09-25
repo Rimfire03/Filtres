@@ -420,11 +420,4 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// <summary>Colonne masquée sur ce poste (voir ColumnChooser).</summary>
     private bool IsColumnHidden(string key) => ColumnPreferences.IsHidden(Title, key);
 
-    [RelayCommand]
-    private void ExportExcelYear()
-    {
-        var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, YearContext.Year);
-        App.Dialogs.ShowMessage("Export Excel",
-            $"Export de l'année {YearContext.Year} généré avec succès (toutes catégories, une feuille par catégorie).\n\nIl est stocké dans :\n{path}");
-    }
 }

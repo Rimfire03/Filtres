@@ -430,21 +430,25 @@ données d'origine (historique de remplacements ponctuels, pas un suivi mois
 par mois) : elle n'a donc pas de case à cocher par mois, mais son sélecteur
 d'année filtre "Dernier changement" et "Nb remplacements" aux remplacements
 datés de l'année consultée, et elle est incluse dans l'export Excel de
-l'année comme les 4 autres catégories.
+l'année (10 derniers changements).
 
 ### Export Excel de l'année
 
-Bouton "Exporter l'année en Excel" (présent sur les écrans de suivi de
-filtres et dans Paramètres, avec sélection d'année) : génère un classeur
-`.xlsx` via ClosedXML, avec une feuille par catégorie (G4 plissés, G4 plan,
-G3, F7-H13, Charbon) contenant emplacement, dimension, qté en place,
-périodicité (et compteur d'heures pour Charbon), puis le détail mensuel
-réalisé/date de l'année sélectionnée (F7-H13 : liste des remplacements datés
-de l'année). Le fichier est déposé dans le **même dossier configurable que
-l'export PDF** (`AppSettings.PdfExportPath`, écran Paramètres) : il
-s'agissait déjà du dossier d'export générique de l'application, ajouter un
-réglage séparé pour un simple changement de format de fichier n'apportait
-rien.
+Uniquement dans l'écran **Paramètres** (carte « Export Excel de l'année » ; le bouton a été retiré
+des écrans de filtres), avec son propre sélecteur « Année à exporter », placé par défaut sur l'année
+en cours. Génère un classeur `.xlsx` (ClosedXML) dans le même dossier configurable que l'export PDF
+(`AppSettings.PdfExportPath`), avec **une feuille par onglet de filtres** du logiciel, dans l'ordre de
+la navigation, et les **familles en lignes titres** (bandeau foncé fusionné, comme à l'écran) :
+
+- **Filtres G4 plissés, Filtres G4 plan, Filtres G3, Charbon** : Filtres (nom), Dimension, Type, Qté
+  en place, Périodicité (+ Réf. K7 pour G3, Compteur d'heures pour Charbon), puis pour chaque mois de
+  l'année exportée « réalisé » (Oui) et date. Seul G3 a des familles (à remplacer / à laver / sans
+  dimension).
+- **Filtres F7 à H13** : Filtres, Dimension, Type, Qté en place, puis les **dates des 10 derniers
+  changements** (du plus récent au plus ancien, jusqu'au 31/12 de l'année exportée), groupés par
+  famille F7 à H13 (« Sans famille » en dernier).
+
+Liste K7, Inventaire et Commande ne sont pas exportés.
 
 ### Impression (écrans G4 plissé, G4 plan, G3 et Charbon)
 

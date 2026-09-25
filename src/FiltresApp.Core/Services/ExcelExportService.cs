@@ -1,18 +1,24 @@
 using ClosedXML.Excel;
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.Core.Services;
 
-/// <summary>Génère un export .xlsx de l'année sélectionnée (une feuille par catégorie de filtre),
-/// via ClosedXML. Le dossier de
-/// destination réutilise <see cref="AppSettings.PdfExportPath"/> : il s'agit du même dossier "exports"
-/// déjà configurable dans les Paramètres, pas besoin d'un réglage séparé pour un simple changement de
-/// format de fichier.</summary>
+/// <summary>Export Excel de l'année (écran Paramètres) : une feuille par onglet de filtres du logiciel
+/// (G4 plissés, G4 plan, G3, F7 à H13, Charbon), avec une ligne titre par famille comme à l'écran.
+/// Liste K7, Inventaire et Commande ne sont pas exportés. Le fichier est déposé dans le dossier des
+/// exports PDF (<see cref="AppSettings.PdfExportPath"/>).</summary>
 public class ExcelExportService
 {
+    /// <summary>Nombre de dates de changement exportées pour chaque filtre F7 à H13.</summary>
+    public const int OpacimetricLastChanges = 10;
+
     private static readonly string[] MonthShortNames =
         { "Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc" };
+
+    private static readonly XLColor FamilyFill = XLColor.FromHtml("#1F2937");
+    private static readonly XLColor HeaderFill = XLColor.FromHtml("#E5E7EB");
 
     public string ExportYear(FiltresDbContext ctx, string exportFolder, int year)
     {
@@ -20,11 +26,11 @@ public class ExcelExportService
 
         using var workbook = new XLWorkbook();
 
-        AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plisse, "G4 plissés", "Nom de la centrale d'air", year);
-        AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plan, "G4 plan", "Emplacement de l'appareil", year);
-        AddPeriodicSheet(workbook, ctx, FilterCategory.G3, "G3", "Emplacement de l'appareil", year);
+        AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plisse, "Filtres G4 plissés", year, groupByFamily: false);
+        AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plan, "Filtres G4 plan", year, groupByFamily: false);
+        AddPeriodicSheet(workbook, ctx, FilterCategory.G3, "Filtres G3", year, groupByFamily: true);
         AddOpacimetricSheet(workbook, ctx, year);
-        AddPeriodicSheet(workbook, ctx, FilterCategory.Charbon, "Charbon", "Emplacement de l'appareil", year);
+        AddPeriodicSheet(workbook, ctx, FilterCategory.Charbon, "Charbon", year, groupByFamily: false);
 
         var now = DateTime.Now;
         var fileName = $"Suivi filtres {year} du {now:dd.MM.yyyy} a {now.Hour}.{now.Minute}.xlsx";
@@ -33,122 +39,157 @@ public class ExcelExportService
         return fullPath;
     }
 
+    // ---- Filtres à périodicité (G4 plissés, G4 plan, G3, Charbon) ----
+
     private static void AddPeriodicSheet(XLWorkbook workbook, FiltresDbContext ctx, FilterCategory category,
-        string sheetName, string locationLabel, int year)
+        string sheetName, int year, bool groupByFamily)
     {
-        var filters = ctx.PeriodicFilters
+        var filters = ctx.PeriodicFilters.AsNoTracking()
             .Where(f => f.Category == category)
             .OrderBy(f => f.Location)
-            .Select(f => new { f.Id, f.Location, f.Dimension, f.MediaType, f.QuantityInPlace, f.Periodicity, f.HourCounter })
             .ToList();
 
-        var replacements = ctx.FilterReplacements
-            .Where(r => r.Year == year && filters.Select(f => f.Id).Contains(r.PeriodicFilterId))
+        var ids = filters.Select(f => f.Id).ToList();
+        var replacements = ctx.FilterReplacements.AsNoTracking()
+            .Where(r => r.Year == year && ids.Contains(r.PeriodicFilterId))
             .ToList()
             .ToLookup(r => r.PeriodicFilterId);
 
-        var ws = workbook.Worksheets.Add(SanitizeSheetName(sheetName));
-
-        var col = 1;
-        ws.Cell(1, col).Value = locationLabel; col++;
-        ws.Cell(1, col).Value = "Dimension"; col++;
-        ws.Cell(1, col).Value = "Type"; col++;
-        ws.Cell(1, col).Value = "Qté en place"; col++;
-        ws.Cell(1, col).Value = "Périodicité"; col++;
-        if (category == FilterCategory.Charbon) { ws.Cell(1, col).Value = "Compteur d'heures"; col++; }
-
-        var firstMonthCol = col;
+        var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place", "Périodicité" };
+        if (category == FilterCategory.G3) headers.Add("Réf. K7");
+        if (category == FilterCategory.Charbon) headers.Add("Compteur d'heures");
+        var firstMonthCol = headers.Count + 1;
         for (var m = 1; m <= 12; m++)
         {
-            ws.Cell(1, firstMonthCol + (m - 1) * 2).Value = $"{MonthShortNames[m - 1]} réalisé";
-            ws.Cell(1, firstMonthCol + (m - 1) * 2 + 1).Value = $"{MonthShortNames[m - 1]} date";
+            headers.Add($"{MonthShortNames[m - 1]} {year} réalisé");
+            headers.Add($"{MonthShortNames[m - 1]} {year} date");
         }
-        ws.Row(1).Style.Font.Bold = true;
+
+        var ws = workbook.Worksheets.Add(SanitizeSheetName(sheetName));
+        WriteHeader(ws, headers);
+
+        // G3 : familles à remplacer / à laver / sans dimension, comme à l'écran.
+        var groups = groupByFamily
+            ? filters.GroupBy(f => f.DimensionFamilyLabel).OrderBy(g => FamilyRank(g.Key)).Select(g => (Title: (string?)g.Key, Items: g.ToList()))
+            : new[] { (Title: (string?)null, Items: filters) };
 
         var row = 2;
-        foreach (var f in filters)
+        foreach (var (title, items) in groups)
         {
-            col = 1;
-            ws.Cell(row, col).Value = f.Location; col++;
-            ws.Cell(row, col).Value = f.Dimension; col++;
-            ws.Cell(row, col).Value = f.MediaType; col++;
-            ws.Cell(row, col).Value = f.QuantityInPlace; col++;
-            ws.Cell(row, col).Value = f.Periodicity; col++;
-            if (category == FilterCategory.Charbon) { ws.Cell(row, col).Value = f.HourCounter; col++; }
-
-            var repsForFilter = replacements[f.Id];
-            for (var m = 1; m <= 12; m++)
+            if (title is not null) WriteFamilyRow(ws, row++, title, headers.Count);
+            foreach (var f in items)
             {
-                var rep = repsForFilter.FirstOrDefault(r => r.Month == m);
-                var realizedCol = firstMonthCol + (m - 1) * 2;
-                var dateCol = realizedCol + 1;
-                ws.Cell(row, realizedCol).Value = rep is { DateDone: not null } ? "Oui" : "Non";
-                if (rep?.DateDone is { } d)
+                var col = 1;
+                ws.Cell(row, col++).Value = f.Location;
+                ws.Cell(row, col++).Value = f.Dimension;
+                ws.Cell(row, col++).Value = f.MediaType;
+                ws.Cell(row, col++).Value = f.QuantityInPlace;
+                ws.Cell(row, col++).Value = f.PeriodicityDisplay;
+                if (category == FilterCategory.G3) ws.Cell(row, col++).Value = f.K7Reference ?? "";
+                if (category == FilterCategory.Charbon) ws.Cell(row, col++).Value = f.HourCounter;
+
+                var repsForFilter = replacements[f.Id];
+                for (var m = 1; m <= 12; m++)
                 {
-                    ws.Cell(row, dateCol).Value = d.ToDateTime(TimeOnly.MinValue);
-                    ws.Cell(row, dateCol).Style.DateFormat.Format = "dd/MM/yyyy";
+                    var rep = repsForFilter.FirstOrDefault(r => r.Month == m);
+                    var realizedCol = firstMonthCol + (m - 1) * 2;
+                    ws.Cell(row, realizedCol).Value = rep is { DateDone: not null } ? "Oui" : "";
+                    if (rep?.DateDone is { } d) WriteDate(ws.Cell(row, realizedCol + 1), d);
                 }
+                row++;
             }
-            row++;
         }
 
-        ws.SheetView.FreezeRows(1);
-        ws.Columns(1, firstMonthCol - 1).AdjustToContents();
+        Finish(ws, headers.Count);
     }
+
+    private static int FamilyRank(string label) => label switch
+    {
+        "Filtres à remplacer" => 0,
+        "Filtres à laver" => 1,
+        _ => 2
+    };
+
+    // ---- Filtres F7 à H13 : 10 derniers changements ----
 
     private static void AddOpacimetricSheet(XLWorkbook workbook, FiltresDbContext ctx, int year)
     {
-        var ws = workbook.Worksheets.Add("F7-H13");
-        ws.Cell(1, 1).Value = "Nom de la centrale d'air";
-        ws.Cell(1, 2).Value = "Dimension";
-        ws.Cell(1, 3).Value = "Type";
-        ws.Cell(1, 4).Value = "Qté en place";
-        ws.Cell(1, 5).Value = "Date de changement";
-        ws.Cell(1, 6).Value = "Qté changée";
-        ws.Row(1).Style.Font.Bold = true;
-
-        var filters = ctx.OpacimetricFilters
-            .OrderBy(f => f.Location)
-            .Select(f => new { f.Id, f.Location, f.Dimension, f.FilterType, f.QuantityInPlace })
+        var filters = ctx.OpacimetricFilters.AsNoTracking()
+            .Include(f => f.Family)
+            .Include(f => f.Replacements)
+            .ToList()
+            .OrderBy(f => f.Family is null)
+            .ThenBy(f => f.Family?.Nom, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(f => f.Location, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
-        var replacements = ctx.OpacimetricReplacements
-            .Where(r => r.DateChanged != null && r.DateChanged.Value.Year == year)
-            .ToList()
-            .ToLookup(r => r.OpacimetricFilterId);
+        var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place" };
+        var firstChangeCol = headers.Count + 1;
+        headers.Add("Dernier changement");
+        for (var i = 2; i <= OpacimetricLastChanges; i++) headers.Add($"Changement n-{i - 1}");
 
+        var ws = workbook.Worksheets.Add(SanitizeSheetName("Filtres F7 à H13"));
+        WriteHeader(ws, headers);
+
+        // Changements jusqu'à la fin de l'année exportée, du plus récent au plus ancien.
+        var endOfYear = new DateOnly(year, 12, 31);
         var row = 2;
-        foreach (var f in filters)
+        foreach (var group in filters.GroupBy(f => f.FamilyGroupLabel))
         {
-            var repsForFilter = replacements[f.Id].OrderBy(r => r.DateChanged).ToList();
-            if (repsForFilter.Count == 0)
+            WriteFamilyRow(ws, row++, group.Key, headers.Count);
+            foreach (var f in group)
             {
                 ws.Cell(row, 1).Value = f.Location;
                 ws.Cell(row, 2).Value = f.Dimension;
                 ws.Cell(row, 3).Value = f.FilterType ?? "";
                 ws.Cell(row, 4).Value = f.QuantityInPlace;
-                row++;
-                continue;
-            }
 
-            foreach (var rep in repsForFilter)
-            {
-                ws.Cell(row, 1).Value = f.Location;
-                ws.Cell(row, 2).Value = f.Dimension;
-                ws.Cell(row, 3).Value = f.FilterType ?? "";
-                ws.Cell(row, 4).Value = f.QuantityInPlace;
-                if (rep.DateChanged.HasValue)
-                {
-                    ws.Cell(row, 5).Value = rep.DateChanged.Value.ToDateTime(TimeOnly.MinValue);
-                    ws.Cell(row, 5).Style.DateFormat.Format = "dd/MM/yyyy";
-                }
-                ws.Cell(row, 6).Value = rep.QuantityChanged;
+                var dates = f.Replacements
+                    .Where(r => r.DateChanged is { } d && d <= endOfYear)
+                    .Select(r => r.DateChanged!.Value)
+                    .OrderByDescending(d => d)
+                    .Take(OpacimetricLastChanges)
+                    .ToList();
+                for (var i = 0; i < dates.Count; i++) WriteDate(ws.Cell(row, firstChangeCol + i), dates[i]);
                 row++;
             }
         }
 
+        Finish(ws, headers.Count);
+    }
+
+    // ---- Mise en forme commune ----
+
+    private static void WriteHeader(IXLWorksheet ws, IReadOnlyList<string> headers)
+    {
+        for (var i = 0; i < headers.Count; i++) ws.Cell(1, i + 1).Value = headers[i];
+        var header = ws.Range(1, 1, 1, headers.Count);
+        header.Style.Font.Bold = true;
+        header.Style.Fill.BackgroundColor = HeaderFill;
+    }
+
+    /// <summary>Ligne titre de famille, fusionnée sur toute la largeur, même style que les bandeaux de
+    /// l'application.</summary>
+    private static void WriteFamilyRow(IXLWorksheet ws, int row, string title, int columnCount)
+    {
+        ws.Cell(row, 1).Value = title;
+        var range = ws.Range(row, 1, row, columnCount);
+        range.Merge();
+        range.Style.Font.Bold = true;
+        range.Style.Font.FontColor = XLColor.White;
+        range.Style.Fill.BackgroundColor = FamilyFill;
+    }
+
+    private static void WriteDate(IXLCell cell, DateOnly date)
+    {
+        cell.Value = date.ToDateTime(TimeOnly.MinValue);
+        cell.Style.DateFormat.Format = "dd/MM/yyyy";
+    }
+
+    private static void Finish(IXLWorksheet ws, int columnCount)
+    {
         ws.SheetView.FreezeRows(1);
-        ws.Columns(1, 6).AdjustToContents();
+        ws.Columns(1, columnCount).AdjustToContents();
     }
 
     private static string SanitizeSheetName(string name)

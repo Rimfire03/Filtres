@@ -37,7 +37,7 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
     /// ces filtres ne peuvent jamais être rattachés à une ligne de Commande / Inventaire (voir
     /// OrderListViewModel.LoadLinkCandidates, qui les exclut des candidats), donc la fonction "Lié" n'a
     /// pas de sens pour eux et est masquée dans la grille.</summary>
-    public bool IsWashable => Filter.Dimension?.Contains("laver", StringComparison.OrdinalIgnoreCase) == true;
+    public bool IsWashable => Filter.IsWashable;
 
     /// <summary>Famille déduite de la Dimension pour le regroupement de la grille (voir
     /// <see cref="PeriodicFilterListViewModel.ShowDimensionFamilyGrouping"/>, écran "Filtres G3"
@@ -47,9 +47,7 @@ public partial class PeriodicFilterRowViewModel : ObservableObject
     {
         get
         {
-            if (!_owner.ShowDimensionFamilyGrouping) return "";
-            if (IsWashable) return "Filtres à laver";
-            return DimensionFormatService.Normalize(Filter.Dimension) is not null ? "Filtres à remplacer" : "Sans dimension";
+            return _owner.ShowDimensionFamilyGrouping ? Filter.DimensionFamilyLabel : "";
         }
     }
 

@@ -367,14 +367,6 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
         App.Printer.PrintTable(documentTitle, headers, rows);
     }
 
-    [RelayCommand]
-    private void ExportExcelYear()
-    {
-        var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, YearContext.Year);
-        App.Dialogs.ShowMessage("Export Excel",
-            $"Export de l'année {YearContext.Year} généré avec succès (toutes catégories, une feuille par catégorie).\n\nIl est stocké dans :\n{path}");
-    }
-
     /// <summary>Valeurs déjà utilisées pour "Type" (toutes familles confondues), pour le menu rapide au
     /// clic droit sur la colonne (voir OpacimetricFilterView.xaml.cs) : liste dynamique, pas de valeurs
     /// figées en dur, puisque cette colonne reste un champ texte libre.</summary>
