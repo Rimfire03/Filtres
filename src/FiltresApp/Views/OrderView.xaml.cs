@@ -25,25 +25,35 @@ public partial class OrderView : UserControl
     /// <summary>Colonne "Famille" : le choix est enregistré dès la sélection. Les changements dus au
     /// chargement de la cellule (valeur déjà enregistrée) sont ignorés par SetFamilyChoice.
     /// SetFamilyChoice recharge entièrement la grille (nouvelle famille = changement possible de groupe
-    /// et de position de la ligne), ce qui remonte sinon la grille tout en haut : on ramène la ligne
-    /// modifiée dans la vue une fois la nouvelle liste posée, plutôt que de rester en haut. Restaurer un
-    /// simple décalage de défilement (VerticalOffset) ne suffisait pas : avec le regroupement + la
-    /// virtualisation, le DataGrid réinitialise son ScrollViewer après coup et écrasait la valeur remise.
-    /// ScrollIntoView, lui, agit après coup sur l'élément réel et n'est pas écrasé de cette façon.</summary>
+    /// et de position de la ligne), ce qui remonte sinon la grille tout en haut : on mémorise le défilement
+    /// avant, et on le restaure une fois la nouvelle liste posée (différé pour laisser le temps au DataGrid
+    /// de se reconstruire).</summary>
     private void FamilyCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (sender is not ComboBox { IsLoaded: true, SelectedItem: string choice } combo
             || combo.DataContext is not OrderLine line || DataContext is not OrderListViewModel vm) return;
 
+        var offset = FindVisualChild<ScrollViewer>(LinesGrid)?.VerticalOffset;
         vm.SetFamilyChoice(line, choice);
 
-        var target = vm.SelectedLine;
-        if (target is null) return;
-        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
+        if (offset is double savedOffset)
         {
-            LinesGrid.UpdateLayout();
-            LinesGrid.ScrollIntoView(target);
-        }));
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+                FindVisualChild<ScrollViewer>(LinesGrid)?.ScrollToVerticalOffset(savedOffset)));
+        }
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject? parent) where T : DependencyObject
+    {
+        if (parent is null) return null;
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T match) return match;
+            var descendant = FindVisualChild<T>(child);
+            if (descendant is not null) return descendant;
+        }
+        return null;
     }
 
     private void NeedBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _needCell.GotFocus((TextBox)sender);
