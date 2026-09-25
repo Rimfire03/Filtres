@@ -51,6 +51,15 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Rattachement des filtres" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Fenêtre « Rattacher des filtres... » de l'écran Commande. Décoché : tous les filtres sont affichés dès l'ouverture." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <CheckBox Content="N'afficher par défaut que les filtres de dimension correspondante (±5 mm, largeur et hauteur interchangeables)"
+                              IsChecked="{Binding LinkDimensionFilterEnabled}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
                               IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,12"/>

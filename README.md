@@ -553,6 +553,15 @@ enregistrement, sans toucher au calcul du besoin ni à la table de liaison exist
      vide sans explication, et une case à cocher **"Afficher tous les filtres (toutes dimensions)"**
      permet de voir tous les filtres des 4 catégories en secours (comportement par défaut = filtrage par
      dimension, comme demandé).
+   - **Comparaison approximative** (évolution ultérieure, remplace la comparaison exacte décrite
+     ci-dessus) : colonne « Dimension » de la ligne (champ `Designation`), à défaut colonne « Type »
+     (champ `Dimension`), comparée à la colonne « Dimension » du filtre. Chaque valeur est acceptée à
+     **±5 mm** près (`DimensionMatchService.ToleranceMm`), largeur et hauteur peuvent être inversées
+     (592x287 = 287x592), et l'épaisseur n'est comparée que si les deux côtés en ont une (592x592 =
+     592x592x45).
+   - **Option dans Paramètres** (carte « Rattachement des filtres », `AppSettings.LinkDimensionFilterEnabled`,
+     enregistrée dans `settings.json`) : décochée, la fenêtre s'ouvre directement avec tous les filtres
+     affichés (case « Afficher tous les filtres » cochée d'office).
    - Un filtre déjà rattaché à la ligne en cours reste toujours visible dans la liste filtrée même s'il ne
      correspond plus à la dimension calculée (ex. dimension modifiée après coup), pour ne jamais masquer
      un rattachement existant à l'utilisateur au risque qu'il le perde sans s'en rendre compte.

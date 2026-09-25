@@ -31,9 +31,14 @@ public partial class FilterLinkWindow : Window
 
         _hasAnyDimensionMatch = _allItems.Any(i => i.DimensionMatches);
 
-        DimensionInfoText.Text = _hasAnyDimensionMatch
-            ? "Seuls les filtres dont la dimension correspond à celle de cette ligne de commande sont affichés par défaut."
-            : "Dimension non renseignée, ou aucun filtre de dimension correspondante trouvé pour cette ligne.";
+        DimensionInfoText.Text = !App.Settings.LinkDimensionFilterEnabled
+            ? "Filtre par dimension désactivé dans Paramètres : tous les filtres sont affichés."
+            : _hasAnyDimensionMatch
+                ? $"Seuls les filtres dont la dimension correspond à celle de cette ligne de commande (à ±{Core.Services.DimensionMatchService.ToleranceMm} mm près, largeur et hauteur interchangeables) sont affichés par défaut."
+                : "Dimension non renseignée, ou aucun filtre de dimension correspondante trouvé pour cette ligne.";
+
+        // Déclenche ApplyFilter via l'événement Checked : à faire après l'initialisation de _view.
+        if (!App.Settings.LinkDimensionFilterEnabled) ShowAllCheckBox.IsChecked = true;
 
         ApplyFilter();
         UpdateSelectionCount();

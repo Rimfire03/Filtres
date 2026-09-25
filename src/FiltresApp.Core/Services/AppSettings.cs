@@ -9,6 +9,10 @@ public class AppSettings
     public string PdfExportPath { get; set; } = Path.Combine("data", "exports");
     public bool AutoUpdateEnabled { get; set; } = true;
 
+    /// <summary>Fenêtre "Rattacher des filtres..." : n'afficher par défaut que les filtres dont la dimension
+    /// correspond (approximativement) à celle de la ligne. Désactivé : tous les filtres sont affichés.</summary>
+    public bool LinkDimensionFilterEnabled { get; set; } = true;
+
     private static string SettingsFilePath => Path.Combine(AppContext.BaseDirectory, "settings.json");
 
     public static AppSettings Load()
