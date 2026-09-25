@@ -8,7 +8,6 @@ public enum EditFieldType
     Decimal,
     Date,
     Months,
-    MonthCombo,
     Combo
 }
 
@@ -88,14 +87,6 @@ public class EditField
         Type = EditFieldType.Months,
         GetValue = () => get(),
         SetValue = v => set((List<int>)v!)
-    };
-
-    public static EditField MonthComboField(string label, Func<int> get, Action<int> set) => new()
-    {
-        Label = label,
-        Type = EditFieldType.MonthCombo,
-        GetValue = () => get(),
-        SetValue = v => set(v is int i ? i : 1)
     };
 
     /// <summary>Liste déroulante générique (ex. sélection d'une famille K7). <paramref name="items"/> est

@@ -43,14 +43,116 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
 
     private bool _refreshingFamilies;
 
+    // ---- Mois consulté (case "Réalisé" / "Date du changement" de la grille) ----
+
+    /// <summary>Options du sélecteur "Mois consulté" : Décembre de l'année précédente, puis Janvier à
+    /// Décembre de l'année choisie (même fonctionnement que les écrans G4 / G3 / Charbon).</summary>
+    [ObservableProperty] private List<PeriodicFilterListViewModel.ConsultedMonthOption> _consultedMonthOptions = new();
+    [ObservableProperty] private PeriodicFilterListViewModel.ConsultedMonthOption? _selectedConsultedMonth;
+
+    partial void OnSelectedConsultedMonthChanged(PeriodicFilterListViewModel.ConsultedMonthOption? value)
+    {
+        foreach (var row in Filters) row.RefreshConsultedMonth();
+    }
+
+    private void RefreshConsultedMonthOptions()
+    {
+        var year = YearContext.Year;
+        var previousIndex = SelectedConsultedMonth is null ? DateTime.Today.Month : ConsultedMonthOptions.IndexOf(SelectedConsultedMonth);
+        if (previousIndex < 0) previousIndex = DateTime.Today.Month;
+
+        var labels = PeriodicFilterListViewModel.MonthLabels;
+        var options = new List<PeriodicFilterListViewModel.ConsultedMonthOption> { new(12, year - 1, $"Décembre {year - 1}") };
+        options.AddRange(Enumerable.Range(1, 12).Select(m => new PeriodicFilterListViewModel.ConsultedMonthOption(m, year, $"{labels[m - 1]} {year}")));
+
+        ConsultedMonthOptions = options;
+        SelectedConsultedMonth = options[Math.Clamp(previousIndex, 0, options.Count - 1)];
+    }
+
     public OpacimetricFilterListViewModel()
     {
+        RefreshConsultedMonthOptions();
         App.YearContext.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(Services.YearContext.Year)) Load();
+            if (e.PropertyName != nameof(Services.YearContext.Year)) return;
+            RefreshConsultedMonthOptions();
+            Load();
         };
         RefreshFamilies();
         Load();
+    }
+
+    private static bool IsInMonth(OpacimetricReplacement r, PeriodicFilterListViewModel.ConsultedMonthOption m) =>
+        r.DateChanged is DateOnly d && d.Year == m.Year && d.Month == m.Month;
+
+    /// <summary>Case "Réalisé" : cochée, crée un remplacement (quantité en place) daté du jour si le mois
+    /// consulté est le mois en cours, sinon du 1er du mois consulté ; décochée, supprime les remplacements
+    /// datés dans ce mois. L'historique des autres mois n'est jamais touché.</summary>
+    public void SetReplacementDone(OpacimetricFilter filter, bool done)
+    {
+        if (!App.GuardWritable() || SelectedConsultedMonth is not { } month) return;
+        var tracked = App.Db.OpacimetricFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
+        var inMonth = tracked.Replacements.Where(r => IsInMonth(r, month)).ToList();
+
+        if (done && inMonth.Count == 0)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var date = today.Year == month.Year && today.Month == month.Month ? today : new DateOnly(month.Year, month.Month, 1);
+            tracked.Replacements.Add(new OpacimetricReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
+        }
+        else if (!done)
+        {
+            foreach (var r in inMonth) App.Db.OpacimetricReplacements.Remove(r);
+        }
+
+        App.Db.SaveChanges();
+        SyncReplacements(filter, tracked.Replacements);
+        App.YearContext.EnsureYear(month.Year);
+    }
+
+    /// <summary>Colonne "Date du changement" : fixe la date du remplacement du mois consulté (le crée au
+    /// besoin), ou le supprime si la date est vidée. La date doit rester dans le mois consulté.</summary>
+    public void SetReplacementDate(OpacimetricFilter filter, DateOnly? date)
+    {
+        if (!App.GuardWritable() || SelectedConsultedMonth is not { } month) return;
+        if (date is DateOnly d && (d.Year != month.Year || d.Month != month.Month))
+        {
+            App.Dialogs.ShowMessage("Date du changement", $"La date doit être en {month.Label} (mois consulté). Changez de mois consulté pour saisir un autre mois.");
+            return;
+        }
+
+        var tracked = App.Db.OpacimetricFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
+        var inMonth = tracked.Replacements.Where(r => IsInMonth(r, month)).OrderBy(r => r.DateChanged).ToList();
+
+        if (date is null)
+        {
+            foreach (var r in inMonth) App.Db.OpacimetricReplacements.Remove(r);
+        }
+        else if (inMonth.Count > 0)
+        {
+            inMonth[^1].DateChanged = date;
+        }
+        else
+        {
+            tracked.Replacements.Add(new OpacimetricReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
+        }
+
+        App.Db.SaveChanges();
+        SyncReplacements(filter, tracked.Replacements);
+    }
+
+    /// <summary>Répercute les remplacements enregistrés sur l'objet affiché (issu d'une requête sans suivi).</summary>
+    private void SyncReplacements(OpacimetricFilter filter, List<OpacimetricReplacement> tracked)
+    {
+        filter.Replacements = tracked
+            .Where(r => App.Db.Entry(r).State != EntityState.Deleted && App.Db.Entry(r).State != EntityState.Detached)
+            .Select(r => new OpacimetricReplacement
+            {
+                Id = r.Id,
+                OpacimetricFilterId = r.OpacimetricFilterId,
+                QuantityChanged = r.QuantityChanged,
+                DateChanged = r.DateChanged
+            }).ToList();
     }
 
     partial void OnSelectedFamilyChanged(FamilyOption? value)
@@ -233,25 +335,6 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
         var tracked = App.Db.OpacimetricFilters.First(f => f.Id == SelectedFilter.Id);
         App.Db.OpacimetricFilters.Remove(tracked);
         App.Db.SaveChanges();
-        Load();
-    }
-
-    [RelayCommand]
-    private void MarkReplacement()
-    {
-        if (!App.GuardWritable()) return;
-        if (SelectedFilter is null) return;
-        var picked = App.Dialogs.PickSimpleReplacement(SelectedFilter.QuantityInPlace);
-        if (picked is null) return;
-
-        var tracked = App.Db.OpacimetricFilters.Include(f => f.Replacements).First(f => f.Id == SelectedFilter.Id);
-        tracked.Replacements.Add(new OpacimetricReplacement
-        {
-            QuantityChanged = picked.Value.Quantity,
-            DateChanged = picked.Value.Date
-        });
-        App.Db.SaveChanges();
-        App.YearContext.EnsureYear(picked.Value.Date.Year);
         Load();
     }
 

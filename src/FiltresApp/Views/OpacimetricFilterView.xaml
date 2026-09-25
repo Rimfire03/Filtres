@@ -29,7 +29,6 @@
             <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Enregistrer un remplacement" Style="{StaticResource PrimaryButton}" Command="{Binding MarkReplacementCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <Button Content="Exporter l'année en Excel" Style="{StaticResource SecondaryButton}" Command="{Binding ExportExcelYearCommand}"/>
             <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
@@ -45,6 +44,8 @@
                     Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
                     Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
         </DockPanel>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
@@ -90,6 +91,24 @@
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.8*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="100" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Réalisé" Width="60">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      IsChecked="{Binding IsDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
+                                      IsEnabled="{x:Static app:App.IsWritable}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Date du changement" Width="95">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding DateDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
+                                        DisplayDateStart="{Binding ConsultedMonthStart, Mode=OneWay}" DisplayDateEnd="{Binding ConsultedMonthEnd, Mode=OneWay}"
+                                        IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
                 <GroupStyle>

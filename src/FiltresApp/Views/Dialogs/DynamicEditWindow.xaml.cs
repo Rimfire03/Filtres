@@ -118,18 +118,6 @@ public partial class DynamicEditWindow : Window
                     });
                     break;
                 }
-                case EditFieldType.MonthCombo:
-                {
-                    var combo = new ComboBox();
-                    string[] names = { "1 - Janvier", "2 - Février", "3 - Mars", "4 - Avril", "5 - Mai", "6 - Juin",
-                        "7 - Juillet", "8 - Août", "9 - Septembre", "10 - Octobre", "11 - Novembre", "12 - Décembre" };
-                    foreach (var n in names) combo.Items.Add(n);
-                    var currentMonth = field.GetValue() is int im ? im : 1;
-                    combo.SelectedIndex = Math.Clamp(currentMonth - 1, 0, 11);
-                    container.Children.Add(combo);
-                    _readers.Add(() => { field.SetValue(combo.SelectedIndex + 1); return true; });
-                    break;
-                }
             }
 
             FieldsPanel.Children.Add(container);

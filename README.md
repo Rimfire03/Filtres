@@ -92,7 +92,7 @@ règle **« un seul rédacteur, plusieurs lecteurs »** :
 - Les postes suivants s'ouvrent en **lecture seule** : dès l'ouverture, un message s'affiche
   « Données en lecture seule : fichier actuellement utilisé par @nom_de_session_windows », puis un
   bandeau jaune reste en haut de la fenêtre pour le rappeler ; les boutons de modification (ajouter, modifier, supprimer,
-  enregistrer un remplacement, case « Réalisé »...) sont désactivés, et la connexion
+  case « Réalisé »...) sont désactivés, et la connexion
   SQLite elle-même est ouverte en lecture seule (aucune écriture possible, même par erreur).
   La consultation, l'impression et les exports PDF/Excel restent disponibles.
 - Les postes en lecture seule voient les modifications du rédacteur en changeant d'écran (les
@@ -212,11 +212,21 @@ ligne concernée. Recalculée à chaque ouverture de l'écran.
 
 Chaque catégorie de filtre à périodicité mensuelle (G4 plissé, G4 plan, G3,
 Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
-`F_sheet`), enregistrement d'un remplacement réalisé via une boîte de dialogue
-(échéance recalculée automatiquement en lecture seule), **case à cocher
-"Réalisé" directement dans la grille** pour le mois consulté (voir plus bas),
+`F_sheet`), échéance recalculée automatiquement, **case à cocher
+"Réalisé" et date du changement directement dans la grille** pour le mois consulté (voir plus bas ;
+seul moyen d'enregistrer un remplacement, l'ancien bouton « Enregistrer un remplacement » a été
+supprimé),
 impression (feuille de terrain avec cases à cocher, voir plus bas), export Excel de
 l'année, et CRUD complet.
+
+**Remplacements F7 à H13** : même principe que les autres écrans de filtres, enregistré à la volée.
+Sélecteur « Mois consulté (case à cocher) » (Décembre N-1 puis Janvier à Décembre de l'année choisie)
+et colonnes « Réalisé » / « Date du changement » en fin de grille. Cocher crée un remplacement
+(quantité en place) daté du jour si le mois consulté est le mois en cours, sinon du 1er du mois
+consulté ; la date se corrige ensuite dans la colonne « Date du changement » (limitée au mois
+consulté). Décocher, ou vider la date, supprime les remplacements de ce mois ; les autres mois ne
+sont jamais touchés. Le bouton « Enregistrer un remplacement » a été supprimé de tous les écrans de
+filtres.
 
 **Familles F7 à H13** (migration v14, table `OpacimetricFamilies` et champ
 `OpacimetricFilter.OpacimetricFamilyId`) : familles **créées à la main** (barre « Famille » en haut

@@ -53,6 +53,52 @@ public partial class OpacimetricFilterRowViewModel : ObservableObject
     }
     public int QuantityInPlace => Filter.QuantityInPlace;
 
+    // ---- Mois consulté : case "Réalisé" et "Date du changement" ----
+
+    private PeriodicFilterListViewModel.ConsultedMonthOption? ConsultedMonth => _owner.SelectedConsultedMonth;
+
+    /// <summary>Dernier remplacement daté dans le mois consulté, s'il y en a un.</summary>
+    private OpacimetricReplacement? ReplacementInConsultedMonth => ConsultedMonth is not { } m
+        ? null
+        : Filter.Replacements
+            .Where(r => r.DateChanged is DateOnly d && d.Year == m.Year && d.Month == m.Month)
+            .OrderBy(r => r.DateChanged)
+            .LastOrDefault();
+
+    public bool IsDoneForConsultedMonth
+    {
+        get => ReplacementInConsultedMonth is not null;
+        set
+        {
+            _owner.SetReplacementDone(Filter, value);
+            RefreshConsultedMonth();
+        }
+    }
+
+    public DateTime? DateDoneForConsultedMonth
+    {
+        get => ReplacementInConsultedMonth?.DateChanged?.ToDateTime(TimeOnly.MinValue);
+        set
+        {
+            _owner.SetReplacementDate(Filter, value.HasValue ? DateOnly.FromDateTime(value.Value) : null);
+            RefreshConsultedMonth();
+        }
+    }
+
+    /// <summary>Bornes du calendrier de la colonne "Date du changement" : le mois consulté.</summary>
+    public DateTime? ConsultedMonthStart => ConsultedMonth is { } m ? new DateTime(m.Year, m.Month, 1) : null;
+    public DateTime? ConsultedMonthEnd => ConsultedMonthStart?.AddMonths(1).AddDays(-1);
+
+    public void RefreshConsultedMonth()
+    {
+        OnPropertyChanged(nameof(IsDoneForConsultedMonth));
+        OnPropertyChanged(nameof(DateDoneForConsultedMonth));
+        OnPropertyChanged(nameof(ConsultedMonthStart));
+        OnPropertyChanged(nameof(ConsultedMonthEnd));
+        OnPropertyChanged(nameof(LastChangedDateInYear));
+        OnPropertyChanged(nameof(ReplacementCountInYear));
+    }
+
     private IEnumerable<OpacimetricReplacement> ReplacementsForYear =>
         Filter.Replacements.Where(r => r.DateChanged.HasValue && r.DateChanged.Value.Year == _year);
 

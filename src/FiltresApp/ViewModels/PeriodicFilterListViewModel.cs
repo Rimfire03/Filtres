@@ -194,39 +194,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    [RelayCommand]
-    private void MarkReplacement()
-    {
-        if (!App.GuardWritable()) return;
-        if (SelectedFilter is null) return;
-
-        var defaultMonth = SelectedFilter.NextDueDate?.Month ?? DateTime.Today.Month;
-        var picked = App.Dialogs.PickReplacement(defaultMonth, SelectedFilter.QuantityInPlace);
-        if (picked is null) return;
-
-        var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == SelectedFilter.Id);
-        var existing = tracked.Replacements.FirstOrDefault(r => r.Month == picked.Value.Month && r.Year == picked.Value.Date.Year);
-        if (existing != null)
-        {
-            existing.QuantityDone = picked.Value.Quantity;
-            existing.DateDone = picked.Value.Date;
-        }
-        else
-        {
-            tracked.Replacements.Add(new FilterReplacement
-            {
-                Month = picked.Value.Month,
-                Year = picked.Value.Date.Year,
-                QuantityDone = picked.Value.Quantity,
-                DateDone = picked.Value.Date
-            });
-        }
-
-        App.Db.SaveChanges();
-        App.YearContext.EnsureYear(picked.Value.Date.Year);
-        Load();
-    }
-
     /// <summary>Case à cocher de la grille : trouve ou crée la ligne de suivi (mois consulté, voir
     /// <see cref="SelectedConsultedMonth"/>) et fixe la date du jour. Ne supprime jamais les lignes des
     /// autres mois/années : c'est ce qui permet de changer d'année sans perdre l'historique.</summary>

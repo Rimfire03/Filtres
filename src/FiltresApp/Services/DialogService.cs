@@ -10,8 +10,6 @@ public interface IDialogService
     void ShowMessage(string title, string message);
     bool ShowConfirm(string title, string message);
     bool EditFields(string title, List<EditField> fields);
-    (int Month, DateOnly Date, int Quantity)? PickReplacement(int defaultMonth, int defaultQuantity);
-    (DateOnly Date, int Quantity)? PickSimpleReplacement(int defaultQuantity);
     List<FilterRef>? PickFilterLinks(List<FilterPickItem> items);
     void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements);
     void ShowOpacimetricHistory(string location, string dimension, List<OpacimetricReplacement> replacements);
@@ -33,36 +31,6 @@ public class DialogService : IDialogService
     {
         var window = new DynamicEditWindow(title, fields) { Owner = Application.Current.MainWindow };
         return window.ShowDialog() == true;
-    }
-
-    public (int Month, DateOnly Date, int Quantity)? PickReplacement(int defaultMonth, int defaultQuantity)
-    {
-        var month = defaultMonth;
-        var date = DateOnly.FromDateTime(DateTime.Today);
-        var qty = defaultQuantity;
-
-        var fields = new List<EditField>
-        {
-            EditField.MonthComboField("Mois du remplacement", () => month, v => month = v),
-            EditField.DateField("Date du changement réalisé", () => date, v => date = v ?? date),
-            EditField.IntField("Quantité changée", () => qty, v => qty = v)
-        };
-
-        return EditFields("Enregistrer un remplacement", fields) ? (month, date, qty) : null;
-    }
-
-    public (DateOnly Date, int Quantity)? PickSimpleReplacement(int defaultQuantity)
-    {
-        var date = DateOnly.FromDateTime(DateTime.Today);
-        var qty = defaultQuantity;
-
-        var fields = new List<EditField>
-        {
-            EditField.DateField("Date du changement", () => date, v => date = v ?? date),
-            EditField.IntField("Quantité changée", () => qty, v => qty = v)
-        };
-
-        return EditFields("Enregistrer un remplacement", fields) ? (date, qty) : null;
     }
 
     public List<FilterRef>? PickFilterLinks(List<FilterPickItem> items)

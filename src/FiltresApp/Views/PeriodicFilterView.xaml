@@ -21,7 +21,6 @@
             <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Enregistrer un remplacement" Style="{StaticResource PrimaryButton}" Command="{Binding MarkReplacementCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <Button Content="Exporter l'année en Excel" Style="{StaticResource SecondaryButton}" Command="{Binding ExportExcelYearCommand}"/>
         </StackPanel>
