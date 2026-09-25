@@ -25,6 +25,7 @@ public class FiltresDbContext : DbContext
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
     public DbSet<OrderLinePeriodicFilter> OrderLinePeriodicFilters => Set<OrderLinePeriodicFilter>();
     public DbSet<SharedAsset> SharedAssets => Set<SharedAsset>();
+    public DbSet<OpacimetricFamily> OpacimetricFamilies => Set<OpacimetricFamily>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -46,6 +47,12 @@ public class FiltresDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SharedAsset>().HasKey(a => a.Key);
+
+        modelBuilder.Entity<OpacimetricFilter>()
+            .HasOne(f => f.Family)
+            .WithMany()
+            .HasForeignKey(f => f.OpacimetricFamilyId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<PeriodicFilter>()
             .HasMany(f => f.Replacements)

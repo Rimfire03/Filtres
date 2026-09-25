@@ -49,6 +49,7 @@ public class DbContextFactory
         (11, "Choix manuel de la famille (Inventaire / Commande)", AddOrderLineFamilyOverrideColumn),
         (12, "Besoin saisi (Commande, familles hors G4 / G3)", AddOrderLineManualNeedColumn),
         (13, "Logo de l'entreprise (stockage dans la base)", AddSharedAssetsTable),
+        (14, "Familles des filtres F7 à H13", AddOpacimetricFamilies),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -141,6 +142,22 @@ public class DbContextFactory
         var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
+    }
+
+    private static void AddOpacimetricFamilies(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "OpacimetricFamilies" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_OpacimetricFamilies" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL
+            );
+            """);
+        if (!GetColumns(ctx, "OpacimetricFilters").Contains("OpacimetricFamilyId"))
+            ctx.Database.ExecuteSqlRaw(
+                """ALTER TABLE "OpacimetricFilters" ADD COLUMN "OpacimetricFamilyId" INTEGER NULL REFERENCES "OpacimetricFamilies" ("Id") ON DELETE SET NULL;""");
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_OpacimetricFilters_OpacimetricFamilyId" ON "OpacimetricFilters" ("OpacimetricFamilyId");""");
     }
 
     private static void AddSharedAssetsTable(FiltresDbContext ctx) =>

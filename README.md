@@ -212,6 +212,17 @@ Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
 impression (feuille de terrain avec cases à cocher, voir plus bas), export Excel de
 l'année, et CRUD complet.
 
+**Familles F7 à H13** (migration v14, table `OpacimetricFamilies` et champ
+`OpacimetricFilter.OpacimetricFamilyId`) : familles **créées à la main** (barre « Famille » en haut
+de l'écran : « + Nouvelle famille », « Renommer la famille », « Supprimer la famille », ces deux
+derniers agissant sur la famille choisie dans le filtre) et **attribuées manuellement** à chaque
+filtre via le champ « Famille » de la fenêtre Ajouter / Modifier. La grille regroupe les filtres sous
+un bandeau par famille (familles par nom, « Sans famille » en dernier) et la liste « Famille » permet
+de n'en afficher qu'une. Un filtre ajouté pendant qu'une famille est filtrée reçoit cette famille.
+Supprimer une famille ne supprime aucun filtre (ils passent en « Sans famille », après
+confirmation). L'impression reprend le regroupement (ligne titre par famille). Ces familles sont
+indépendantes de celles des autres écrans. Gestion désactivée en lecture seule.
+
 Filtres F7 à H13 (colonnes : nom de la centrale, dimension, **type** — texte libre saisi dans
 « Modifier », migration v10 —, qté en place, dernier changement, nb remplacements) :
 historique de remplacements (qté + date) sans périodicité

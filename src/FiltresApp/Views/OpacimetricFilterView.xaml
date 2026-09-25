@@ -7,8 +7,17 @@
              d:DataContext="{d:DesignInstance vm:OpacimetricFilterListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Filtres regroupés par famille : un bandeau titre par famille (même style que la Liste K7). -->
+        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -26,7 +35,19 @@
             <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Filters}" svc:ColumnChooser.Key="Filtres F7 à H13" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
+        <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
+            <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding FamilyOptions}" SelectedItem="{Binding SelectedFamily}"
+                      DisplayMemberPath="Label" Width="220" VerticalContentAlignment="Center"/>
+            <Button Content="+ Nouvelle famille" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                    Command="{Binding AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Renommer la famille" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+        </DockPanel>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="Filtres F7 à H13" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Resources>
                 <!-- Menu contextuel minimal (cette vue n'en avait pas encore) : uniquement "Consulter
@@ -49,6 +70,17 @@
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="100" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource BrushSidebar}" Padding="10,5" Margin="0,6,0,2">
+                                <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+                            </Border>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
         </DataGrid>
     </Grid>
 </UserControl>

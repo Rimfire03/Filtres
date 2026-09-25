@@ -13,6 +13,15 @@ public class OpacimetricFilter
     public int QuantityInPlace { get; set; }
     public string? Notes { get; set; }
 
+    public int? OpacimetricFamilyId { get; set; }
+    public OpacimetricFamily? Family { get; set; }
+
+    public const string NoFamilyLabel = "Sans famille";
+
+    /// <summary>Titre du séparateur de famille dans la grille F7 à H13.</summary>
+    [NotMapped]
+    public string FamilyGroupLabel => Family?.Nom ?? NoFamilyLabel;
+
     public List<OpacimetricReplacement> Replacements { get; set; } = new();
 
     [NotMapped]

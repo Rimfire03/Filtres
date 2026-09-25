@@ -28,6 +28,7 @@ public partial class OpacimetricFilterRowViewModel : ObservableObject
     private void ShowHistory() => _owner.ShowHistory(Filter);
 
     public int Id => Filter.Id;
+    public string FamilyGroupLabel => Filter.FamilyGroupLabel;
     public string Location => Filter.Location;
     public string Dimension => Filter.Dimension;
     public string? FilterType => Filter.FilterType;
