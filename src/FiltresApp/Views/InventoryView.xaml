@@ -26,11 +26,12 @@
 
         <DataGrid Grid.Row="2" ItemsSource="{Binding Lines}" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="2*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -31,7 +31,10 @@ public class OrderLine
     /// Inventaire / Commande chmy.</summary>
     public string? Unite { get; set; }
 
+    /// <summary>Affichée comme "Référence fournisseur" dans les écrans Commande et Inventaire.</summary>
     public string? Notes { get; set; }
+
+    public string? Destination { get; set; }
 
     /// <summary>Marqueur technique (non affiché en UI) : identifiant de l'<see cref="InventoryLine"/>
     /// d'origine si cette ligne provient de la migration "fusion Inventaire / Commande chmy" (voir

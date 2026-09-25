@@ -35,11 +35,20 @@ public class DbContextFactory
         ctx.Database.EnsureCreated();
         EnsureOrderLinePeriodicFilterTable(ctx);
         EnsureInventoryOrderMergeSchema(ctx);
+        EnsureOrderLineDestinationColumn(ctx);
         MigrateInventoryLinesIntoOrderLines(ctx);
         EnsureK7FamilySchema(ctx);
         K7FamilyReconstructionService.ReconstructIfNeeded(ctx);
         RemovePourDevisAndRefacturingData(ctx);
         EnsureChangedEvery15DaysColumn(ctx);
+    }
+
+    /// <summary>Colonne "Destination" des écrans Commande et Inventaire, vide pour les lignes existantes.</summary>
+    private static void EnsureOrderLineDestinationColumn(FiltresDbContext ctx)
+    {
+        var cols = GetColumns(ctx, "OrderLines");
+        if (!cols.Contains("Destination"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "Destination" TEXT NULL;""");
     }
 
     /// <summary>Option "Changé tous les 15 jours" (G4 plissé, voir README) : ajoute à "PeriodicFilters"

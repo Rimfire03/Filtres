@@ -161,6 +161,22 @@ modifient les mêmes lignes.**
 > README conserve l'ancien nom dans les sections historiques ; la feuille du classeur
 > Excel source s'appelait « Commande chmy ».
 
+**Colonnes des écrans Commande et Inventaire** (même table `OrderLine`, seuls les libellés
+affichés ont changé, les données existantes sont conservées telles quelles) :
+
+| Libellé affiché         | Champ en base   | Remarque                                     |
+|-------------------------|-----------------|----------------------------------------------|
+| Dimension               | `Designation`   | ex-« Désignation »                           |
+| Destination             | `Destination`   | nouveau champ, vide pour les lignes existantes (colonne ajoutée automatiquement au démarrage du poste rédacteur) |
+| Type                    | `Dimension`     | ex-« Dimension »                             |
+| Référence fournisseur   | `Notes`         | ex-« Notes », placée après Type              |
+
+- **Commande** : Dimension, Destination, Type, Référence fournisseur, Filtres liés, Besoin mars,
+  Besoin septembre, **Quantité à commander en dernier**.
+- **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Quantité, Unité.
+- Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les
+  mêmes libellés.
+
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de
 l'application (interface, code et données), voir plus bas.
 

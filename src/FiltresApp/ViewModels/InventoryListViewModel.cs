@@ -68,11 +68,12 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     {
         var fields = new List<EditField>
         {
-            EditField.Text("Désignation", () => entity.Designation, v => entity.Designation = v, required: true),
-            EditField.NullableText("Dimension", () => entity.Dimension, v => entity.Dimension = v),
+            EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
+            EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
+            EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
+            EditField.Multiline("Référence fournisseur", () => entity.Notes, v => entity.Notes = v),
             EditField.NullableInt("Quantité", () => entity.Quantite, v => entity.Quantite = v),
-            EditField.NullableText("Unité", () => entity.Unite, v => entity.Unite = v),
-            EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v)
+            EditField.NullableText("Unité", () => entity.Unite, v => entity.Unite = v)
         };
         return App.Dialogs.EditFields(isNew ? "Ajouter une ligne" : "Modifier la ligne", fields);
     }
@@ -89,11 +90,11 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    private static string[] BuildHeaders() => new[] { "Désignation", "Dimension", "Quantité", "Unité", "Notes" };
+    private static string[] BuildHeaders() => new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Quantité", "Unité" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
-        l.Designation, l.Dimension ?? "", l.Quantite?.ToString() ?? "", l.Unite ?? "", l.Notes ?? ""
+        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.Quantite?.ToString() ?? "", l.Unite ?? ""
     };
 
     [RelayCommand]
