@@ -13,6 +13,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+            <conv:InverseBoolConverter x:Key="InverseBool"/>
 
             <DataTemplate DataType="{x:Type vm:PeriodicFilterListViewModel}">
                 <views:PeriodicFilterView/>

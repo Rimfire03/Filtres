@@ -35,6 +35,26 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Margin="0,0,0,8" Style="{StaticResource SectionText}">
+                        <Run Text="Version actuelle :"/>
+                        <Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                    <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
+                              IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,12"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Vérifier maintenant" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding CheckForUpdatesCommand}" IsEnabled="{Binding IsCheckingForUpdate, Converter={StaticResource InverseBool}}"/>
+                        <Button Content="Télécharger et installer" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
+                                Command="{Binding InstallUpdateCommand}" Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}"
+                                IsEnabled="{Binding IsInstallingUpdate, Converter={StaticResource InverseBool}}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding UpdateStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBlock Text="Génère un classeur .xlsx (une feuille par catégorie : G4 plissés, G4 plan, G3, F7-H13, Charbon) pour l'année sélectionnée, dans le même dossier que les exports PDF." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <DockPanel Margin="0,0,0,8">

@@ -7,6 +7,7 @@ public class AppSettings
 {
     public string DatabasePath { get; set; } = Path.Combine("data", "filtres.db");
     public string PdfExportPath { get; set; } = Path.Combine("data", "exports");
+    public bool AutoUpdateEnabled { get; set; } = true;
 
     private static string SettingsFilePath => Path.Combine(AppContext.BaseDirectory, "settings.json");
 
