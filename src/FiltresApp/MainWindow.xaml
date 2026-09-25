@@ -8,74 +8,80 @@
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <Border Grid.Column="0" Background="{StaticResource BrushSidebar}">
-            <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Margin="16,20,16,16">
-                    <!-- Logo de l'entreprise (Paramètres), sur fond blanc pour rester lisible sur la barre sombre. -->
-                    <Border Background="White" CornerRadius="4" Padding="6" Margin="0,0,0,12" HorizontalAlignment="Left"
-                            Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
-                        <Image Source="{Binding LogoImage}" MaxHeight="60" MaxWidth="200" Stretch="Uniform"/>
-                    </Border>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="/Assets/app-logo-white.png" Width="26" Height="26" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Filtres à air" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <TextBlock Text="Suivi de maintenance" FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0"/>
-                    <DockPanel Margin="0,14,0,0">
-                        <TextBlock DockPanel.Dock="Left" Text="Année :" Foreground="#D1D5DB" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding YearContext.Year}"/>
-                    </DockPanel>
-                </StackPanel>
-
-                <ListBox ItemsSource="{Binding NavigationItems}" SelectedItem="{Binding SelectedItem}"
-                         Background="Transparent" BorderThickness="0">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding" Value="16,10"/>
-                            <Setter Property="Foreground" Value="#D1D5DB"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <Border x:Name="Bd" Background="Transparent" Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarSelected}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarHover}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Icon}" Margin="0,0,10,0" FontSize="14"/>
-                                <TextBlock Text="{Binding Title}" FontSize="13" Foreground="White" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
+    <DockPanel>
+        <!-- Pied de page -->
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource BrushSidebar}" Padding="12,3">
+            <TextBlock Text="© Thomas Guidez" FontSize="11" Foreground="#9CA3AF" HorizontalAlignment="Center"/>
         </Border>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <DockPanel Grid.Column="1">
-            <Border DockPanel.Dock="Top" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="0,0,0,1" Padding="16,10"
-                    Visibility="{Binding Source={x:Static app:App.IsReadOnly}, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="{x:Static app:App.ReadOnlyMessage}" TextWrapping="Wrap" Foreground="#92400E" FontWeight="SemiBold"/>
+            <Border Grid.Column="0" Background="{StaticResource BrushSidebar}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="16,20,16,16">
+                        <!-- Logo de l'entreprise (Paramètres), sur fond blanc pour rester lisible sur la barre sombre. -->
+                        <Border Background="White" CornerRadius="4" Padding="6" Margin="0,0,0,12" HorizontalAlignment="Left"
+                                Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
+                            <Image Source="{Binding LogoImage}" MaxHeight="60" MaxWidth="200" Stretch="Uniform"/>
+                        </Border>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/app-logo-white.png" Width="26" Height="26" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Filtres" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="Suivi de maintenance" FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0"/>
+                        <DockPanel Margin="0,14,0,0">
+                            <TextBlock DockPanel.Dock="Left" Text="Année :" Foreground="#D1D5DB" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding YearContext.Year}"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding NavigationItems}" SelectedItem="{Binding SelectedItem}"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="16,10"/>
+                                <Setter Property="Foreground" Value="#D1D5DB"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="Bd" Background="Transparent" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarSelected}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarHover}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Icon}" Margin="0,0,10,0" FontSize="14"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="13" Foreground="White" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
             </Border>
-            <ContentControl Content="{Binding CurrentViewModel}" Background="{StaticResource BrushBackground}"/>
-        </DockPanel>
-    </Grid>
+
+            <DockPanel Grid.Column="1">
+                <Border DockPanel.Dock="Top" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="0,0,0,1" Padding="16,10"
+                        Visibility="{Binding Source={x:Static app:App.IsReadOnly}, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{x:Static app:App.ReadOnlyMessage}" TextWrapping="Wrap" Foreground="#92400E" FontWeight="SemiBold"/>
+                </Border>
+                <ContentControl Content="{Binding CurrentViewModel}" Background="{StaticResource BrushBackground}"/>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
 </Window>
