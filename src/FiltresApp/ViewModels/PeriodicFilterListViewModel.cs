@@ -155,8 +155,12 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             && (name.Length == 0 || compare.IndexOf(f.Location, name, ignore) >= 0)
             && (SelectedDimension == AllDimensions || string.Equals(f.Dimension.Trim(), SelectedDimension, StringComparison.OrdinalIgnoreCase)));
 
+        // Trié explicitement ici (plutôt que via CollectionViewSource.SortDescriptions, qui ne garantit
+        // pas l'ordre des groupes dans la grille) : rang de famille (Filtres à remplacer avant Filtres à
+        // laver avant Sans dimension, écran G3 uniquement, voir DimensionFamilyRank), puis emplacement.
         Filters = new ObservableCollection<PeriodicFilterRowViewModel>(
-            filtered.Select(f => new PeriodicFilterRowViewModel(f, this, _linkedLines.GetValueOrDefault(f.Id))));
+            filtered.OrderBy(f => f.DimensionFamilyRank).ThenBy(f => f.Location, StringComparer.CurrentCultureIgnoreCase)
+                .Select(f => new PeriodicFilterRowViewModel(f, this, _linkedLines.GetValueOrDefault(f.Id))));
     }
 
     private void RefreshRows()
