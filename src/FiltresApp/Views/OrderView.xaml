@@ -42,7 +42,7 @@
                        Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
         </DockPanel>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
+        <DataGrid x:Name="LinesGrid" Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedLine}" IsReadOnly="True"
                   AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Columns>
