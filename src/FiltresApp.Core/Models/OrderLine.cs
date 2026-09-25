@@ -31,14 +31,35 @@ public class OrderLine
 
     public string? Destination { get; set; }
 
-    public int? OrderFamilyId { get; set; }
-    public OrderFamily? Family { get; set; }
-
     public const string NoFamilyLabel = "Sans famille";
+    public const string MultipleFamiliesLabel = "Plusieurs familles";
 
-    /// <summary>Titre du séparateur de famille dans les grilles Inventaire et Commande.</summary>
+    public static string FamilyLabelFor(FilterCategory category) => category switch
+    {
+        FilterCategory.G4Plisse => "Filtres G4 plissés",
+        FilterCategory.G4Plan => "Filtres G4 plan",
+        FilterCategory.G3 => "Filtres G3",
+        FilterCategory.Charbon => "Charbon",
+        _ => category.ToString()
+    };
+
+    /// <summary>Famille (séparateur des grilles Inventaire et Commande), déduite de la catégorie des filtres
+    /// rattachés : "Sans famille" si aucun, "Plusieurs familles" s'ils sont de catégories différentes.
+    /// Nécessite FilterLinks et leurs PeriodicFilter chargés.</summary>
     [NotMapped]
-    public string FamilyGroupLabel => Family?.Nom ?? NoFamilyLabel;
+    public string FamilyGroupLabel
+    {
+        get
+        {
+            var categories = LinkedFilters.Select(f => f.Category).Distinct().ToList();
+            return categories.Count switch
+            {
+                0 => NoFamilyLabel,
+                1 => FamilyLabelFor(categories[0]),
+                _ => MultipleFamiliesLabel
+            };
+        }
+    }
 
     /// <summary>Quantité relevée à l'inventaire, saisie directement dans la grille de l'écran Inventaire.</summary>
     public int? Inventaire { get; set; }

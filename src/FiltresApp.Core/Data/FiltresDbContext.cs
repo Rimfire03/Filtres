@@ -23,7 +23,6 @@ public class FiltresDbContext : DbContext
     public DbSet<K7Family> K7Families => Set<K7Family>();
     public DbSet<InventoryLine> InventoryLines => Set<InventoryLine>();
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
-    public DbSet<OrderFamily> OrderFamilies => Set<OrderFamily>();
     public DbSet<OrderLinePeriodicFilter> OrderLinePeriodicFilters => Set<OrderLinePeriodicFilter>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -56,12 +55,6 @@ public class FiltresDbContext : DbContext
             .WithOne(r => r.OpacimetricFilter)
             .HasForeignKey(r => r.OpacimetricFilterId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<OrderLine>()
-            .HasOne(l => l.Family)
-            .WithMany()
-            .HasForeignKey(l => l.OrderFamilyId)
-            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<OrderLinePeriodicFilter>()
             .HasOne(l => l.OrderLine)

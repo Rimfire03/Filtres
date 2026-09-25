@@ -36,13 +36,9 @@
         <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
             <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
             <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
-                      DisplayMemberPath="Label" Width="220" VerticalContentAlignment="Center"/>
-            <Button Content="+ Nouvelle famille" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
-                    Command="{Binding FamilyFilter.AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Renommer la famille" Style="{StaticResource SecondaryButton}"
-                    Command="{Binding FamilyFilter.RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
-                    Command="{Binding FamilyFilter.DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                      Width="220" VerticalContentAlignment="Center"/>
+            <TextBlock Text="Famille déduite des filtres rattachés à la ligne (bouton « Rattacher des filtres... » de l'écran Commande)."
+                       Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
         </DockPanel>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}"

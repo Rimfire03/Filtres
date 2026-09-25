@@ -146,6 +146,8 @@ public class DbContextFactory
             ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OpacimetricFilters" ADD COLUMN "FilterType" TEXT NULL;""");
     }
 
+    /// <summary>Familles saisies manuellement, remplacées depuis par des familles déduites des filtres
+    /// rattachés : la table et la colonne restent en base mais ne sont plus utilisées.</summary>
     private static void AddOrderFamilies(FiltresDbContext ctx)
     {
         ctx.Database.ExecuteSqlRaw(

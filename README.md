@@ -243,25 +243,30 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
 - Les fenêtres d'ajout/modification, l'impression et l'export PDF suivent le même ordre et les
   mêmes libellés.
 
-**Familles (Inventaire et Commande)** — migration v9, table `OrderFamilies` et champ
-`OrderLine.OrderFamilyId`. Les familles sont communes aux deux écrans (mêmes lignes) et
-indépendantes de toute autre information (sans lien avec les familles K7 ni avec les filtres).
+**Familles (Inventaire et Commande)** — générées automatiquement, rien à saisir. La famille d'une
+ligne est déduite de la catégorie des filtres qui lui sont rattachés (bouton « Rattacher des
+filtres... » de l'écran Commande) :
 
-- Barre « Famille » en haut de chaque écran : liste déroulante pour **filtrer** (« Toutes les
-  familles », « Sans famille », puis chaque famille), et boutons « + Nouvelle famille »,
-  « Renommer la famille » et « Supprimer la famille » (ces deux derniers agissent sur la famille
-  choisie dans le filtre). Chaque écran garde son propre filtre.
-- Pas de colonne « Famille » : les lignes sont **regroupées sous un bandeau titre par famille**
-  (séparateur horizontal, même style que la Liste K7), familles triées par nom et « Sans famille »
-  en dernier. Le choix de la famille d'une ligne se fait dans le champ « Famille » de la fenêtre
-  d'ajout/modification. Une ligne ajoutée pendant qu'une famille est filtrée reçoit cette famille
-  par défaut.
-- Supprimer une famille ne supprime aucune ligne : ses lignes passent en « Sans famille » (après
-  confirmation indiquant leur nombre). Deux familles ne peuvent pas porter le même nom.
+| Filtres rattachés à la ligne                       | Famille              |
+|----------------------------------------------------|----------------------|
+| uniquement des filtres de « Filtres G4 plissés »   | Filtres G4 plissés   |
+| uniquement des filtres de « Filtres G4 plan »      | Filtres G4 plan      |
+| uniquement des filtres de « Filtres G3 »           | Filtres G3           |
+| uniquement des filtres de « Charbon »              | Charbon              |
+| des filtres de plusieurs catégories                | Plusieurs familles   |
+| aucun filtre                                       | Sans famille         |
+
+Les filtres F7 à H13 ne sont pas rattachables et n'ont donc pas de famille pour le moment.
+
+- Les lignes sont **regroupées sous un bandeau titre par famille** (même style que la Liste K7),
+  dans l'ordre du tableau ci-dessus.
+- Liste « Famille » en haut de chaque écran pour **filtrer** sur une famille (chaque écran garde son
+  propre filtre).
 - L'impression et l'export PDF suivent le filtre en cours (famille ajoutée au titre) et reprennent
   le regroupement : une ligne titre « — NOM DE LA FAMILLE — » avant les lignes de chaque famille.
-- Le nom « Sans famille » est réservé au groupe des lignes sans famille.
-- En lecture seule, le filtre reste utilisable ; la gestion des familles est désactivée.
+- Historique : une première version (migration v9) permettait de créer des familles à la main. Elle
+  a été remplacée par ce calcul automatique ; la table `OrderFamilies` et la colonne
+  `OrderLines.OrderFamilyId` restent dans les bases déjà mises à jour mais ne sont plus utilisées.
 
 "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement de
 l'application (interface, code et données), voir plus bas.

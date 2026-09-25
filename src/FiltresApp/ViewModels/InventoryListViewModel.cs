@@ -29,22 +29,16 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    public void Reload()
-    {
-        FamilyFilter.Refresh();
-        Load();
-    }
+    public void Reload() => Load();
 
     private void Load()
     {
-        Lines = new ObservableCollection<OrderLine>(
-            OrderFamilyFilter.OrderByFamily(
-                    FamilyFilter.Apply(App.Db.OrderLines
-                            .Include(l => l.Family)
-                            .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
-                            .AsNoTracking())
-                        .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy))
-                .ToList());
+        Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
+            App.Db.OrderLines
+                .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
+                .AsNoTracking()
+                .Where(l => l.DocumentType == OrderDocumentType.CommandeChmy)
+                .ToList()));
     }
 
     [RelayCommand]
@@ -54,8 +48,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
         var entity = new OrderLine
         {
             DocumentType = OrderDocumentType.CommandeChmy,
-            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == OrderDocumentType.CommandeChmy).Max(l => (int?)l.Ordre) ?? 0) + 1,
-            OrderFamilyId = FamilyFilter.DefaultFamilyId
+            Ordre = (App.Db.OrderLines.Where(l => l.DocumentType == OrderDocumentType.CommandeChmy).Max(l => (int?)l.Ordre) ?? 0) + 1
         };
         if (!EditEntity(entity, true)) return;
         App.Db.OrderLines.Add(entity);
@@ -78,7 +71,6 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     {
         var fields = new List<EditField>
         {
-            FamilyFilter.CreateEditField(entity),
             EditField.Text("Dimension", () => entity.Designation, v => entity.Designation = v, required: true),
             EditField.NullableText("Destination", () => entity.Destination, v => entity.Destination = v),
             EditField.NullableText("Type", () => entity.Dimension, v => entity.Dimension = v),
