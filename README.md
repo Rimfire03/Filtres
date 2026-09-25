@@ -144,6 +144,8 @@ modifications de données en SQL brut (pas via le modèle EF, qui aura évolué)
 directement à la dernière version. Les versions 1 à 5 reprennent les mises à jour faites avant ce
 système (idempotentes) ; la version 6 ajoute la colonne « Destination » ; la version 7 supprime la
 colonne « Unité » et son contenu (récupérable dans la sauvegarde `.bak` faite avant la mise à jour).
+La version 8 ajoute la colonne « Inventaire », la 9 les familles Inventaire/Commande, la 10 la
+colonne « Type » des filtres F7 à H13.
 
 ## Import Excel (supprimé)
 
@@ -181,7 +183,9 @@ Charbon) propose : liste/grille, filtre d'affichage par mois (équivalent
 impression générale et impression dédiée au mois consulté, export Excel de
 l'année, et CRUD complet.
 
-Filtres F7 à H13 : historique de remplacements (qté + date) sans périodicité
+Filtres F7 à H13 (colonnes : nom de la centrale, dimension, **type** — texte libre saisi dans
+« Modifier », migration v10 —, qté en place, dernier changement, nb remplacements) :
+historique de remplacements (qté + date) sans périodicité
 fixe (pas de notion de "mois consulté" pour cette feuille, voir plus bas),
 CRUD, impression, export Excel de l'année.
 

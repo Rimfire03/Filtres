@@ -45,6 +45,7 @@ public class DbContextFactory
         (7, "Suppression de la colonne Unité (Inventaire) et de son contenu", DropOrderLineUniteColumn),
         (8, "Colonne Inventaire (écran Inventaire)", AddOrderLineInventaireColumn),
         (9, "Familles des écrans Inventaire et Commande", AddOrderFamilies),
+        (10, "Colonne Type des filtres F7 à H13", AddOpacimetricFilterTypeColumn),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -126,6 +127,12 @@ public class DbContextFactory
     {
         var backupPath = $"{_dbPath}.avant-maj-v{fromVersion}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
+    }
+
+    private static void AddOpacimetricFilterTypeColumn(FiltresDbContext ctx)
+    {
+        if (!GetColumns(ctx, "OpacimetricFilters").Contains("FilterType"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OpacimetricFilters" ADD COLUMN "FilterType" TEXT NULL;""");
     }
 
     private static void AddOrderFamilies(FiltresDbContext ctx)

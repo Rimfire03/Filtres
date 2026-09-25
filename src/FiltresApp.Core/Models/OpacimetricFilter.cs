@@ -9,6 +9,7 @@ public class OpacimetricFilter
     public int Id { get; set; }
     public string Location { get; set; } = string.Empty;
     public string Dimension { get; set; } = string.Empty;
+    public string? FilterType { get; set; }
     public int QuantityInPlace { get; set; }
     public string? Notes { get; set; }
 

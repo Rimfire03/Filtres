@@ -69,6 +69,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
         {
             EditField.Text("Nom de la centrale d'air", () => entity.Location, v => entity.Location = v, required: true),
             EditField.Text("Dimension", () => entity.Dimension, v => entity.Dimension = v),
+            EditField.NullableText("Type", () => entity.FilterType, v => entity.FilterType = v),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v)
         };
@@ -109,10 +110,10 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
     [RelayCommand]
     private void Print()
     {
-        var headers = new[] { "Nom de la centrale d'air", "Dimension", "Qté en place", $"Dernier changement ({YearContext.Year})", $"Nb remplacements ({YearContext.Year})" };
+        var headers = new[] { "Nom de la centrale d'air", "Dimension", "Type", "Qté en place", $"Dernier changement ({YearContext.Year})", $"Nb remplacements ({YearContext.Year})" };
         var rows = Filters.Select(f => new[]
         {
-            f.Location, f.Dimension, f.QuantityInPlace.ToString(),
+            f.Location, f.Dimension, f.FilterType ?? "", f.QuantityInPlace.ToString(),
             f.LastChangedDateInYear?.ToString("dd/MM/yyyy") ?? "-", f.ReplacementCountInYear.ToString()
         }).ToList();
         App.Printer.PrintTable(Title, headers, rows);

@@ -30,6 +30,7 @@ public partial class OpacimetricFilterRowViewModel : ObservableObject
     public int Id => Filter.Id;
     public string Location => Filter.Location;
     public string Dimension => Filter.Dimension;
+    public string? FilterType => Filter.FilterType;
     public int QuantityInPlace => Filter.QuantityInPlace;
 
     private IEnumerable<OpacimetricReplacement> ReplacementsForYear =>

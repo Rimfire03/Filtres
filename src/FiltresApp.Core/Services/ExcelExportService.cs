@@ -101,14 +101,15 @@ public class ExcelExportService
         var ws = workbook.Worksheets.Add("F7-H13");
         ws.Cell(1, 1).Value = "Nom de la centrale d'air";
         ws.Cell(1, 2).Value = "Dimension";
-        ws.Cell(1, 3).Value = "Qté en place";
-        ws.Cell(1, 4).Value = "Date de changement";
-        ws.Cell(1, 5).Value = "Qté changée";
+        ws.Cell(1, 3).Value = "Type";
+        ws.Cell(1, 4).Value = "Qté en place";
+        ws.Cell(1, 5).Value = "Date de changement";
+        ws.Cell(1, 6).Value = "Qté changée";
         ws.Row(1).Style.Font.Bold = true;
 
         var filters = ctx.OpacimetricFilters
             .OrderBy(f => f.Location)
-            .Select(f => new { f.Id, f.Location, f.Dimension, f.QuantityInPlace })
+            .Select(f => new { f.Id, f.Location, f.Dimension, f.FilterType, f.QuantityInPlace })
             .ToList();
 
         var replacements = ctx.OpacimetricReplacements
@@ -124,7 +125,8 @@ public class ExcelExportService
             {
                 ws.Cell(row, 1).Value = f.Location;
                 ws.Cell(row, 2).Value = f.Dimension;
-                ws.Cell(row, 3).Value = f.QuantityInPlace;
+                ws.Cell(row, 3).Value = f.FilterType ?? "";
+                ws.Cell(row, 4).Value = f.QuantityInPlace;
                 row++;
                 continue;
             }
@@ -133,19 +135,20 @@ public class ExcelExportService
             {
                 ws.Cell(row, 1).Value = f.Location;
                 ws.Cell(row, 2).Value = f.Dimension;
-                ws.Cell(row, 3).Value = f.QuantityInPlace;
+                ws.Cell(row, 3).Value = f.FilterType ?? "";
+                ws.Cell(row, 4).Value = f.QuantityInPlace;
                 if (rep.DateChanged.HasValue)
                 {
-                    ws.Cell(row, 4).Value = rep.DateChanged.Value.ToDateTime(TimeOnly.MinValue);
-                    ws.Cell(row, 4).Style.DateFormat.Format = "dd/MM/yyyy";
+                    ws.Cell(row, 5).Value = rep.DateChanged.Value.ToDateTime(TimeOnly.MinValue);
+                    ws.Cell(row, 5).Style.DateFormat.Format = "dd/MM/yyyy";
                 }
-                ws.Cell(row, 5).Value = rep.QuantityChanged;
+                ws.Cell(row, 6).Value = rep.QuantityChanged;
                 row++;
             }
         }
 
         ws.SheetView.FreezeRows(1);
-        ws.Columns(1, 5).AdjustToContents();
+        ws.Columns(1, 6).AdjustToContents();
     }
 
     private static string SanitizeSheetName(string name)
