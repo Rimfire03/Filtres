@@ -153,8 +153,11 @@
                 <Setter Property="BorderBrush" Value="#3B82F6"/>
                 <Setter Property="Background" Value="White"/>
             </Trigger>
+            <!-- Cellule non modifiable (valeur calculée, ou poste en lecture seule) : légèrement grisée. -->
             <Trigger Property="IsReadOnly" Value="True">
-                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Background" Value="#F3F4F6"/>
+                <Setter Property="Foreground" Value="#6B7280"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
                 <Setter Property="ToolTip" Value="{x:Null}"/>
             </Trigger>
         </Style.Triggers>

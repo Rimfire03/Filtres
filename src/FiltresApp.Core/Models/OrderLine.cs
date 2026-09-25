@@ -105,22 +105,40 @@ public class OrderLine
     [NotMapped]
     public IEnumerable<PeriodicFilter> LinkedFilters => FilterLinks.Where(l => l.PeriodicFilter != null).Select(l => l.PeriodicFilter!);
 
-    /// <summary>Besoin calculé pour l'inventaire de septembre (15/07 au 31/07), somme sur tous les
-    /// filtres rattachés. Nul (pas affiché) tant qu'aucun filtre n'est rattaché.</summary>
-    [NotMapped]
-    public int? NeedSeptembre => FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedSeptembre(LinkedFilters);
+    /// <summary>Familles dont le besoin est calculé (mars / septembre) à partir des filtres rattachés.</summary>
+    public static readonly FilterCategory[] ComputedNeedCategories = { FilterCategory.G4Plisse, FilterCategory.G4Plan, FilterCategory.G3 };
 
-    /// <summary>Besoin calculé pour l'inventaire de mars (15/01 au 31/01), somme sur tous les filtres
-    /// rattachés. Nul (pas affiché) tant qu'aucun filtre n'est rattaché.</summary>
+    /// <summary>Besoin saisi directement dans l'écran Commande, pour les lignes des autres familles.</summary>
+    public int? ManualNeed { get; set; }
+
     [NotMapped]
-    public int? NeedMars => FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedMars(LinkedFilters);
+    public bool UsesComputedNeed => ComputedNeedCategories.Any(c => FamilyGroupLabel == FamilyLabelFor(c));
+
+    /// <summary>Cellule "Besoin" de l'écran Commande saisissable (familles hors G4 plissé, G4 plan, G3).</summary>
+    [NotMapped]
+    public bool UsesManualNeed => !UsesComputedNeed;
+
+    /// <summary>Besoin calculé pour l'inventaire de septembre (15/07 au 31/07), somme sur tous les
+    /// filtres rattachés. Uniquement pour les familles G4 plissé, G4 plan et G3 ; nul sinon ou tant
+    /// qu'aucun filtre n'est rattaché.</summary>
+    [NotMapped]
+    public int? NeedSeptembre => !UsesComputedNeed || FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedSeptembre(LinkedFilters);
+
+    /// <summary>Besoin calculé pour l'inventaire de mars (15/01 au 31/01), même règle que
+    /// <see cref="NeedSeptembre"/>.</summary>
+    [NotMapped]
+    public int? NeedMars => !UsesComputedNeed || FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedMars(LinkedFilters);
+
+    /// <summary>Colonne "Besoin" de l'écran Commande : plus grand des deux besoins calculés pour les
+    /// familles G4 plissé, G4 plan et G3, besoin saisi (<see cref="ManualNeed"/>) pour les autres.</summary>
+    [NotMapped]
+    public int? Need => UsesComputedNeed
+        ? NeedMars is null && NeedSeptembre is null ? null : Math.Max(NeedMars ?? 0, NeedSeptembre ?? 0)
+        : ManualNeed;
 
     /// <summary>Colonne "Quantité" de l'écran Inventaire et "Quantité à commander" de l'écran Commande :
-    /// plus grand des deux besoins calculés moins la
-    /// quantité relevée à l'inventaire. Vide tant qu'aucun filtre n'est rattaché ; 0 si le stock dépasse
-    /// le besoin.</summary>
+    /// <see cref="Need"/> moins la quantité relevée à l'inventaire, 0 si le stock dépasse le besoin, vide
+    /// sans besoin.</summary>
     [NotMapped]
-    public int? InventoryQuantity => NeedMars is null && NeedSeptembre is null
-        ? null
-        : Math.Max(0, Math.Max(NeedMars ?? 0, NeedSeptembre ?? 0) - (Inventaire ?? 0));
+    public int? InventoryQuantity => Need is null ? null : Math.Max(0, Need.Value - (Inventaire ?? 0));
 }

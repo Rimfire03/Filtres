@@ -11,10 +11,19 @@ namespace FiltresApp.Views;
 
 public partial class OrderView : UserControl
 {
+    private readonly InlineIntCell _needCell;
+
     public OrderView()
     {
         InitializeComponent();
+        _needCell = new InlineIntCell(
+            box => box.DataContext is OrderLine line && DataContext is OrderListViewModel vm && vm.SetManualNeed(line, box.Text),
+            QuantityColumn);
     }
+
+    private void NeedBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _needCell.GotFocus((TextBox)sender);
+    private void NeedBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _needCell.LostFocus((TextBox)sender);
+    private void NeedBox_PreviewKeyDown(object sender, KeyEventArgs e) => _needCell.PreviewKeyDown((TextBox)sender, e);
 
     /// <summary>Clic droit sur une cellule "Filtres liés" : menu rapide pour cocher / décocher les filtres
     /// rattachés et les filtres de dimension correspondante, ou ouvrir la fenêtre complète.</summary>

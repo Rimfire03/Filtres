@@ -50,9 +50,33 @@
                 <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Besoin : calculé (grisé, non modifiable) pour les familles G4 plissés, G4 plan et G3 ;
+                     saisi directement dans la cellule pour les autres familles. -->
+                <DataGridTemplateColumn Header="Besoin" Width="0.8*" SortMemberPath="Need">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Need, Mode=OneWay}"
+                                     GotKeyboardFocus="NeedBox_GotKeyboardFocus" LostKeyboardFocus="NeedBox_LostKeyboardFocus"
+                                     PreviewKeyDown="NeedBox_PreviewKeyDown">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox" BasedOn="{StaticResource InlineEditTextBox}">
+                                        <Setter Property="IsReadOnly" Value="{x:Static app:App.IsReadOnly}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UsesManualNeed}" Value="False">
+                                                <Setter Property="IsReadOnly" Value="True"/>
+                                                <Setter Property="Focusable" Value="False"/>
+                                                <Setter Property="ToolTip" Value="Besoin calculé (max de Besoin mars / septembre) : non modifiable pour les familles G4 plissés, G4 plan et G3"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <!-- Clic droit sur une cellule : menu rapide de rattachement (OrderView.xaml.cs). -->
                 <DataGridTextColumn x:Name="LinkedFiltersColumn" Header="Filtres liés" Binding="{Binding LinkedFilterCountDisplay}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Quantité à commander" Binding="{Binding InventoryQuantity}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn x:Name="QuantityColumn" Header="Quantité à commander" Binding="{Binding InventoryQuantity}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
                 <GroupStyle>

@@ -143,6 +143,22 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         Load();
     }
 
+    /// <summary>Saisie directe dans la cellule "Besoin" (lignes hors familles G4 plissé, G4 plan, G3).
+    /// Retourne false (saisie à annuler) en lecture seule ou si le texte n'est pas un nombre entier.</summary>
+    public bool SetManualNeed(OrderLine line, string text)
+    {
+        if (!line.UsesManualNeed) return false;
+        if (!IntInput.TryParse(text, "Besoin", out var value)) return false;
+        if (value == line.ManualNeed) return true;
+        if (!App.GuardWritable()) return false;
+
+        var tracked = App.Db.OrderLines.First(l => l.Id == line.Id);
+        tracked.ManualNeed = value;
+        App.Db.SaveChanges();
+        line.ManualNeed = value;
+        return true;
+    }
+
     public record QuickLinkOption(int FilterId, string Label, bool IsLinked);
 
     /// <summary>Nombre maximal de filtres de dimension correspondante proposés dans le menu rapide.</summary>
@@ -212,7 +228,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     /// <summary>Colonnes imprimées / exportées en PDF : la colonne "Filtres liés" de la grille n'y figure
     /// jamais.</summary>
     private static string[] BuildHeaders() =>
-        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Quantité à commander" };
+        new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Besoin", "Quantité à commander" };
 
     private static string[] BuildRow(OrderLine l) => new[]
     {
@@ -220,6 +236,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         l.Destination ?? "",
         l.Dimension ?? "",
         l.Notes ?? "",
+        l.Need?.ToString() ?? "",
         l.InventoryQuantity?.ToString() ?? ""
     };
 

@@ -243,15 +243,22 @@ affichés ont changé, les données existantes sont conservées telles quelles) 
   imprimée ni exportée en PDF.
 - **Inventaire** : Dimension, Destination, Type, Référence fournisseur, Besoin mars (calculé),
   Besoin septembre (calculé), **Inventaire**, Quantité. Dans cet écran, **« Quantité » est calculée** :
-  plus grande valeur entre Besoin mars et Besoin septembre, moins Inventaire (vide si aucun filtre
-  n'est rattaché, 0 si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
+  Besoin (voir « Besoin » ci-dessous : calculé pour G4/G3, saisi pour les autres familles) moins
+  Inventaire (vide sans besoin, 0 si le stock dépasse le besoin), mise à jour dès qu'une valeur d'inventaire
   est validée ; elle n'est donc plus saisie dans la fenêtre « Modifier » de l'Inventaire.
 - **Bouton « Vider la colonne Inventaire » (Inventaire)** : efface la valeur d'inventaire des lignes
   affichées (toutes, ou celles de la famille choisie dans le filtre), après confirmation indiquant le
   nombre de lignes et une sauvegarde de la base à côté du fichier
   (`filtres.db.avant-vidage-inventaire-<date>.bak`). Désactivé en lecture seule.
+- **Besoin (Commande, après « Référence fournisseur »)** : pour les lignes des familles **Filtres G4
+  plissés, G4 plan et G3**, le besoin est calculé (plus grande valeur entre Besoin mars et Besoin
+  septembre) et la cellule est **grisée, non modifiable** ; pour les **autres familles** (Charbon,
+  Plusieurs familles, Sans famille), il n'y a pas de besoin mars / septembre calculé et le besoin se
+  **saisit directement dans la cellule** (même fonctionnement que la colonne Inventaire ; champ
+  `OrderLine.ManualNeed`, migration v12). Toute cellule de saisie non modifiable (valeur calculée ou
+  poste en lecture seule) est légèrement grisée.
 - **Quantité à commander (Commande)** : même valeur calculée que la « Quantité » de l'Inventaire
-  (max(Besoin mars, Besoin septembre) − Inventaire, 0 si négatif, vide si aucun filtre rattaché),
+  (Besoin − Inventaire, 0 si négatif, vide sans besoin),
   reprise à l'impression et dans le PDF. Elle n'est plus saisie dans « Modifier » ; l'ancienne
   quantité saisie (champ `OrderLine.Quantite`) reste en base mais n'est plus affichée. Les colonnes « Besoin » ont été déplacées
   depuis Commande ; elles restent calculées à partir des filtres rattachés à la ligne (bouton

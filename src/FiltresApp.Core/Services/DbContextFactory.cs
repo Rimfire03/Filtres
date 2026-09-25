@@ -47,6 +47,7 @@ public class DbContextFactory
         (9, "Familles des écrans Inventaire et Commande", AddOrderFamilies),
         (10, "Colonne Type des filtres F7 à H13", AddOpacimetricFilterTypeColumn),
         (11, "Choix manuel de la famille (Inventaire / Commande)", AddOrderLineFamilyOverrideColumn),
+        (12, "Besoin saisi (Commande, familles hors G4 / G3)", AddOrderLineManualNeedColumn),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -139,6 +140,12 @@ public class DbContextFactory
         var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
+    }
+
+    private static void AddOrderLineManualNeedColumn(FiltresDbContext ctx)
+    {
+        if (!GetColumns(ctx, "OrderLines").Contains("ManualNeed"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "ManualNeed" INTEGER NULL;""");
     }
 
     private static void AddOrderLineFamilyOverrideColumn(FiltresDbContext ctx)

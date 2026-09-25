@@ -124,17 +124,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
 
     public bool SetInventaire(OrderLine line, string text)
     {
-        int? value = null;
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            if (!int.TryParse(text.Trim(), out var parsed))
-            {
-                App.Dialogs.ShowMessage("Inventaire", $"« {text.Trim()} » n'est pas un nombre entier : la valeur n'a pas été enregistrée.");
-                return false;
-            }
-            value = parsed;
-        }
-
+        if (!IntInput.TryParse(text, "Inventaire", out var value)) return false;
         if (value == line.Inventaire) return true;
         if (!App.GuardWritable()) return false;
 
