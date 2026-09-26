@@ -114,19 +114,35 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Dernier écran effectivement affiché (hors redirections), pour distinguer une entrée
+    /// authentique dans la section "Filtres F7 à H14" d'une resélection accidentelle du menu parent
+    /// pendant qu'on y est déjà (voir <see cref="OnSelectedItemChanged"/>).</summary>
+    private NavigationItem? _lastDisplayedItem;
+
     partial void OnSelectedItemChanged(NavigationItem? value)
     {
         // Tant que la création de variétés est désactivée (Paramètres), le menu "Filtres F7 à H14"
         // lui-même n'a plus de page de gestion à afficher : ouvrir directement la première variété.
         if (value == _dynamicFiltersMenu && !App.Settings.AllowFilterVarietyCreation && _dynamicFiltersMenu.Children.Count > 0)
         {
-            // Déplier le menu AVANT de sélectionner l'enfant : sinon le conteneur TreeViewItem du sous-menu
-            // n'existe pas encore (ItemsPresenter masqué tant que replié) et ne reçoit pas la sélection.
+            // Si on est déjà sur une variété (ou déjà "sur" le menu), on ignore : sans ce garde-fou, le
+            // simple fait de replier le menu (clic sur le chevron) redéclencherait cette redirection, qui
+            // forcerait IsExpanded à true et rouvrirait le menu immédiatement - le rendant impossible à
+            // replier. Le menu reste repliable à tout moment, la redirection ne joue qu'à l'entrée dans la
+            // section depuis un autre écran.
+            var alreadyInSection = _lastDisplayedItem == _dynamicFiltersMenu || _dynamicFiltersMenu.Children.Contains(_lastDisplayedItem);
+            if (alreadyInSection)
+            {
+                SelectedItem = _lastDisplayedItem;
+                return;
+            }
+
             _dynamicFiltersMenu.IsExpanded = true;
             SelectedItem = _dynamicFiltersMenu.Children[0];
             return;
         }
 
+        _lastDisplayedItem = value;
         foreach (var item in NavigationItems) item.IsSelected = item == value;
         foreach (var child in _dynamicFiltersMenu.Children) child.IsSelected = child == value;
 
