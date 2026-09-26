@@ -120,6 +120,9 @@ public partial class MainViewModel : ObservableObject
         // lui-même n'a plus de page de gestion à afficher : ouvrir directement la première variété.
         if (value == _dynamicFiltersMenu && !App.Settings.AllowFilterVarietyCreation && _dynamicFiltersMenu.Children.Count > 0)
         {
+            // Déplier le menu AVANT de sélectionner l'enfant : sinon le conteneur TreeViewItem du sous-menu
+            // n'existe pas encore (ItemsPresenter masqué tant que replié) et ne reçoit pas la sélection.
+            _dynamicFiltersMenu.IsExpanded = true;
             SelectedItem = _dynamicFiltersMenu.Children[0];
             return;
         }
