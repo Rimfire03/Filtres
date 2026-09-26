@@ -14,9 +14,11 @@ public class AppSettings
     public bool LinkDimensionFilterEnabled { get; set; } = true;
 
     /// <summary>Menu dépliant "Filtres F7 à H14" : autorise la création de nouvelles variétés (chacune
-    /// devenant un sous-menu permanent). Désactivé par défaut pour éviter la création accidentelle de
-    /// nouveaux sous-menus ; l'ajout, la modification et la suppression des filtres d'une variété déjà
-    /// créée restent soumis uniquement au verrou d'écriture habituel (App.IsWritable).</summary>
+    /// devenant un sous-menu permanent). Non persisté ([JsonIgnore]) : toujours désactivé au lancement de
+    /// l'application, à réactiver manuellement dans Paramètres à chaque session pour éviter la création
+    /// accidentelle de nouveaux sous-menus ; l'ajout, la modification et la suppression des filtres d'une
+    /// variété déjà créée restent soumis uniquement au verrou d'écriture habituel (App.IsWritable).</summary>
+    [JsonIgnore]
     public bool AllowFilterVarietyCreation { get; set; } = false;
 
     private static string SettingsFilePath => Path.Combine(AppContext.BaseDirectory, "settings.json");

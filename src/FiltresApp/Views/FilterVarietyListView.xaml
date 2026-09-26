@@ -17,14 +17,20 @@
         <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
 
         <TextBlock Grid.Row="1" Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"
+                   Visibility="{Binding CanManageVarieties, Converter={StaticResource BoolToVis}}"
                    Text="Créez ici librement de nouvelles variétés de filtres (par exemple « F7 à H13 », « G5 », etc.). Chaque variété devient un sous-menu déroulant sous « Filtres F7 à H14 », avec sa propre grille, ses familles, son historique de remplacements et son rattachement à Commande / Inventaire."/>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
+        <TextBlock Grid.Row="1" Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"
+                   Visibility="{Binding CannotManageVarieties, Converter={StaticResource BoolToVis}}"
+                   Text="Aucune variété de filtre n'a encore été créée. Activez « Autoriser la création de nouvelles variétés de filtres (mode édition) » dans Paramètres pour en créer une."/>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12" Visibility="{Binding CanManageVarieties, Converter={StaticResource BoolToVis}}">
             <Button Content="+ Nouvelle variété" Style="{StaticResource PrimaryButton}" Command="{Binding AddVarietyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Renommer" Style="{StaticResource SecondaryButton}" Command="{Binding RenameVarietyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditVarietyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteVarietyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
         </StackPanel>
 
-        <ListBox Grid.Row="3" ItemsSource="{Binding Varieties}" SelectedItem="{Binding SelectedVariety}" DisplayMemberPath="Nom"/>
+        <ListBox Grid.Row="3" ItemsSource="{Binding Varieties}" SelectedItem="{Binding SelectedVariety}" DisplayMemberPath="Nom"
+                 Visibility="{Binding CanManageVarieties, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </UserControl>

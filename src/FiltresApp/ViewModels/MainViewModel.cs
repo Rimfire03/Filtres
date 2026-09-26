@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FiltresApp.Core.Models;
 using FiltresApp.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.ViewModels;
 
@@ -61,16 +62,34 @@ public partial class MainViewModel : ObservableObject
     {
         var item = CreateVarietyItem(variety);
         _dynamicFiltersMenu.Children.Add(item);
+        ResortVarietyNavigationItems();
         _dynamicFiltersMenu.IsExpanded = true;
         SelectedItem = item;
     }
 
-    /// <summary>Appelé par <see cref="FilterVarietyListViewModel.RenameVariety"/> : met à jour le libellé
-    /// du sous-menu sans le recréer (garde le même écran ouvert le cas échéant).</summary>
-    public void RenameVarietyNavigationItem(int varietyId, string newName)
+    /// <summary>Appelé par <see cref="FilterVarietyListViewModel.EditVariety"/> : met à jour le libellé du
+    /// sous-menu (sans le recréer, pour garder le même écran ouvert le cas échéant) et sa position, l'ordre
+    /// d'affichage ayant pu changer.</summary>
+    public void UpdateVarietyNavigationItem(int varietyId, string newName)
     {
         var item = _dynamicFiltersMenu.Children.FirstOrDefault(c => c.VarietyId == varietyId);
         if (item is not null) item.Title = newName;
+        ResortVarietyNavigationItems();
+    }
+
+    /// <summary>Réordonne les sous-menus de variété selon leur <see cref="FilterVariety.Ordre"/> actuel en
+    /// base (puis nom), en déplaçant les éléments existants (même identité d'objet, pas de recréation) pour
+    /// ne pas perdre les écrans déjà ouverts.</summary>
+    public void ResortVarietyNavigationItems()
+    {
+        var order = App.Db.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).Select(v => v.Id).ToList();
+        for (var target = 0; target < order.Count; target++)
+        {
+            var item = _dynamicFiltersMenu.Children.FirstOrDefault(c => c.VarietyId == order[target]);
+            if (item is null) continue;
+            var current = _dynamicFiltersMenu.Children.IndexOf(item);
+            if (current != target) _dynamicFiltersMenu.Children.Move(current, target);
+        }
     }
 
     /// <summary>Appelé par <see cref="FilterVarietyListViewModel.DeleteVariety"/> : retire le sous-menu. Si
@@ -97,6 +116,14 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSelectedItemChanged(NavigationItem? value)
     {
+        // Tant que la création de variétés est désactivée (Paramètres), le menu "Filtres F7 à H14"
+        // lui-même n'a plus de page de gestion à afficher : ouvrir directement la première variété.
+        if (value == _dynamicFiltersMenu && !App.Settings.AllowFilterVarietyCreation && _dynamicFiltersMenu.Children.Count > 0)
+        {
+            SelectedItem = _dynamicFiltersMenu.Children[0];
+            return;
+        }
+
         foreach (var item in NavigationItems) item.IsSelected = item == value;
         foreach (var child in _dynamicFiltersMenu.Children) child.IsSelected = child == value;
 

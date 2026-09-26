@@ -10,49 +10,38 @@
         <StackPanel MaxWidth="700" HorizontalAlignment="Left">
             <TextBlock Text="Paramètres" Style="{StaticResource HeaderText}"/>
 
+            <!-- Base de données : versions, taille, et les deux chemins enregistrés ensemble. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="Versions" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Base de données" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}">
-                        <Run Text="Version du logiciel :"/>
-                        <Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="Logiciel"/><Run Text=" "/><Run Text="{Binding CurrentVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="  ·  Base v"/><Run Text="{Binding DatabaseVersion, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="  ·  "/><Run Text="{Binding DatabaseSizeDisplay, Mode=OneWay}" FontWeight="SemiBold"/>
                     </TextBlock>
-                    <TextBlock Style="{StaticResource SectionText}" Margin="0,2,0,0">
-                        <Run Text="Version de la base de données :"/>
-                        <Run Text="{Binding DatabaseVersion, Mode=OneWay}" FontWeight="SemiBold"/>
-                    </TextBlock>
-                </StackPanel>
-            </Border>
 
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Emplacement de la base de données" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Chemin relatif au dossier de l'exécutable pour rester portable, ou chemin absolu." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
-                    <DockPanel>
+                    <TextBlock Text="Fichier de la base (chemin relatif au dossier de l'exécutable pour rester portable, ou absolu) :" Style="{StaticResource SectionText}" Margin="0,10,0,4"/>
+                    <DockPanel Margin="0,0,0,10">
                         <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowseDatabasePathCommand}"/>
                         <TextBox Text="{Binding DatabasePath, UpdateSourceTrigger=PropertyChanged}"/>
                     </DockPanel>
-                </StackPanel>
-            </Border>
 
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Dossier d'export PDF" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Remplace le chemin réseau codé en dur de l'ancienne macro Excel (exportcmd)." Style="{StaticResource SectionText}" Margin="0,0,0,8"/>
-                    <DockPanel>
+                    <TextBlock Text="Dossier d'export PDF (remplace le chemin réseau de l'ancienne macro Excel) :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                    <DockPanel Margin="0,0,0,10">
                         <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowsePdfExportPathCommand}"/>
                         <TextBox Text="{Binding PdfExportPath, UpdateSourceTrigger=PropertyChanged}"/>
                     </DockPanel>
+
+                    <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 
-            <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left"/>
-            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,24" Foreground="{StaticResource BrushPrimary}"/>
-
+            <!-- Logo de l'entreprise (base de données, commun à tous les postes). -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Logo de l'entreprise" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Enregistré dans la base de données (commun à tous les postes). Affiché en haut de la barre latérale et en tête des impressions et des exports PDF. Formats PNG, JPG, BMP ou GIF, 2 Mo au maximum." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <TextBlock Text="Affiché dans la barre latérale et en tête des impressions/exports PDF. PNG, JPG, BMP ou GIF, 2 Mo max." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <Border BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" Padding="6" Margin="0,0,0,8" HorizontalAlignment="Left"
                             Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
                         <Image Source="{Binding LogoImage}" MaxHeight="80" MaxWidth="260" Stretch="Uniform"/>
@@ -66,29 +55,23 @@
                 </StackPanel>
             </Border>
 
+            <!-- Réglages de comportement, regroupés et réduits à une ligne chacun. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="Rattachement des filtres" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Fenêtre « Rattacher des filtres... » de l'écran Commande. Décoché : tous les filtres sont affichés dès l'ouverture." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
-                    <CheckBox Content="N'afficher par défaut que les filtres de dimension correspondante (±5 mm, largeur et hauteur interchangeables)"
-                              IsChecked="{Binding LinkDimensionFilterEnabled}"/>
-                </StackPanel>
-            </Border>
-
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Menu « Filtres F7 à H14 »" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Décoché : les sous-menus (variétés) déjà créés restent utilisables normalement (ajout/modification/suppression de leurs filtres), mais le bouton « + Nouvelle variété » de la page d'accueil du menu est désactivé, pour éviter la création accidentelle de nouveaux sous-menus permanents." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
-                    <CheckBox Content="Autoriser la création de nouvelles variétés de filtres (mode édition)"
-                              IsChecked="{Binding AllowFilterVarietyCreation}"/>
-                </StackPanel>
-            </Border>
-
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Comportement" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <CheckBox Content="Rattacher des filtres... : n'afficher par défaut que les dimensions correspondantes (±5 mm)"
+                              IsChecked="{Binding LinkDimensionFilterEnabled}" Margin="0,0,0,8"/>
+                    <CheckBox Content="Autoriser la création de nouvelles variétés de filtres « F7 à H14 » (mode édition, remis à non à chaque lancement)"
+                              IsChecked="{Binding AllowFilterVarietyCreation}" Margin="0,0,0,8"/>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
-                              IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,12"/>
+                              IsChecked="{Binding AutoUpdateEnabled}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Mises à jour : action + statut, séparés du réglage automatique ci-dessus. -->
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Vérifier maintenant" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding CheckForUpdatesCommand}" IsEnabled="{Binding IsCheckingForUpdate, Converter={StaticResource InverseBool}}"/>
@@ -96,45 +79,47 @@
                                 Command="{Binding InstallUpdateCommand}" Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}"
                                 IsEnabled="{Binding IsInstallingUpdate, Converter={StaticResource InverseBool}}"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding UpdateStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    <TextBlock Text="{Binding UpdateStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 
+            <!-- Export Excel de l'année. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Génère un classeur .xlsx dans le même dossier que les exports PDF : une feuille par onglet de filtres (Filtres G4 plissés, Filtres G4 plan, Filtres G3, Charbon, plus une feuille par variété « Filtres F7 à H14 »), avec les familles en lignes titres. Suivi mensuel de l'année choisie pour G4 / G3 / Charbon, dates des 10 derniers changements pour les variétés F7 à H14. Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <TextBlock Text="Un classeur .xlsx dans le dossier d'export PDF : une feuille par onglet de filtres (G4 plissés, G4 plan, G3, Charbon, et chaque variété « F7 à H14 »). Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <DockPanel Margin="0,0,0,8">
                         <TextBlock DockPanel.Dock="Left" Text="Année à exporter :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding SelectedExportYear}" HorizontalAlignment="Left" Width="120"/>
                     </DockPanel>
                     <Button Content="Exporter l'année en Excel" Style="{StaticResource PrimaryButton}" Command="{Binding ExportExcelYearCommand}" HorizontalAlignment="Left"/>
-                    <TextBlock Text="{Binding ExportStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    <TextBlock Text="{Binding ExportStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 
+            <!-- Suppression définitive de l'historique d'une année, par groupe de filtres. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Supprimer l'historique d'une année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Supprime définitivement les remplacements enregistrés pour l'année choisie. Les filtres eux-mêmes sont conservés. Seules les années ayant un historique sont proposées. Une sauvegarde de la base est faite avant chaque suppression." Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+                    <TextBlock Text="Supprime définitivement les remplacements de l'année choisie (les filtres sont conservés). Une sauvegarde est faite avant." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
 
-                    <TextBlock Text="Filtres G4 plissés, G4 plan, G3 et Charbon" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="G4 plissés, G4 plan, G3, Charbon" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding PeriodicHistoryYears}" SelectedItem="{Binding SelectedPeriodicHistoryYear}" Width="120"/>
-                        <Button Content="Supprimer l'historique de cette année" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
+                        <Button Content="Supprimer" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
                                 Command="{Binding DeletePeriodicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
                     </StackPanel>
 
-                    <TextBlock Text="Filtres F7 à H14 (toutes variétés)" FontWeight="SemiBold" Margin="0,16,0,4"/>
+                    <TextBlock Text="Filtres F7 à H14 (toutes variétés)" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding DynamicHistoryYears}" SelectedItem="{Binding SelectedDynamicHistoryYear}" Width="120"/>
-                        <Button Content="Supprimer l'historique de cette année" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
+                        <Button Content="Supprimer" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
                                 Command="{Binding DeleteDynamicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
                     </StackPanel>
 
-                    <TextBlock Text="{Binding HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    <TextBlock Text="{Binding HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 

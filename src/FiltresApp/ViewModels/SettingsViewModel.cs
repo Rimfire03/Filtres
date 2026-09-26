@@ -27,6 +27,18 @@ public partial class SettingsViewModel : ObservableObject
     public string CurrentVersion => App.CurrentVersion;
     public int DatabaseVersion => App.DatabaseVersion;
 
+    /// <summary>Taille du fichier de base de données, affichée en Ko ou Mo. Recalculée après tout ce qui
+    /// peut la faire varier sensiblement (rechargement, suppression d'historique).</summary>
+    public string DatabaseSizeDisplay => FormatFileSize(App.Settings.ResolvedDatabasePath);
+
+    private static string FormatFileSize(string path)
+    {
+        long bytes;
+        try { bytes = new System.IO.FileInfo(path).Length; }
+        catch { return "inconnue"; }
+        return bytes < 1024 * 1024 ? $"{bytes / 1024.0:0.0} Ko" : $"{bytes / 1024.0 / 1024.0:0.0} Mo";
+    }
+
     /// <summary>Liste des années proposées (barre latérale et export Excel).</summary>
     public YearContext YearContext => App.YearContext;
 
@@ -159,6 +171,7 @@ public partial class SettingsViewModel : ObservableObject
             HistoryStatusMessage = $"Erreur pendant la suppression : {ex.Message}";
         }
         LoadHistoryYears();
+        OnPropertyChanged(nameof(DatabaseSizeDisplay));
     }
 
     /// <summary>La case à cocher se sauvegarde immédiatement : contrairement aux autres champs, il n'y
@@ -298,6 +311,7 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
         OnPropertyChanged(nameof(DatabaseVersion));
+        OnPropertyChanged(nameof(DatabaseSizeDisplay));
         StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
     }
 }

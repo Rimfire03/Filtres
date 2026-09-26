@@ -67,17 +67,17 @@
                                         CellTemplate="{StaticResource LinkDotCellTemplate}"/>
                 <!-- Filtres d'affichage dans le bas du bandeau des titres : "contient" sur le nom, liste des
                      dimensions présentes (DynamicFilterListViewModel.HeaderFilter). -->
-                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" SortMemberPath="Location" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" SortMemberPath="Location" Width="2.48*" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="1.01*" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
                 <!-- Clic droit : menu rapide listant les types déjà utilisés (DynamicFilterView.xaml.cs). -->
-                <DataGridTextColumn x:Name="TypeColumn" Header="Type" Binding="{Binding FilterType}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.8*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="100" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn x:Name="TypeColumn" Header="Type" Binding="{Binding FilterType}" Width="0.99*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.79*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="97" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="1.05*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <!-- Pas de mois à cocher pour cette feuille : choisir une date ici enregistre directement un
                      nouveau remplacement daté de ce jour (le champ se vide ensuite), sans jamais modifier
                      l'historique déjà enregistré (voir "Consulter l'historique..."). -->
-                <DataGridTemplateColumn Header="Date du changement" Width="110">
+                <DataGridTemplateColumn Header="Date du changement" Width="109">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DatePicker SelectedDate="{Binding NewChangeDate, UpdateSourceTrigger=PropertyChanged}"

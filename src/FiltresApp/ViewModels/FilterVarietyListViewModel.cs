@@ -18,8 +18,18 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
 
     private readonly MainViewModel _main;
 
+    /// <summary>Boutons de création / renommage / suppression masqués tant que ce réglage (Paramètres,
+    /// remis à non à chaque lancement) n'est pas activé : cette page ne sert alors qu'à afficher le
+    /// message d'absence de variété, le cas normal (au moins une variété créée) redirigeant
+    /// automatiquement vers la première d'entre elles, voir <see cref="MainViewModel.OnSelectedItemChanged"/>.</summary>
+    public bool CanManageVarieties => App.Settings.AllowFilterVarietyCreation;
+    public bool CannotManageVarieties => !CanManageVarieties;
+
     [ObservableProperty] private ObservableCollection<FilterVariety> _varieties = new();
-    [ObservableProperty] private FilterVariety? _selectedVariety;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(EditVarietyCommand), nameof(DeleteVarietyCommand))]
+    private FilterVariety? _selectedVariety;
 
     public FilterVarietyListViewModel(MainViewModel main)
     {
@@ -33,6 +43,8 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
     {
         Varieties = new ObservableCollection<FilterVariety>(
             App.Db.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList());
+        OnPropertyChanged(nameof(CanManageVarieties));
+        OnPropertyChanged(nameof(CannotManageVarieties));
     }
 
     [RelayCommand]
@@ -49,22 +61,24 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
         {
             Ordre = (App.Db.FilterVarieties.Max(v => (int?)v.Ordre) ?? 0) + 1
         };
-        if (!EditVarietyName(entity, "Nouvelle variété de filtre")) return;
+        if (!EditVarietyFields(entity, "Nouvelle variété de filtre")) return;
         App.Db.FilterVarieties.Add(entity);
         App.Db.SaveChanges();
         Load();
         _main.AddVarietyNavigationItem(entity);
     }
 
-    [RelayCommand]
-    private void RenameVariety()
+    private bool CanEditVariety() => SelectedVariety is not null;
+
+    [RelayCommand(CanExecute = nameof(CanEditVariety))]
+    private void EditVariety()
     {
         if (!App.GuardWritable() || SelectedVariety is null) return;
         var tracked = App.Db.FilterVarieties.First(v => v.Id == SelectedVariety.Id);
-        if (!EditVarietyName(tracked, "Renommer la variété")) return;
+        if (!EditVarietyFields(tracked, "Modifier la variété")) return;
         App.Db.SaveChanges();
         Load();
-        _main.RenameVarietyNavigationItem(tracked.Id, tracked.Nom);
+        _main.UpdateVarietyNavigationItem(tracked.Id, tracked.Nom);
     }
 
     private bool CanDeleteVariety() => SelectedVariety is not null;
@@ -92,11 +106,14 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
         _main.RemoveVarietyNavigationItem(id);
     }
 
-    private bool EditVarietyName(FilterVariety variety, string title)
+    /// <summary>Nom et ordre d'affichage (position du sous-menu sous "Filtres F7 à H14", plus petit
+    /// d'abord) : voir <see cref="MainViewModel.ResortVarietyNavigationItems"/>.</summary>
+    private bool EditVarietyFields(FilterVariety variety, string title)
     {
         var fields = new List<EditField>
         {
-            EditField.Text("Nom de la variété", () => variety.Nom, v => variety.Nom = v.Trim(), required: true)
+            EditField.Text("Nom de la variété", () => variety.Nom, v => variety.Nom = v.Trim(), required: true),
+            EditField.IntField("Ordre d'affichage", () => variety.Ordre, v => variety.Ordre = v)
         };
         if (!App.Dialogs.EditFields(title, fields)) return false;
 

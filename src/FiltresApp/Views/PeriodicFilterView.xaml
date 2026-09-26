@@ -88,14 +88,14 @@
                 <!-- Filtres d'affichage placés dans le bas du bandeau des titres : "contient" sur le nom, liste
                      des dimensions présentes (PeriodicFilterListViewModel.HeaderFilter). -->
                 <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
-                <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastDoneDate, StringFormat='dd/MM/yyyy'}" Width="95" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTemplateColumn Header="Réalisé" Width="60" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
-                <DataGridTemplateColumn Header="Date du changement" Width="95">
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="1.02*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="0.92*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.65*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="1.04*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="1.06*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastDoneDate, StringFormat='dd/MM/yyyy'}" Width="93" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Réalisé" Width="62" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
+                <DataGridTemplateColumn Header="Date du changement" Width="94">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <DatePicker SelectedDate="{Binding DateDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
