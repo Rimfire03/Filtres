@@ -28,6 +28,10 @@ src/
 dotnet build FiltresApp.sln -c Debug
 ```
 
+Sous Linux (vérification de compilation uniquement, l'application ne s'y lance pas) : SDK .NET 8 de
+Microsoft (il doit contenir `Sdks/Microsoft.NET.Sdk.WindowsDesktop`), puis
+`dotnet build FiltresApp.sln -p:EnableWindowsTargeting=true`.
+
 ## Lancer en développement
 
 ```powershell
@@ -1108,21 +1112,43 @@ affiche une boîte de confirmation proposant la correction ; l'utilisateur peut 
 (le texte saisi est alors conservé tel quel). Les données existantes ont été harmonisées une fois via un
 script ponctuel (273 valeurs corrigées sur 475, le 26/09/2026).
 
-### Code partagé entre écrans (factorisation)
+### Architecture du code
 
-Les éléments communs à plusieurs écrans sont écrits une seule fois :
+**`FiltresApp.Core`** (sans WPF) :
+
+- `Models/` : entités EF Core. `Data/FiltresDbContext.cs` : le contexte.
+- `Data/Migrations/DatabaseMigrations.cs` : les migrations de schéma numérotées (voir « Version de la base
+  de données ») ; `Data/SchemaInspector.cs` lit les colonnes existantes pour les rendre idempotentes.
+- `Services/DbContextFactory.cs` : création du contexte, version de la base, application des migrations,
+  sauvegardes.
+- Règles métier et accès aux données réutilisés par les écrans : `ReplacementTrackingService`
+  (enregistrement des remplacements), `FilterLinkService` (rattachement filtres / lignes de Commande),
+  `OrderLineQueries` (lecture des lignes de Commande / Inventaire), `OrderNeedCalculationService`,
+  `MaintenanceScheduleService`, `DimensionFormatService`, `DimensionMatchService`, exports Excel / PDF.
+
+**`FiltresApp`** (WPF, MVVM) :
+
+- `App.xaml.cs` (démarrage, lecture seule) et ses fichiers partiels `App.Database.cs` (ouverture de la
+  base, verrou d'écriture, contrôle de version), `App.CompanyLogo.cs`, `App.Updates.cs`.
+- `ViewModels/` : un ViewModel par écran. Les gros écrans sont découpés en fichiers partiels par sujet
+  (`OrderListViewModel.Links.cs`, `DynamicFilterListViewModel.Families.cs`, `SettingsViewModel.Logo.cs`,
+  `.History.cs`, `.Updates.cs`).
+- `Services/` : services d'interface (dialogues, impression, préférences de colonnes, `ImageLoader`,
+  `DimensionCorrectionPrompt`...).
+
+Éléments communs à plusieurs écrans, écrits une seule fois :
 
 - **XAML** (`Styles/Controls.xaml`) : `GroupHeaderTemplate` (bandeau de famille des grilles regroupées,
   masqué si le nom de groupe est vide), `LinkDotCellTemplate` (puce « Lié »), `DoneCheckBoxCellTemplate`
   (case « Réalisé »), `NameFilterHeaderTemplate` / `DimensionFilterHeaderTemplate` (filtres sous les
   titres de colonnes).
-- **ViewModels** : `LinkedFilterRowViewModel` (base des lignes de filtres : puce « Lié » et son
-  info-bulle, `ShowsLinkDot` faux pour les filtres lavables), `NameDimensionFilter` (filtres « nom
-  contient » / dimension, propriété `HeaderFilter` des écrans), `ConsultedMonthOption` (sélecteur
-  « Mois consulté » et noms des mois).
-- **Services** : `FilterLinkService.PeriodicLinkedLines` (ligne de Commande / Inventaire de chaque
-  filtre rattaché), `PrintService.BuildGroupedRows` (ligne titre « — FAMILLE — » des impressions et
-  PDF), `VisualTreeExtensions.FindAncestor` (recherche d'un parent dans l'arbre visuel).
+- **ViewModels** : `OrderLineListViewModelBase` (base d'Inventaire et Commande : chargement, ajout,
+  modification, suppression, saisie en cellule, impression, PDF), `LinkedFilterRowViewModel` (base des
+  lignes de filtres : puce « Lié »), `NameDimensionFilter` (filtres « nom contient » / dimension),
+  `ConsultedMonthOption` (sélecteur « Mois consulté »), `OrderFamilyFilter` (familles d'Inventaire /
+  Commande).
+- **Services** : `PrintService.BuildGroupedRows` (ligne titre « — FAMILLE — » des impressions et PDF),
+  `VisualTreeExtensions.FindAncestor` (recherche d'un parent dans l'arbre visuel).
 
 ## Pistes d'amélioration
 

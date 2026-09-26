@@ -23,10 +23,8 @@ public class ExcelExportService
 
         using var workbook = new XLWorkbook();
 
-        AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plisse, "Filtres G4 plissés", year, groupByFamily: false);
-        AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plan, "Filtres G4 plan", year, groupByFamily: false);
-        AddPeriodicSheet(workbook, ctx, FilterCategory.G3, "Filtres G3", year, groupByFamily: true);
-        AddPeriodicSheet(workbook, ctx, FilterCategory.Charbon, "Charbon", year, groupByFamily: false);
+        foreach (var category in new[] { FilterCategory.G4Plisse, FilterCategory.G4Plan, FilterCategory.G3, FilterCategory.Charbon })
+            AddPeriodicSheet(workbook, ctx, category, year, groupByFamily: category == FilterCategory.G3);
 
         foreach (var variety in ctx.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
             AddDynamicSheet(workbook, ctx, variety);
@@ -41,7 +39,7 @@ public class ExcelExportService
     // ---- Filtres à périodicité (G4 plissés, G4 plan, G3, Charbon) ----
 
     private static void AddPeriodicSheet(XLWorkbook workbook, FiltresDbContext ctx, FilterCategory category,
-        string sheetName, int year, bool groupByFamily)
+        int year, bool groupByFamily)
     {
         var filters = ctx.PeriodicFilters.AsNoTracking()
             .Where(f => f.Category == category)
@@ -64,12 +62,12 @@ public class ExcelExportService
             headers.Add($"{MonthShortNames[m - 1]} {year} date");
         }
 
-        var ws = workbook.Worksheets.Add(SanitizeSheetName(sheetName));
+        var ws = AddSheet(workbook, OrderLine.FamilyLabelFor(category));
         WriteHeader(ws, headers);
 
         // G3 : familles à remplacer / à laver / sans dimension, comme à l'écran.
         var groups = groupByFamily
-            ? filters.GroupBy(f => f.DimensionFamilyLabel).OrderBy(g => FamilyRank(g.Key)).Select(g => (Title: (string?)g.Key, Items: g.ToList()))
+            ? filters.GroupBy(f => f.DimensionFamilyLabel).OrderBy(g => g.First().DimensionFamilyRank).Select(g => (Title: (string?)g.Key, Items: g.ToList()))
             : new[] { (Title: (string?)null, Items: filters) };
 
         var row = 2;
@@ -121,7 +119,7 @@ public class ExcelExportService
         var headers = new List<string> { "Nom de la centrale d'air", "Dimension", "Type", "Qté en place" };
         for (var i = 1; i <= DynamicHistoryColumnCount; i++) headers.Add($"Changement -{i}");
 
-        var ws = workbook.Worksheets.Add(SanitizeSheetName(variety.Nom));
+        var ws = AddSheet(workbook, variety.Nom);
         WriteHeader(ws, headers);
 
         var groups = filters.GroupBy(f => f.FamilyGroupLabel);
@@ -150,13 +148,6 @@ public class ExcelExportService
 
         Finish(ws, headers.Count);
     }
-
-    private static int FamilyRank(string label) => label switch
-    {
-        "Filtres à remplacer" => 0,
-        "Filtres à laver" => 1,
-        _ => 2
-    };
 
     // ---- Mise en forme commune ----
 
@@ -192,10 +183,22 @@ public class ExcelExportService
         ws.Columns(1, columnCount).AdjustToContents();
     }
 
-    private static string SanitizeSheetName(string name)
+    /// <summary>Nouvelle feuille nommée d'après <paramref name="name"/>, ramené aux règles d'Excel (31
+    /// caractères, sans \ / ? * [ ] :, non vide) et rendu unique dans le classeur : deux variétés au nom
+    /// proche ne doivent pas faire échouer l'export.</summary>
+    private static IXLWorksheet AddSheet(XLWorkbook workbook, string name)
     {
         var invalid = new[] { '\\', '/', '?', '*', '[', ']', ':' };
-        var clean = new string(name.Where(c => !invalid.Contains(c)).ToArray());
-        return clean.Length > 31 ? clean[..31] : clean;
+        var clean = new string(name.Where(c => !invalid.Contains(c)).ToArray()).Trim();
+        if (clean.Length == 0) clean = "Feuille";
+        if (clean.Length > 31) clean = clean[..31].TrimEnd();
+
+        var unique = clean;
+        for (var i = 2; workbook.Worksheets.Contains(unique); i++)
+        {
+            var suffix = $" ({i})";
+            unique = (clean.Length + suffix.Length > 31 ? clean[..(31 - suffix.Length)].TrimEnd() : clean) + suffix;
+        }
+        return workbook.Worksheets.Add(unique);
     }
 }
