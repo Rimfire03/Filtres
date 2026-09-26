@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using FiltresApp.Core.Services;
@@ -126,13 +127,16 @@ public partial class App
         }
     }
 
-    /// <summary>Recrée le contexte de base de données courant (après changement de chemin
-    /// dans les paramètres, ou après un import qui a remplacé le fichier).</summary>
-    public static void ReloadDatabase(string newPath)
+    /// <summary>Relance l'application dans un nouveau processus puis ferme celui-ci. Utilisé après un
+    /// changement de chemin de base de données (Paramètres) : un simple rechargement du contexte ne
+    /// suffirait pas, tous les écrans déjà ouverts (barre latérale, année consultée...) gardant sinon des
+    /// données de l'ancienne base en mémoire.</summary>
+    public static void Restart()
     {
-        Db?.Dispose();
-        OpenDatabase(newPath);
-        YearContext = CreateYearContext();
+        var exePath = Environment.ProcessPath;
+        if (exePath is not null)
+            Process.Start(new ProcessStartInfo { FileName = exePath, UseShellExecute = true });
+        Current.Shutdown();
     }
 
     /// <summary>Construit le contexte d'année partagé par les écrans de suivi : année courante par

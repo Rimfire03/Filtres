@@ -108,27 +108,32 @@ public partial class SettingsViewModel : ObservableObject
         if (dialog.ShowDialog() == true) PdfExportPath = dialog.FolderName;
     }
 
+    /// <summary>Un changement de chemin de base de données exige un redémarrage complet (voir
+    /// <see cref="App.Restart"/>) : un simple rechargement laisserait les écrans déjà ouverts (barre
+    /// latérale, année consultée...) avec des données de l'ancienne base en mémoire.</summary>
     [RelayCommand]
     private void SaveSettings()
     {
+        var databasePathChanged = !string.Equals(DatabasePath, App.Settings.DatabasePath, StringComparison.Ordinal);
+
+        if (databasePathChanged && !App.Dialogs.ShowConfirm("Changement de base de données",
+                "Le chemin de la base de données a changé. L'application va se fermer puis redémarrer automatiquement pour l'ouvrir.\n\n" +
+                "Continuer ?"))
+        {
+            DatabasePath = App.Settings.DatabasePath; // annulé : revient au chemin actuellement ouvert
+            return;
+        }
+
         App.Settings.DatabasePath = DatabasePath;
         App.Settings.PdfExportPath = PdfExportPath;
         App.Settings.Save();
 
-        try
+        if (databasePathChanged)
         {
-            App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
-        }
-        catch (Exception ex)
-        {
-            // L'ancienne base est déjà fermée : on ne peut pas continuer sans base ouverte.
-            System.Windows.MessageBox.Show($"Impossible d'ouvrir la base de données :\n{App.Settings.ResolvedDatabasePath}\n\n{ex.Message}\n\nL'application va se fermer.",
-                "Base de données", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Stop);
-            System.Windows.Application.Current.Shutdown();
+            App.Restart();
             return;
         }
-        OnPropertyChanged(nameof(DatabaseVersion));
-        OnPropertyChanged(nameof(DatabaseSizeDisplay));
-        StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
+
+        StatusMessage = "Paramètres enregistrés.";
     }
 }

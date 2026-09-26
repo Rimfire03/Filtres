@@ -78,8 +78,12 @@ qu'aucune version de .NET ne soit installée sur la machine cible.
   - `PdfExportPath` : dossier de destination des exports PDF (remplace le
     chemin réseau codé en dur de l'ancienne macro `exportcmd`).
 - Ces deux chemins sont modifiables dans l'écran **Paramètres** de
-  l'application ; le bouton "Enregistrer les paramètres" recharge
-  immédiatement la base de données au nouvel emplacement.
+  l'application. Changer le chemin de la base de données demande une
+  confirmation, puis l'application se ferme et redémarre automatiquement
+  pour l'ouvrir à son nouvel emplacement (un simple rechargement ne
+  suffirait pas : les écrans déjà ouverts garderaient des données de
+  l'ancienne base en mémoire). Changer uniquement le dossier d'export PDF
+  n'entraîne pas de redémarrage.
 - La base fournie (`data\filtres.db`) a été pré-remplie via l'import du
   classeur Excel source réel (voir ci-dessous), afin que l'utilisateur
   retrouve immédiatement toutes ses données actuelles.
