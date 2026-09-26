@@ -57,10 +57,7 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
                 "La création de nouvelles variétés de filtres est désactivée. Activez « Autoriser la création de nouvelles variétés de filtres (mode édition) » dans Paramètres pour en créer une.");
             return;
         }
-        var entity = new FilterVariety
-        {
-            Ordre = (App.Db.FilterVarieties.Max(v => (int?)v.Ordre) ?? 0) + 1
-        };
+        var entity = new FilterVariety();
         if (!EditVarietyFields(entity, "Nouvelle variété de filtre")) return;
         App.Db.FilterVarieties.Add(entity);
         App.Db.SaveChanges();
@@ -106,14 +103,34 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
         _main.RemoveVarietyNavigationItem(id);
     }
 
-    /// <summary>Nom et ordre d'affichage (position du sous-menu sous "Filtres F7 à H14", plus petit
-    /// d'abord) : voir <see cref="MainViewModel.ResortVarietyNavigationItems"/>.</summary>
+    /// <summary>Nom et position du sous-menu sous "Filtres F7 à H14" : plutôt qu'un numéro d'ordre brut, un
+    /// sélecteur "Placer après" (une variété existante, ou "en premier"). La position choisie est ensuite
+    /// traduite en <see cref="FilterVariety.Ordre"/> pour toutes les variétés par <see cref="ApplyOrdering"/>.</summary>
     private bool EditVarietyFields(FilterVariety variety, string title)
     {
+        var ordered = App.Db.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList();
+        var others = ordered.Where(v => v.Id != variety.Id).ToList();
+
+        var positionLabels = new List<string> { "(en premier)" };
+        positionLabels.AddRange(others.Select(o => $"Après « {o.Nom} »"));
+
+        // Position actuelle : juste après son prédécesseur direct dans l'ordre existant (dernière position
+        // pour une variété toute nouvelle, qui n'a pas encore de prédécesseur/successeur).
+        int? currentAfterId;
+        if (variety.Id == 0) currentAfterId = others.Count > 0 ? others[^1].Id : null;
+        else
+        {
+            var selfIndex = ordered.FindIndex(v => v.Id == variety.Id);
+            currentAfterId = selfIndex > 0 ? ordered[selfIndex - 1].Id : null;
+        }
+        var currentPositionIndex = currentAfterId is int afterId ? others.FindIndex(o => o.Id == afterId) + 1 : 0;
+
+        int? chosenAfterId = currentAfterId;
         var fields = new List<EditField>
         {
             EditField.Text("Nom de la variété", () => variety.Nom, v => variety.Nom = v.Trim(), required: true),
-            EditField.IntField("Ordre d'affichage", () => variety.Ordre, v => variety.Ordre = v)
+            EditField.ComboField("Placer après", positionLabels, () => currentPositionIndex,
+                v => chosenAfterId = v >= 1 && v <= others.Count ? others[v - 1].Id : null)
         };
         if (!App.Dialogs.EditFields(title, fields)) return false;
 
@@ -124,6 +141,21 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
             if (variety.Id != 0) App.Db.Entry(variety).Reload();
             return false;
         }
+
+        ApplyOrdering(variety, chosenAfterId);
         return true;
+    }
+
+    /// <summary>Repositionne <paramref name="variety"/> juste après <paramref name="afterVarietyId"/> (ou
+    /// en premier si null) et renumérote séquentiellement (0, 1, 2...) l'ensemble des variétés, y compris
+    /// celles non modifiées : leur <see cref="FilterVariety.Ordre"/> est mis à jour sur les entités suivies
+    /// par le contexte, à sauvegarder par l'appelant avec <paramref name="variety"/> (même SaveChanges).</summary>
+    private static void ApplyOrdering(FilterVariety variety, int? afterVarietyId)
+    {
+        var others = App.Db.FilterVarieties.Where(v => v.Id != variety.Id).OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList();
+        var insertIndex = afterVarietyId is int id ? others.FindIndex(v => v.Id == id) + 1 : 0;
+        if (insertIndex < 0) insertIndex = others.Count;
+        others.Insert(insertIndex, variety);
+        for (var i = 0; i < others.Count; i++) others[i].Ordre = i;
     }
 }
