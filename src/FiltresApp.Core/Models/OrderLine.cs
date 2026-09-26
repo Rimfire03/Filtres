@@ -43,26 +43,13 @@ public class OrderLine
         _ => category.ToString()
     };
 
-    /// <summary>Libellé de catégorie des filtres F7 à H13 (fenêtre de rattachement). Ce n'est pas une
-    /// famille : dans Commande / Inventaire, la famille d'un filtre F7 à H13 est son Type.</summary>
-    public const string OpacimetricCategoryLabel = "Filtres F7 à H13";
-
     /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Sans famille".</summary>
     public const int NoFamilyOverride = -1;
 
-    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force comme famille un Type de filtre F7 à H13,
-    /// indiqué dans <see cref="FamilyOverrideType"/>.</summary>
-    public const int OpacimetricTypeOverride = 100;
-
     /// <summary>Famille choisie manuellement (fenêtre Modifier / colonne Famille) : null = automatique
-    /// (d'après les filtres rattachés), <see cref="NoFamilyOverride"/> = "Sans famille",
-    /// <see cref="OpacimetricTypeOverride"/> = Type F7 à H13 (<see cref="FamilyOverrideType"/>), sinon valeur
-    /// de <see cref="FilterCategory"/>.</summary>
+    /// (d'après les filtres rattachés), <see cref="NoFamilyOverride"/> = "Sans famille", sinon valeur de
+    /// <see cref="FilterCategory"/>.</summary>
     public int? FamilyOverride { get; set; }
-
-    /// <summary>Type F7 à H13 choisi comme famille quand <see cref="FamilyOverride"/> vaut
-    /// <see cref="OpacimetricTypeOverride"/>.</summary>
-    public string? FamilyOverrideType { get; set; }
 
     public const string AutomaticFamilyChoice = "Automatique";
 
@@ -78,24 +65,18 @@ public class OrderLine
     {
         null => AutomaticFamilyLabel,
         NoFamilyOverride => NoFamilyLabel,
-        OpacimetricTypeOverride => string.IsNullOrWhiteSpace(FamilyOverrideType) ? AutomaticFamilyLabel : FamilyOverrideType.Trim(),
         int category => FamilyLabelFor((FilterCategory)category)
     };
 
-    /// <summary>Famille déduite des filtres rattachés : catégorie pour les filtres à périodicité, Type pour
-    /// les filtres F7 à H13 (un filtre F7 à H13 sans Type n'apporte pas de famille). "Sans famille" si
-    /// aucune, "Plusieurs familles" si elles diffèrent. Nécessite FilterLinks (avec PeriodicFilter) et
-    /// OpacimetricLinks (avec OpacimetricFilter) chargés.</summary>
+    /// <summary>Famille déduite des filtres rattachés (catégorie des filtres à périodicité). "Sans famille"
+    /// si aucun filtre rattaché, "Plusieurs familles" si plusieurs catégories différentes. Nécessite
+    /// FilterLinks (avec PeriodicFilter) chargés.</summary>
     [NotMapped]
     public string AutomaticFamilyLabel
     {
         get
         {
             var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category))
-                .Concat(OpacimetricLinks
-                    .Select(l => l.OpacimetricFilter?.FilterType?.Trim())
-                    .Where(t => !string.IsNullOrEmpty(t))
-                    .Select(t => t!))
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
             return families.Count switch
@@ -121,11 +102,8 @@ public class OrderLine
     /// calcul automatique du besoin semestriel. Voir <see cref="OrderNeedCalculationService"/>.</summary>
     public List<OrderLinePeriodicFilter> FilterLinks { get; set; } = new();
 
-    /// <summary>Rattachement manuel à des filtres F7 à H13 (pas de besoin calculé : besoin saisi).</summary>
-    public List<OrderLineOpacimetricFilter> OpacimetricLinks { get; set; } = new();
-
     [NotMapped]
-    public int LinkedFilterCount => FilterLinks.Count + OpacimetricLinks.Count;
+    public int LinkedFilterCount => FilterLinks.Count;
 
     [NotMapped]
     public string LinkedFilterCountDisplay => LinkedFilterCount switch

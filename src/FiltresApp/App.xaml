@@ -19,9 +19,6 @@
             <DataTemplate DataType="{x:Type vm:PeriodicFilterListViewModel}">
                 <views:PeriodicFilterView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:OpacimetricFilterListViewModel}">
-                <views:OpacimetricFilterView/>
-            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:K7ListViewModel}">
                 <views:K7View/>
             </DataTemplate>

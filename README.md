@@ -126,14 +126,10 @@ un poste en lecture seule.
 
 ## Suppression de l'historique d'une année
 
-Écran **Paramètres** → carte « Supprimer l'historique d'une année », avec deux fonctions séparées :
+Écran **Paramètres** → carte « Supprimer l'historique d'une année » : supprime les remplacements
+(cases « Réalisé » / dates) de l'année choisie pour les filtres G4 plissés, G4 plan, G3 et Charbon.
 
-- **Filtres G4 plissés, G4 plan, G3 et Charbon** : supprime les remplacements (cases « Réalisé » /
-  dates) de l'année choisie. Les filtres F7 à H13 ne sont pas touchés.
-- **Filtres F7 à H13** : supprime les remplacements datés de l'année choisie, uniquement pour ces
-  filtres.
-
-Chaque liste ne propose que les années qui ont réellement un historique. Les filtres eux-mêmes ne
+La liste ne propose que les années qui ont réellement un historique. Les filtres eux-mêmes ne
 sont jamais supprimés. Une confirmation indique le nombre de remplacements concernés, et une copie
 de la base est faite juste avant, à côté du fichier
 (`filtres.db.avant-suppression-historique-<année>-<date>.bak`). Désactivé sur un poste en lecture
@@ -212,11 +208,8 @@ texte saisi (majuscules et accents ignorés) ; sous « Dimension », une liste d
 sur l'écran (« Toutes » par défaut). Ces filtres se combinent avec « Filtrer par mois », sont
 appliqués immédiatement (sans relire la base), repris par l'impression (titre complété) et remis à
 zéro par « Réinitialiser les filtres ».
-Même principe sur l'écran **F7 à H13** : champ « contient » sous « Nom de la centrale d'air » et
-liste des dimensions sous « Dimension », combinés avec le filtre par famille, repris à l'impression et
-remis à zéro par « Réinitialiser les filtres ».
 
-**Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3, Charbon et F7 à H13)** : première colonne de la
+**Puce « Lié » (écrans Filtres G4 plissés, G4 plan, G3, Charbon)** : première colonne de la
 grille, puce **verte** si le filtre est rattaché à une ligne de Commande / Inventaire (bouton
 « Rattacher des filtres... » de l'écran Commande), **rouge** sinon. Le survol de la puce indique la
 ligne concernée. Recalculée à chaque ouverture de l'écran.
@@ -230,31 +223,15 @@ supprimé),
 impression (feuille de terrain avec cases à cocher, voir plus bas), export Excel de
 l'année, et CRUD complet.
 
-**Remplacements F7 à H13** : même principe que les autres écrans de filtres, enregistré à la volée.
-Sélecteur « Mois consulté (case à cocher) » (Décembre N-1 puis Janvier à Décembre de l'année choisie)
-et colonnes « Réalisé » / « Date du changement » en fin de grille. Cocher crée un remplacement
-(quantité en place) daté du jour si le mois consulté est le mois en cours, sinon du 1er du mois
-consulté ; la date se corrige ensuite dans la colonne « Date du changement » (limitée au mois
-consulté). Décocher, ou vider la date, supprime les remplacements de ce mois ; les autres mois ne
-sont jamais touchés. Le bouton « Enregistrer un remplacement » a été supprimé de tous les écrans de
-filtres.
-
-**Familles F7 à H13** (migration v14, table `OpacimetricFamilies` et champ
-`OpacimetricFilter.OpacimetricFamilyId`) : familles **créées à la main** (barre « Famille » en haut
-de l'écran : « + Nouvelle famille », « Renommer la famille », « Supprimer la famille », ces deux
-derniers agissant sur la famille choisie dans le filtre) et **attribuées manuellement** à chaque
-filtre via le champ « Famille » de la fenêtre Ajouter / Modifier. La grille regroupe les filtres sous
-un bandeau par famille (familles par nom, « Sans famille » en dernier) et la liste « Famille » permet
-de n'en afficher qu'une. Un filtre ajouté pendant qu'une famille est filtrée reçoit cette famille.
-Supprimer une famille ne supprime aucun filtre (ils passent en « Sans famille », après
-confirmation). L'impression reprend le regroupement (ligne titre par famille). Ces familles sont
-indépendantes de celles des autres écrans. Gestion désactivée en lecture seule.
-
-Filtres F7 à H13 (colonnes : nom de la centrale, dimension, **type** — texte libre saisi dans
-« Modifier », migration v10 —, qté en place, dernier changement, nb remplacements) :
-historique de remplacements (qté + date) sans périodicité
-fixe (pas de case « Réalisé » par mois pour cette feuille, voir plus bas),
-CRUD, impression, export Excel de l'année.
+> La fonctionnalité **« Filtres F7 à H13 »** (écran dédié, remplacements par date, familles créées à
+> la main, rattachement à Commande / Inventaire) a été **supprimée définitivement** le 26/09/2026,
+> données et code compris, à la demande explicite de l'utilisateur. Voir la migration de base v17
+> (`DbContextFactory.RemoveOpacimetricFeature`) : suppression des tables `OpacimetricFilters`,
+> `OpacimetricReplacements`, `OpacimetricFamilies`, `OrderLineOpacimetricFilters` et de la colonne
+> `OrderLines.FamilyOverrideType` (les lignes qui avaient un Type F7 à H13 comme famille manuelle
+> repassent en famille automatique). Les sections historiques ci-dessous (import des archives,
+> effectifs, etc.) mentionnant `OpacimetricFilter` restent volontairement inchangées : elles
+> documentent des décisions et migrations passées, pas l'état actuel du logiciel.
 
 Liste K7 (lieux regroupés par famille éditable, voir plus bas), Inventaire,
 Commande chmy : CRUD en grille, impression ; Inventaire et Commande chmy
@@ -345,20 +322,8 @@ Famille automatique :
 | uniquement des filtres de « Filtres G4 plan »      | Filtres G4 plan      |
 | uniquement des filtres de « Filtres G3 »           | Filtres G3           |
 | uniquement des filtres de « Charbon »              | Charbon              |
-| uniquement des filtres F7 à H13 d'un même Type     | ce Type (ex. « Poches F7 ») |
 | des filtres de plusieurs catégories                | Plusieurs familles   |
 | aucun filtre                                       | Sans famille         |
-
-**Rattachement des filtres F7 à H13** (migration v15, table `OrderLineOpacimetricFilters`) : ils se
-rattachent à une ligne de Commande / Inventaire comme les autres filtres (fenêtre « Rattacher des
-filtres... » et menu rapide du clic droit sur « Filtres liés », même comparaison approximative des
-dimensions, un filtre = une seule ligne). Il n'y a **pas de famille « Filtres F7 à H13 »** : une
-ligne rattachée à des F7 à H13 prend comme famille le **Type** saisi pour ces filtres sur l'écran F7 à
-H13 (un filtre sans Type n'apporte pas de famille). Les Types existants sont aussi proposés au choix
-manuel (fenêtre « Modifier » et colonne « Famille » de Commande ; champ
-`OrderLine.FamilyOverrideType`, migration v16, qui remet en « Automatique » les lignes qui avaient été
-forcées dans l'ancienne famille « Filtres F7 à H13 »). Comme pour Charbon, le besoin de ces familles
-n'est pas calculé et se saisit dans la colonne « Besoin » de l'écran Commande.
 
 - Les lignes sont **regroupées sous un bandeau titre par famille** (même style que la Liste K7),
   dans l'ordre du tableau ci-dessus.
@@ -376,7 +341,7 @@ l'application (interface, code et données), voir plus bas.
 ### Alignement des colonnes de grilles et format d'affichage de la périodicité
 
 Dans toutes les grilles (`DataGrid`) de l'application (écrans G4 plissé/G4 plan/G3/Charbon,
-F7-H13, Liste K7, Inventaire, Commande chmy, ainsi que les fenêtres "Consulter l'historique..."
+Liste K7, Inventaire, Commande chmy, ainsi que les fenêtres "Consulter l'historique..."
 et "Rattacher des filtres...") :
 
 - La **première colonne d'identification de la ligne** (emplacement/lieu/désignation/nom de la
@@ -437,13 +402,6 @@ même position dans la liste reste sélectionnée (par défaut le mois calendair
   ligne "réalisée sans date", ambiguë. L'historique des autres mois/années
   n'est jamais touché.
 
-La feuille F7 à H13 n'a pas de périodicité mensuelle fixe dans le modèle de
-données d'origine (historique de remplacements ponctuels, pas un suivi mois
-par mois) : elle n'a donc pas de case à cocher par mois, mais son sélecteur
-d'année filtre "Dernier changement" et "Nb remplacements" aux remplacements
-datés de l'année consultée, et elle est incluse dans l'export Excel de
-l'année (10 derniers changements).
-
 ### Export Excel de l'année
 
 Uniquement dans l'écran **Paramètres** (carte « Export Excel de l'année » ; le bouton a été retiré
@@ -456,9 +414,6 @@ la navigation, et les **familles en lignes titres** (bandeau foncé fusionné, c
   en place, Périodicité (+ Réf. K7 pour G3, Compteur d'heures pour Charbon), puis pour chaque mois de
   l'année exportée « réalisé » (Oui) et date. Seul G3 a des familles (à remplacer / à laver / sans
   dimension).
-- **Filtres F7 à H13** : Filtres, Dimension, Type, Qté en place, puis les **dates des 10 derniers
-  changements** (du plus récent au plus ancien, jusqu'au 31/12 de l'année exportée), groupés par
-  famille F7 à H13 (« Sans famille » en dernier).
 
 Liste K7, Inventaire et Commande ne sont pas exportés.
 
@@ -1013,8 +968,7 @@ restrictive** que l'import principal, sur demande explicite de l'utilisateur :
 ### Fenêtre "Consulter l'historique..." (clic droit, lecture seule)
 
 Sur les 4 catégories à périodicité mensuelle (G4 plissé, G4 plan, G3, Charbon,
-écran partagé `PeriodicFilterView`) et sur "Filtres F7 à H13"
-(`OpacimetricFilterView`), un **clic droit sur une ligne du tableau** ouvre un
+écran partagé `PeriodicFilterView`), un **clic droit sur une ligne du tableau** ouvre un
 menu contextuel avec une option **"Consulter l'historique..."**, visible sur
 **toutes** les catégories (contrairement à l'option "Changé tous les 15
 jours" ci-dessus, restreinte à G4 plissé) : elle ouvre une fenêtre de
@@ -1023,12 +977,11 @@ voie d'écriture concurrente à la case à cocher "Réalisé" de la grille
 principale) affichant l'historique complet d'un seul filtre.
 
 - **En-tête** : nom/emplacement (libellé de colonne adapté à la catégorie,
-  ex. "Nom de la centrale d'air" pour G4 plissé/F7-H13, "Emplacement" pour les
+  ex. "Nom de la centrale d'air" pour G4 plissé, "Emplacement" pour les
   autres) et dimension du filtre consulté.
 - **Sélecteur d'année** (`ComboBox`) : liste uniquement les années où **ce
-  filtre précis** a de l'historique en base (`FilterReplacement.Year`/
-  `OpacimetricReplacement.DateChanged.Year` distincts pour ce
-  `PeriodicFilterId`/`OpacimetricFilterId`), pas une liste fixe 2014-2026
+  filtre précis** a de l'historique en base (`FilterReplacement.Year`
+  distincts pour ce `PeriodicFilterId`), pas une liste fixe 2014-2026
   codée en dur : un filtre récent n'affiche que ses années réelles. Si le
   filtre n'a aucun historique, un message "Aucun historique disponible..."
   remplace le sélecteur/la grille plutôt que de les afficher vides. Par
@@ -1040,28 +993,20 @@ principale) affichant l'historique complet d'un seul filtre.
   `PeriodicFilterListViewModel.MonthLabels`) avec, pour chacun, s'il a été
   réalisé et à quelle date (mois vide/"-" si aucune ligne `FilterReplacement`
   pour ce mois/cette année).
-- **Filtres F7 à H13** (`OpacimetricHistoryWindow`) : cette feuille n'a pas de
-  notion de mois fixe (voir plus haut, historique de remplacements ponctuels),
-  donc pas de grille à 12 mois : liste chronologique des remplacements
-  (`OpacimetricReplacement`) datés de l'année choisie, avec quantité changée
-  et date. `OpacimetricFilterView` n'avait pas encore de menu contextuel : un
-  menu minimal, ne contenant que cette option, a été ajouté sur la grille.
-- **Implémentation** : `PeriodicFilterListViewModel.ShowHistory` /
-  `OpacimetricFilterListViewModel.ShowHistory` chargent l'historique complet
-  du filtre sélectionné depuis `App.Db` (`AsNoTracking`, pas de filtrage par
-  année à la requête : c'est la fenêtre elle-même qui restreint l'affichage à
-  l'année choisie dans son `ComboBox`, pour permettre de changer d'année sans
-  recharger depuis la base) puis délèguent l'ouverture de la fenêtre à
-  `IDialogService.ShowFilterHistory`/`ShowOpacimetricHistory`
+- **Implémentation** : `PeriodicFilterListViewModel.ShowHistory` charge
+  l'historique complet du filtre sélectionné depuis `App.Db` (`AsNoTracking`,
+  pas de filtrage par année à la requête : c'est la fenêtre elle-même qui
+  restreint l'affichage à l'année choisie dans son `ComboBox`, pour permettre
+  de changer d'année sans recharger depuis la base) puis délègue l'ouverture
+  de la fenêtre à `IDialogService.ShowFilterHistory`
   (`Services/DialogService.cs`), suivant le même pattern que
   `PickFilterLinks`/`FilterLinkWindow` déjà en place pour le rattachement
   filtre <-> commande. Commande exposée par ligne de grille
-  (`PeriodicFilterRowViewModel.ShowHistoryCommand` /
-  `OpacimetricFilterRowViewModel.ShowHistoryCommand`, `[RelayCommand]`), liée
+  (`PeriodicFilterRowViewModel.ShowHistoryCommand`, `[RelayCommand]`), liée
   au `MenuItem` du `ContextMenu` (dont le `DataContext` est hérité de la ligne
   cliquée, comme pour "Changé tous les 15 jours").
-- **Aucune migration de schéma nécessaire** : la fenêtre ne fait que lire les
-  tables `FilterReplacement`/`OpacimetricReplacement` déjà existantes, sans
+- **Aucune migration de schéma nécessaire** : la fenêtre ne fait que lire la
+  table `FilterReplacement` déjà existante, sans
   ajouter de colonne ni de table.
 - **Fichiers ajoutés** : `src/FiltresApp/Views/Dialogs/FilterHistoryWindow.xaml`
   (+ `.xaml.cs`), `src/FiltresApp/Views/Dialogs/OpacimetricHistoryWindow.xaml`
@@ -1129,10 +1074,10 @@ imprimés (`PrintService`, impression générale) reprennent la
 même couleur de bordure sur chaque cellule (bordure complète 0.75px au lieu du simple soulignement bas
 précédent).
 
-### Harmonisation du format Dimension (filtres G4 plissé/plan, G3, Charbon, F7 à H13)
+### Harmonisation du format Dimension (filtres G4 plissé/plan, G3, Charbon)
 
 `FiltresApp.Core.Services.DimensionFormatService.Normalize` impose le format **"aaaa x bbbb x cccc"**
-au champ Dimension des filtres à périodicité et F7 à H13 : `aaaa` est toujours le plus grand des deux
+au champ Dimension des filtres à périodicité : `aaaa` est toujours le plus grand des deux
 premiers nombres (`bbbb` le plus petit), `cccc` (épaisseur) n'est **jamais** réordonné et reste en
 dernière position. Un indice de classe entre parenthèses (`(A+)`, `( C )`, `(Classe B)`...) est retiré ;
 les autres parenthèses (`(9poches)`, `(à découper)`...) sont conservées comme texte libre. Tout texte
@@ -1141,12 +1086,11 @@ multi-lignes dans le formulaire "Modifier"). Si le texte ne commence pas par un 
 reconnaissable ("NxN" ou "NxNxN", ex. "A laver"), `Normalize` retourne `null` : la valeur reste
 inchangée, aucune règle ne s'y applique.
 
-À l'ajout/la modification d'un filtre (`PeriodicFilterListViewModel.EditEntity`,
-`OpacimetricFilterListViewModel.EditEntity`), si le texte saisi ne correspond pas déjà exactement à la
-norme, `PeriodicFilterListViewModel.ProposeDimensionCorrection` (partagée entre les deux écrans) affiche
-une boîte de confirmation proposant la correction ; l'utilisateur peut l'accepter ou la refuser (le texte
-saisi est alors conservé tel quel). Les données existantes ont été harmonisées une fois via un script
-ponctuel (273 valeurs corrigées sur 475, le 26/09/2026).
+À l'ajout/la modification d'un filtre (`PeriodicFilterListViewModel.EditEntity`), si le texte saisi ne
+correspond pas déjà exactement à la norme, `PeriodicFilterListViewModel.ProposeDimensionCorrection`
+affiche une boîte de confirmation proposant la correction ; l'utilisateur peut l'accepter ou la refuser
+(le texte saisi est alors conservé tel quel). Les données existantes ont été harmonisées une fois via un
+script ponctuel (273 valeurs corrigées sur 475, le 26/09/2026).
 
 ### Code partagé entre écrans (factorisation)
 
@@ -1160,9 +1104,9 @@ Les éléments communs à plusieurs écrans sont écrits une seule fois :
   info-bulle, `ShowsLinkDot` faux pour les filtres lavables), `NameDimensionFilter` (filtres « nom
   contient » / dimension, propriété `HeaderFilter` des écrans), `ConsultedMonthOption` (sélecteur
   « Mois consulté » et noms des mois).
-- **Services** : `FilterLinkService.PeriodicLinkedLines` / `OpacimetricLinkedLines` (ligne de Commande /
-  Inventaire de chaque filtre rattaché), `PrintService.BuildGroupedRows` (ligne titre « — FAMILLE — »
-  des impressions et PDF), `VisualTreeExtensions.FindAncestor` (recherche d'un parent dans l'arbre visuel).
+- **Services** : `FilterLinkService.PeriodicLinkedLines` (ligne de Commande / Inventaire de chaque
+  filtre rattaché), `PrintService.BuildGroupedRows` (ligne titre « — FAMILLE — » des impressions et
+  PDF), `VisualTreeExtensions.FindAncestor` (recherche d'un parent dans l'arbre visuel).
 
 ## Pistes d'amélioration
 

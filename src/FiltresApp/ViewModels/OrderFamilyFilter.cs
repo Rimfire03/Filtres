@@ -7,8 +7,7 @@ namespace FiltresApp.ViewModels;
 
 /// <summary>Familles des écrans Inventaire et Commande : filtre d'affichage (chaque écran garde son propre
 /// choix), ordre des groupes, et choix manuel de famille. Les familles sont celles des filtres à
-/// périodicité (G4 plissés, G4 plan, G3, Charbon) et les Types saisis sur l'écran F7 à H13 (voir
-/// <see cref="OrderLine.FamilyGroupLabel"/>).</summary>
+/// périodicité (G4 plissés, G4 plan, G3, Charbon), voir <see cref="OrderLine.FamilyGroupLabel"/>.</summary>
 public partial class OrderFamilyFilter : ObservableObject
 {
     private const string AllLabel = "Toutes les familles";
@@ -29,17 +28,6 @@ public partial class OrderFamilyFilter : ObservableObject
         if (!_updatingOptions) _onFilterChanged();
     }
 
-    /// <summary>Types saisis sur l'écran F7 à H13 (familles possibles dans Commande / Inventaire).</summary>
-    public static List<string> LoadOpacimetricTypes() =>
-        App.Db.OpacimetricFilters.AsNoTracking()
-            .Select(f => f.FilterType)
-            .ToList()
-            .Where(t => !string.IsNullOrWhiteSpace(t))
-            .Select(t => t!.Trim())
-            .Distinct(StringComparer.CurrentCultureIgnoreCase)
-            .OrderBy(t => t, StringComparer.CurrentCultureIgnoreCase)
-            .ToList();
-
     /// <summary>Lignes (filtres rattachés chargés) filtrées puis triées par famille, puis par ordre. Met aussi
     /// à jour la liste du filtre avec les familles connues.</summary>
     public List<OrderLine> Apply(IEnumerable<OrderLine> lines)
@@ -53,17 +41,16 @@ public partial class OrderFamilyFilter : ObservableObject
             .ToList();
     }
 
-    /// <summary>Ordre des familles : catégories, Types F7 à H13 (plus d'éventuels types choisis
-    /// manuellement qui n'existent plus), "Plusieurs familles", "Sans famille".</summary>
+    /// <summary>Ordre des familles : catégories (plus d'éventuelles familles choisies manuellement qui
+    /// n'existent plus), "Plusieurs familles", "Sans famille".</summary>
     private static List<string> BuildOrder(IEnumerable<OrderLine> lines)
     {
         var order = CategoryFamilies.ToList();
-        var types = LoadOpacimetricTypes()
-            .Concat(lines.Select(l => l.FamilyGroupLabel))
+        var extra = lines.Select(l => l.FamilyGroupLabel)
             .Where(f => !CategoryFamilies.Contains(f) && f != OrderLine.MultipleFamiliesLabel && f != OrderLine.NoFamilyLabel)
             .Distinct()
             .OrderBy(t => t, StringComparer.CurrentCultureIgnoreCase);
-        order.AddRange(types);
+        order.AddRange(extra);
         order.Add(OrderLine.MultipleFamiliesLabel);
         order.Add(OrderLine.NoFamilyLabel);
         return order;
@@ -93,19 +80,17 @@ public partial class OrderFamilyFilter : ObservableObject
 
     // ---- Choix manuel de la famille ----
 
-    private sealed record ManualChoice(string Label, int Override, string? Type);
+    private sealed record ManualChoice(string Label, int Override);
 
-    /// <summary>Familles au choix manuel : catégories, Types F7 à H13, "Sans famille".</summary>
+    /// <summary>Familles au choix manuel : catégories, "Sans famille".</summary>
     private static List<ManualChoice> ManualChoices() =>
-        Enum.GetValues<FilterCategory>().Select(c => new ManualChoice(OrderLine.FamilyLabelFor(c), (int)c, null))
-            .Concat(LoadOpacimetricTypes().Select(t => new ManualChoice(t, OrderLine.OpacimetricTypeOverride, t)))
-            .Append(new ManualChoice(OrderLine.NoFamilyLabel, OrderLine.NoFamilyOverride, null))
+        Enum.GetValues<FilterCategory>().Select(c => new ManualChoice(OrderLine.FamilyLabelFor(c), (int)c))
+            .Append(new ManualChoice(OrderLine.NoFamilyLabel, OrderLine.NoFamilyOverride))
             .ToList();
 
     private static void ApplyChoice(OrderLine entity, ManualChoice? choice)
     {
         entity.FamilyOverride = choice?.Override;
-        entity.FamilyOverrideType = choice?.Type;
     }
 
     /// <summary>Nouvelle ligne : famille du filtre en cours si c'en est une, sinon automatique.</summary>
@@ -131,8 +116,7 @@ public partial class OrderFamilyFilter : ObservableObject
 
         var currentIndex = entity.FamilyOverride is null
             ? 0
-            : choices.FindIndex(c => c.Override == entity.FamilyOverride
-                && (c.Type is null || string.Equals(c.Type, entity.FamilyOverrideType?.Trim(), StringComparison.CurrentCultureIgnoreCase))) + 1;
+            : choices.FindIndex(c => c.Override == entity.FamilyOverride) + 1;
 
         return EditField.ComboField("Famille", names, () => currentIndex,
             v => ApplyChoice(entity, v >= 1 && v <= choices.Count ? choices[v - 1] : null));

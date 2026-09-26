@@ -48,21 +48,6 @@ public partial class FilterPickItem : ObservableObject
         _isSelected = isSelected;
     }
 
-    /// <summary>Filtre F7 à H13 : pas de type média ni de périodicité fixe.</summary>
-    public FilterPickItem(OpacimetricFilter filter, bool isSelected, bool dimensionMatches, string? linkedElsewhereLabel)
-    {
-        Ref = FilterRef.Opacimetric(filter.Id);
-        CategoryLabel = OrderLine.OpacimetricCategoryLabel;
-        Location = filter.Location;
-        Dimension = filter.Dimension;
-        MediaType = filter.FilterType ?? string.Empty;
-        QuantityInPlace = filter.QuantityInPlace;
-        PeriodicityDisplay = string.Empty;
-        DimensionMatches = dimensionMatches;
-        LinkedElsewhereLabel = linkedElsewhereLabel;
-        _isSelected = isSelected;
-    }
-
     /// <summary>Texte de recherche libre utilisé par le filtre du sélecteur.</summary>
     public string SearchText => $"{CategoryLabel} {Location} {Dimension} {MediaType}".ToLowerInvariant();
 }

@@ -198,8 +198,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// <summary>Propose une correction du champ Dimension selon la norme harmonisée ("aaaa x bbbb x
     /// cccc", voir <see cref="DimensionFormatService"/>) juste après validation du formulaire, si le
     /// texte saisi ne correspond pas déjà exactement à cette norme. N'affiche rien si aucun motif de
-    /// dimension n'a pu être reconnu (le texte reste inchangé, ex. "A laver"). Partagée avec
-    /// <see cref="OpacimetricFilterListViewModel"/> (même règle pour les filtres F7 à H13).</summary>
+    /// dimension n'a pu être reconnu (le texte reste inchangé, ex. "A laver").</summary>
     internal static void ProposeDimensionCorrection(Func<string> get, Action<string> set)
     {
         var raw = get();

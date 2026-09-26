@@ -48,7 +48,6 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
             App.Db.OrderLines
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
-                .Include(l => l.OpacimetricLinks).ThenInclude(ol => ol.OpacimetricFilter)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
                 .ToList()));
@@ -108,20 +107,18 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         if (SelectedLine is not null) OpenLinkWindow(SelectedLine);
     }
 
-    /// <summary>Filtre rattachable (à périodicité ou F7 à H13), vu depuis une ligne de commande.</summary>
+    /// <summary>Filtre rattachable (à périodicité), vu depuis une ligne de commande.</summary>
     private sealed record LinkCandidate(FilterRef Ref, string Category, string Location, string Dimension,
         bool IsLinked, string? LinkedElsewhere, bool DimensionMatches, Func<FilterPickItem> ToPickItem);
 
     /// <summary>Tous les filtres rattachables pour <paramref name="line"/> (chargée avec ses rattachements),
-    /// dans l'ordre catégorie puis emplacement, filtres F7 à H13 en dernier.</summary>
+    /// dans l'ordre catégorie puis emplacement.</summary>
     private List<LinkCandidate> LoadLinkCandidates(OrderLine line)
     {
         // Filtres déjà rattachés à une AUTRE ligne : indicateur rouge / mention "déjà rattaché à".
         var periodicElsewhere = FilterLinkService.PeriodicLinkedLines(App.Db, excludedLineId: line.Id);
-        var opacimetricElsewhere = FilterLinkService.OpacimetricLinkedLines(App.Db, excludedLineId: line.Id);
 
         var linkedPeriodic = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
-        var linkedOpacimetric = line.OpacimetricLinks.Select(l => l.OpacimetricFilterId).ToHashSet();
 
         var candidates = new List<LinkCandidate>();
         foreach (var f in App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList())
@@ -137,21 +134,13 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
             candidates.Add(new LinkCandidate(FilterRef.Periodic(f.Id), category, f.Location, f.Dimension, isLinked, elsewhere, matches,
                 () => new FilterPickItem(f, category, isLinked, matches, elsewhere)));
         }
-        foreach (var f in App.Db.OpacimetricFilters.AsNoTracking().OrderBy(f => f.Location).ToList())
-        {
-            var isLinked = linkedOpacimetric.Contains(f.Id);
-            var elsewhere = opacimetricElsewhere.GetValueOrDefault(f.Id);
-            var matches = DimensionMatchService.Matches(line, f.Dimension);
-            candidates.Add(new LinkCandidate(FilterRef.Opacimetric(f.Id), OrderLine.OpacimetricCategoryLabel, f.Location, f.Dimension, isLinked, elsewhere, matches,
-                () => new FilterPickItem(f, isLinked, matches, elsewhere)));
-        }
         return candidates;
     }
 
     /// <summary>Remplace les rattachements de la ligne, enregistre et recharge l'écran.</summary>
     private void SaveLinks(OrderLine line, IEnumerable<FilterRef> selected)
     {
-        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).Include(l => l.OpacimetricLinks).First(l => l.Id == line.Id);
+        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == line.Id);
         FilterLinkService.SetLinks(App.Db, tracked, selected);
         App.Db.SaveChanges();
         Load();
@@ -170,7 +159,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         SaveLinks(line, selected);
     }
 
-    /// <summary>Choix de la colonne "Famille" (Automatique, familles, Types F7 à H13), relus à chaque chargement.</summary>
+    /// <summary>Choix de la colonne "Famille" (Automatique, familles), relus à chaque chargement.</summary>
     [ObservableProperty] private List<string> _familyQuickChoices = new();
 
     /// <summary>Colonne "Famille" (masquée par défaut) : change la famille de la ligne sans ouvrir
@@ -188,7 +177,6 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         OrderFamilyFilter.ApplyQuickChoice(tracked, choice);
         App.Db.SaveChanges();
         line.FamilyOverride = tracked.FamilyOverride;
-        line.FamilyOverrideType = tracked.FamilyOverrideType;
 
         var index = Lines.IndexOf(line);
         if (index < 0) return;
@@ -236,9 +224,9 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     public const int QuickLinkMaxSuggestions = 20;
 
     /// <summary>Menu rapide (clic droit sur "Filtres liés") : filtres déjà rattachés à la ligne, puis
-    /// filtres de dimension correspondante (même comparaison approximative que la fenêtre complète, F7 à
-    /// H13 compris), limités à <see cref="QuickLinkMaxSuggestions"/>. Le second élément indique combien de
-    /// suggestions ont été omises.</summary>
+    /// filtres de dimension correspondante (même comparaison approximative que la fenêtre complète),
+    /// limités à <see cref="QuickLinkMaxSuggestions"/>. Le second élément indique combien de suggestions
+    /// ont été omises.</summary>
     public (List<QuickLinkOption> Options, int Omitted) GetQuickLinkOptions(OrderLine line)
     {
         var candidates = LoadLinkCandidates(line);
@@ -260,9 +248,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     public void SetQuickLink(OrderLine line, FilterRef filter, bool link)
     {
         if (!App.GuardWritable()) return;
-        var selected = line.FilterLinks.Select(l => FilterRef.Periodic(l.PeriodicFilterId))
-            .Concat(line.OpacimetricLinks.Select(l => FilterRef.Opacimetric(l.OpacimetricFilterId)))
-            .ToHashSet();
+        var selected = line.FilterLinks.Select(l => FilterRef.Periodic(l.PeriodicFilterId)).ToHashSet();
         if (link) selected.Add(filter);
         else selected.Remove(filter);
         SaveLinks(line, selected);

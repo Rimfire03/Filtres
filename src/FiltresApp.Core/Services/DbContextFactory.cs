@@ -52,6 +52,7 @@ public class DbContextFactory
         (14, "Familles des filtres F7 à H13", AddOpacimetricFamilies),
         (15, "Rattachement des filtres F7 à H13 à Commande / Inventaire", AddOrderLineOpacimetricFilters),
         (16, "Familles Commande / Inventaire : Type des filtres F7 à H13 au lieu de « Filtres F7 à H13 »", AddOrderLineFamilyOverrideTypeColumn),
+        (17, "Suppression de la fonctionnalité Filtres F7 à H13", RemoveOpacimetricFeature),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -144,6 +145,23 @@ public class DbContextFactory
         var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
+    }
+
+    /// <summary>Suppression définitive de la fonctionnalité "Filtres F7 à H13" (demandée explicitement par
+    /// l'utilisateur), données ET structure : table des filtres, de leurs remplacements, de leurs familles,
+    /// et de leur rattachement à Commande / Inventaire. Les lignes de Commande / Inventaire dont la famille
+    /// était un Type F7 à H13 (FamilyOverrideType) repassent en famille automatique.</summary>
+    private static void RemoveOpacimetricFeature(FiltresDbContext ctx)
+    {
+        if (GetColumns(ctx, "OrderLines").Contains("FamilyOverrideType"))
+        {
+            ctx.Database.ExecuteSqlRaw("""UPDATE "OrderLines" SET "FamilyOverride" = NULL WHERE "FamilyOverrideType" IS NOT NULL;""");
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" DROP COLUMN "FamilyOverrideType";""");
+        }
+        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OrderLineOpacimetricFilters";""");
+        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricReplacements";""");
+        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricFilters";""");
+        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricFamilies";""");
     }
 
     /// <summary>La famille "Filtres F7 à H13" (FamilyOverride = 100) n'existe plus : les lignes qui l'avaient

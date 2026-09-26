@@ -12,7 +12,6 @@ public interface IDialogService
     bool EditFields(string title, List<EditField> fields);
     List<FilterRef>? PickFilterLinks(List<FilterPickItem> items);
     void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements);
-    void ShowOpacimetricHistory(string location, string dimension, List<OpacimetricReplacement> replacements);
 }
 
 public class DialogService : IDialogService
@@ -42,12 +41,6 @@ public class DialogService : IDialogService
     public void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements)
     {
         var window = new FilterHistoryWindow(locationLabel, location, dimension, replacements) { Owner = Application.Current.MainWindow };
-        window.ShowDialog();
-    }
-
-    public void ShowOpacimetricHistory(string location, string dimension, List<OpacimetricReplacement> replacements)
-    {
-        var window = new OpacimetricHistoryWindow(location, dimension, replacements) { Owner = Application.Current.MainWindow };
         window.ShowDialog();
     }
 }

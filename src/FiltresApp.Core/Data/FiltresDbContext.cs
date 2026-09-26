@@ -17,16 +17,12 @@ public class FiltresDbContext : DbContext
 
     public DbSet<PeriodicFilter> PeriodicFilters => Set<PeriodicFilter>();
     public DbSet<FilterReplacement> FilterReplacements => Set<FilterReplacement>();
-    public DbSet<OpacimetricFilter> OpacimetricFilters => Set<OpacimetricFilter>();
-    public DbSet<OpacimetricReplacement> OpacimetricReplacements => Set<OpacimetricReplacement>();
     public DbSet<K7Location> K7Locations => Set<K7Location>();
     public DbSet<K7Family> K7Families => Set<K7Family>();
     public DbSet<InventoryLine> InventoryLines => Set<InventoryLine>();
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
     public DbSet<OrderLinePeriodicFilter> OrderLinePeriodicFilters => Set<OrderLinePeriodicFilter>();
     public DbSet<SharedAsset> SharedAssets => Set<SharedAsset>();
-    public DbSet<OpacimetricFamily> OpacimetricFamilies => Set<OpacimetricFamily>();
-    public DbSet<OrderLineOpacimetricFilter> OrderLineOpacimetricFilters => Set<OrderLineOpacimetricFilter>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -49,34 +45,10 @@ public class FiltresDbContext : DbContext
     {
         modelBuilder.Entity<SharedAsset>().HasKey(a => a.Key);
 
-        modelBuilder.Entity<OrderLineOpacimetricFilter>()
-            .HasOne(l => l.OrderLine)
-            .WithMany(o => o.OpacimetricLinks)
-            .HasForeignKey(l => l.OrderLineId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<OrderLineOpacimetricFilter>()
-            .HasOne(l => l.OpacimetricFilter)
-            .WithMany()
-            .HasForeignKey(l => l.OpacimetricFilterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<OpacimetricFilter>()
-            .HasOne(f => f.Family)
-            .WithMany()
-            .HasForeignKey(f => f.OpacimetricFamilyId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         modelBuilder.Entity<PeriodicFilter>()
             .HasMany(f => f.Replacements)
             .WithOne(r => r.PeriodicFilter)
             .HasForeignKey(r => r.PeriodicFilterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<OpacimetricFilter>()
-            .HasMany(f => f.Replacements)
-            .WithOne(r => r.OpacimetricFilter)
-            .HasForeignKey(r => r.OpacimetricFilterId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<OrderLinePeriodicFilter>()

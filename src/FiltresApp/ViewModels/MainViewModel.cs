@@ -26,7 +26,6 @@ public partial class MainViewModel : ObservableObject
             new("Filtres G4 plissés", "🟦", () => new PeriodicFilterListViewModel(FilterCategory.G4Plisse, "Filtres G4 plissés", "Nom de la centrale d'air")),
             new("Filtres G4 plan", "🟦", () => new PeriodicFilterListViewModel(FilterCategory.G4Plan, "Filtres G4 plan", "Emplacement de l'appareil")),
             new("Filtres G3", "🟩", () => new PeriodicFilterListViewModel(FilterCategory.G3, "Filtres G3", "Emplacement de l'appareil")),
-            new("Filtres F7 à H13", "🟨", () => new OpacimetricFilterListViewModel()),
             new("Charbon", "⬛", () => new PeriodicFilterListViewModel(FilterCategory.Charbon, "Charbon", "Emplacement de l'appareil")),
             new("Liste K7", "🗂", () => new K7ListViewModel()),
             new("Inventaire", "📦", () => new InventoryListViewModel()),

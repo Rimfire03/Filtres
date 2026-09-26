@@ -35,11 +35,6 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(DeletePeriodicHistoryCommand))]
     private int? _selectedPeriodicHistoryYear;
 
-    [ObservableProperty] private List<int> _opacimetricHistoryYears = new();
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(DeleteOpacimetricHistoryCommand))]
-    private int? _selectedOpacimetricHistoryYear;
-
     [ObservableProperty] private string _historyStatusMessage = string.Empty;
 
     // ---- Logo de l'entreprise (stocké dans la base, commun à tous les postes) ----
@@ -106,33 +101,20 @@ public partial class SettingsViewModel : ObservableObject
     {
         PeriodicHistoryYears = HistoryCleanupService.GetPeriodicYears(App.Db);
         SelectedPeriodicHistoryYear = PeriodicHistoryYears.Count > 0 ? PeriodicHistoryYears[^1] : null;
-        OpacimetricHistoryYears = HistoryCleanupService.GetOpacimetricYears(App.Db);
-        SelectedOpacimetricHistoryYear = OpacimetricHistoryYears.Count > 0 ? OpacimetricHistoryYears[^1] : null;
     }
 
     private bool CanDeletePeriodicHistory() => SelectedPeriodicHistoryYear.HasValue;
-    private bool CanDeleteOpacimetricHistory() => SelectedOpacimetricHistoryYear.HasValue;
 
-    /// <summary>Supprime l'historique de l'année choisie pour G4 plissé, G4 plan, G3 et Charbon
-    /// uniquement (pas F7 à H13, qui a sa propre fonction).</summary>
+    /// <summary>Supprime l'historique de l'année choisie pour G4 plissé, G4 plan, G3 et Charbon.</summary>
     [RelayCommand(CanExecute = nameof(CanDeletePeriodicHistory))]
     private void DeletePeriodicHistory()
     {
         if (SelectedPeriodicHistoryYear is not int year) return;
-        DeleteHistory(year, "Filtres G4 plissés, G4 plan, G3 et Charbon", "Les filtres F7 à H13 ne sont pas concernés.",
+        DeleteHistory(year, "Filtres G4 plissés, G4 plan, G3 et Charbon",
             HistoryCleanupService.CountPeriodic, HistoryCleanupService.DeletePeriodicYear);
     }
 
-    /// <summary>Supprime l'historique de l'année choisie pour les filtres F7 à H13 uniquement.</summary>
-    [RelayCommand(CanExecute = nameof(CanDeleteOpacimetricHistory))]
-    private void DeleteOpacimetricHistory()
-    {
-        if (SelectedOpacimetricHistoryYear is not int year) return;
-        DeleteHistory(year, "Filtres F7 à H13", "Les filtres G4 plissés, G4 plan, G3 et Charbon ne sont pas concernés.",
-            HistoryCleanupService.CountOpacimetric, HistoryCleanupService.DeleteOpacimetricYear);
-    }
-
-    private void DeleteHistory(int year, string scope, string notConcerned,
+    private void DeleteHistory(int year, string scope,
         Func<FiltresDbContext, int, int> count, Func<FiltresDbContext, int, int> delete)
     {
         if (!App.GuardWritable()) return;
@@ -140,7 +122,7 @@ public partial class SettingsViewModel : ObservableObject
         var n = count(App.Db, year);
         if (!App.Dialogs.ShowConfirm("Supprimer l'historique",
                 $"Supprimer définitivement l'historique de l'année {year} ?\n\n{scope} : {n} remplacement(s) enregistré(s) seront supprimés. " +
-                $"Les filtres eux-mêmes sont conservés. {notConcerned}\n\n" +
+                "Les filtres eux-mêmes sont conservés.\n\n" +
                 "Une copie de sauvegarde de la base sera faite juste avant.")) return;
 
         try

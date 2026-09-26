@@ -94,7 +94,7 @@
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Génère un classeur .xlsx dans le même dossier que les exports PDF : une feuille par onglet de filtres (Filtres G4 plissés, Filtres G4 plan, Filtres G3, Filtres F7 à H13, Charbon), avec les familles en lignes titres. Suivi mensuel de l'année choisie pour G4 / G3 / Charbon, dates des 10 derniers changements pour F7 à H13. Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <TextBlock Text="Génère un classeur .xlsx dans le même dossier que les exports PDF : une feuille par onglet de filtres (Filtres G4 plissés, Filtres G4 plan, Filtres G3, Charbon), avec les familles en lignes titres et le suivi mensuel de l'année choisie. Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <DockPanel Margin="0,0,0,8">
                         <TextBlock DockPanel.Dock="Left" Text="Année à exporter :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding SelectedExportYear}" HorizontalAlignment="Left" Width="120"/>
@@ -110,19 +110,11 @@
                     <TextBlock Text="Supprime définitivement les remplacements enregistrés pour l'année choisie. Les filtres eux-mêmes sont conservés. Seules les années ayant un historique sont proposées. Une sauvegarde de la base est faite avant chaque suppression." Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"/>
 
                     <TextBlock Text="Filtres G4 plissés, G4 plan, G3 et Charbon" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding PeriodicHistoryYears}" SelectedItem="{Binding SelectedPeriodicHistoryYear}" Width="120"/>
                         <Button Content="Supprimer l'historique de cette année" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
                                 Command="{Binding DeletePeriodicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-                    </StackPanel>
-
-                    <TextBlock Text="Filtres F7 à H13" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding OpacimetricHistoryYears}" SelectedItem="{Binding SelectedOpacimetricHistoryYear}" Width="120"/>
-                        <Button Content="Supprimer l'historique de cette année" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
-                                Command="{Binding DeleteOpacimetricHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>

@@ -6,14 +6,11 @@ using Microsoft.EntityFrameworkCore;
 namespace FiltresApp.Core.Services;
 
 /// <summary>Export Excel de l'année (écran Paramètres) : une feuille par onglet de filtres du logiciel
-/// (G4 plissés, G4 plan, G3, F7 à H13, Charbon), avec une ligne titre par famille comme à l'écran.
+/// (G4 plissés, G4 plan, G3, Charbon), avec une ligne titre par famille comme à l'écran.
 /// Liste K7, Inventaire et Commande ne sont pas exportés. Le fichier est déposé dans le dossier des
 /// exports PDF (<see cref="AppSettings.PdfExportPath"/>).</summary>
 public class ExcelExportService
 {
-    /// <summary>Nombre de dates de changement exportées pour chaque filtre F7 à H13.</summary>
-    public const int OpacimetricLastChanges = 10;
-
     private static readonly string[] MonthShortNames =
         { "Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc" };
 
@@ -29,7 +26,6 @@ public class ExcelExportService
         AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plisse, "Filtres G4 plissés", year, groupByFamily: false);
         AddPeriodicSheet(workbook, ctx, FilterCategory.G4Plan, "Filtres G4 plan", year, groupByFamily: false);
         AddPeriodicSheet(workbook, ctx, FilterCategory.G3, "Filtres G3", year, groupByFamily: true);
-        AddOpacimetricSheet(workbook, ctx, year);
         AddPeriodicSheet(workbook, ctx, FilterCategory.Charbon, "Charbon", year, groupByFamily: false);
 
         var now = DateTime.Now;
@@ -109,54 +105,6 @@ public class ExcelExportService
         "Filtres à laver" => 1,
         _ => 2
     };
-
-    // ---- Filtres F7 à H13 : 10 derniers changements ----
-
-    private static void AddOpacimetricSheet(XLWorkbook workbook, FiltresDbContext ctx, int year)
-    {
-        var filters = ctx.OpacimetricFilters.AsNoTracking()
-            .Include(f => f.Family)
-            .Include(f => f.Replacements)
-            .ToList()
-            .OrderBy(f => f.Family is null)
-            .ThenBy(f => f.Family?.Nom, StringComparer.CurrentCultureIgnoreCase)
-            .ThenBy(f => f.Location, StringComparer.CurrentCultureIgnoreCase)
-            .ToList();
-
-        var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place" };
-        var firstChangeCol = headers.Count + 1;
-        headers.Add("Dernier changement");
-        for (var i = 2; i <= OpacimetricLastChanges; i++) headers.Add($"Changement n-{i - 1}");
-
-        var ws = workbook.Worksheets.Add(SanitizeSheetName("Filtres F7 à H13"));
-        WriteHeader(ws, headers);
-
-        // Changements jusqu'à la fin de l'année exportée, du plus récent au plus ancien.
-        var endOfYear = new DateOnly(year, 12, 31);
-        var row = 2;
-        foreach (var group in filters.GroupBy(f => f.FamilyGroupLabel))
-        {
-            WriteFamilyRow(ws, row++, group.Key, headers.Count);
-            foreach (var f in group)
-            {
-                ws.Cell(row, 1).Value = f.Location;
-                ws.Cell(row, 2).Value = f.Dimension;
-                ws.Cell(row, 3).Value = f.FilterType ?? "";
-                ws.Cell(row, 4).Value = f.QuantityInPlace;
-
-                var dates = f.Replacements
-                    .Where(r => r.DateChanged is { } d && d <= endOfYear)
-                    .Select(r => r.DateChanged!.Value)
-                    .OrderByDescending(d => d)
-                    .Take(OpacimetricLastChanges)
-                    .ToList();
-                for (var i = 0; i < dates.Count; i++) WriteDate(ws.Cell(row, firstChangeCol + i), dates[i]);
-                row++;
-            }
-        }
-
-        Finish(ws, headers.Count);
-    }
 
     // ---- Mise en forme commune ----
 
