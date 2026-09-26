@@ -48,6 +48,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(
             App.Db.OrderLines
                 .Include(l => l.FilterLinks).ThenInclude(fl => fl.PeriodicFilter)
+                .Include(l => l.DynamicLinks).ThenInclude(dl => dl.DynamicFilter)
                 .AsNoTracking()
                 .Where(l => l.DocumentType == _type)
                 .ToList()));
@@ -107,18 +108,20 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         if (SelectedLine is not null) OpenLinkWindow(SelectedLine);
     }
 
-    /// <summary>Filtre rattachable (à périodicité), vu depuis une ligne de commande.</summary>
+    /// <summary>Filtre rattachable (à périodicité ou d'une variété "Filtres F7 à H14"), vu depuis une
+    /// ligne de commande.</summary>
     private sealed record LinkCandidate(FilterRef Ref, string Category, string Location, string Dimension,
         bool IsLinked, string? LinkedElsewhere, bool DimensionMatches, Func<FilterPickItem> ToPickItem);
 
     /// <summary>Tous les filtres rattachables pour <paramref name="line"/> (chargée avec ses rattachements),
-    /// dans l'ordre catégorie puis emplacement.</summary>
+    /// dans l'ordre catégorie puis emplacement, filtres "F7 à H14" en dernier (groupés par variété).</summary>
     private List<LinkCandidate> LoadLinkCandidates(OrderLine line)
     {
         // Filtres déjà rattachés à une AUTRE ligne : indicateur rouge / mention "déjà rattaché à".
         var periodicElsewhere = FilterLinkService.PeriodicLinkedLines(App.Db, excludedLineId: line.Id);
 
         var linkedPeriodic = line.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
+        var linkedDynamic = line.DynamicLinks.Select(l => l.DynamicFilterId).ToHashSet();
 
         var candidates = new List<LinkCandidate>();
         foreach (var f in App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList())
@@ -134,13 +137,28 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
             candidates.Add(new LinkCandidate(FilterRef.Periodic(f.Id), category, f.Location, f.Dimension, isLinked, elsewhere, matches,
                 () => new FilterPickItem(f, category, isLinked, matches, elsewhere)));
         }
+        var dynamicElsewhere = App.Db.OrderLineDynamicFilters.AsNoTracking()
+            .Where(l => l.OrderLineId != line.Id)
+            .Select(l => new { l.DynamicFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.DynamicFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+        foreach (var f in App.Db.DynamicFilters.AsNoTracking().Include(f => f.Variety).OrderBy(f => f.Variety!.Nom).ThenBy(f => f.Location).ToList())
+        {
+            var elsewhere = dynamicElsewhere.GetValueOrDefault(f.Id);
+            var isLinked = linkedDynamic.Contains(f.Id);
+            var matches = DimensionMatchService.Matches(line, f.Dimension);
+            var category = f.Variety?.Nom ?? "";
+            candidates.Add(new LinkCandidate(FilterRef.Dynamic(f.Id), category, f.Location, f.Dimension, isLinked, elsewhere, matches,
+                () => new FilterPickItem(f, category, isLinked, matches, elsewhere)));
+        }
         return candidates;
     }
 
     /// <summary>Remplace les rattachements de la ligne, enregistre et recharge l'écran.</summary>
     private void SaveLinks(OrderLine line, IEnumerable<FilterRef> selected)
     {
-        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).First(l => l.Id == line.Id);
+        var tracked = App.Db.OrderLines.Include(l => l.FilterLinks).Include(l => l.DynamicLinks).First(l => l.Id == line.Id);
         FilterLinkService.SetLinks(App.Db, tracked, selected);
         App.Db.SaveChanges();
         Load();
@@ -177,6 +195,7 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
         OrderFamilyFilter.ApplyQuickChoice(tracked, choice);
         App.Db.SaveChanges();
         line.FamilyOverride = tracked.FamilyOverride;
+        line.FamilyOverrideType = tracked.FamilyOverrideType;
 
         var index = Lines.IndexOf(line);
         if (index < 0) return;
@@ -248,7 +267,9 @@ public partial class OrderListViewModel : ObservableObject, IReloadable
     public void SetQuickLink(OrderLine line, FilterRef filter, bool link)
     {
         if (!App.GuardWritable()) return;
-        var selected = line.FilterLinks.Select(l => FilterRef.Periodic(l.PeriodicFilterId)).ToHashSet();
+        var selected = line.FilterLinks.Select(l => FilterRef.Periodic(l.PeriodicFilterId))
+            .Concat(line.DynamicLinks.Select(l => FilterRef.Dynamic(l.DynamicFilterId)))
+            .ToHashSet();
         if (link) selected.Add(filter);
         else selected.Remove(filter);
         SaveLinks(line, selected);

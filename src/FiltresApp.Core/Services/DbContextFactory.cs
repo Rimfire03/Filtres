@@ -53,6 +53,7 @@ public class DbContextFactory
         (15, "Rattachement des filtres F7 à H13 à Commande / Inventaire", AddOrderLineOpacimetricFilters),
         (16, "Familles Commande / Inventaire : Type des filtres F7 à H13 au lieu de « Filtres F7 à H13 »", AddOrderLineFamilyOverrideTypeColumn),
         (17, "Suppression de la fonctionnalité Filtres F7 à H13", RemoveOpacimetricFeature),
+        (18, "Menu dépliant « Filtres F7 à H14 » : variétés de filtres créées librement", AddDynamicFilterSchema),
     };
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
@@ -162,6 +163,89 @@ public class DbContextFactory
         ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricReplacements";""");
         ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricFilters";""");
         ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricFamilies";""");
+    }
+
+    /// <summary>Menu dépliant "Filtres F7 à H14" (barre latérale) : variétés de filtres créées librement
+    /// par l'utilisateur (<see cref="FilterVariety"/>), chacune avec ses propres filtres
+    /// (<see cref="DynamicFilter"/>), familles (<see cref="DynamicFilterFamily"/>) et rattachement à
+    /// Commande / Inventaire (<see cref="OrderLineDynamicFilter"/>). Généralisation de l'ancienne
+    /// fonctionnalité "Filtres F7 à H13" (une seule variété codée en dur, supprimée en v17) à un nombre
+    /// quelconque de variétés créées à la main. Réutilise le champ "FamilyOverrideType" (colonne texte
+    /// libre) pour le choix manuel de famille par Type, comme l'ancienne fonctionnalité : cette colonne
+    /// avait été supprimée en v17, elle est recréée ici avec le même rôle.</summary>
+    private static void AddDynamicFilterSchema(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "FilterVarieties" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_FilterVarieties" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL,
+                "Ordre" INTEGER NOT NULL DEFAULT 0
+            );
+            """);
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "DynamicFilterFamilies" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_DynamicFilterFamilies" PRIMARY KEY AUTOINCREMENT,
+                "VarietyId" INTEGER NOT NULL,
+                "Nom" TEXT NOT NULL,
+                CONSTRAINT "FK_DynamicFilterFamilies_FilterVarieties_VarietyId" FOREIGN KEY ("VarietyId") REFERENCES "FilterVarieties" ("Id") ON DELETE CASCADE
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilterFamilies_VarietyId" ON "DynamicFilterFamilies" ("VarietyId");""");
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "DynamicFilters" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_DynamicFilters" PRIMARY KEY AUTOINCREMENT,
+                "VarietyId" INTEGER NOT NULL,
+                "Location" TEXT NOT NULL DEFAULT '',
+                "Dimension" TEXT NOT NULL DEFAULT '',
+                "FilterType" TEXT NULL,
+                "QuantityInPlace" INTEGER NOT NULL DEFAULT 0,
+                "Notes" TEXT NULL,
+                "DynamicFilterFamilyId" INTEGER NULL,
+                CONSTRAINT "FK_DynamicFilters_FilterVarieties_VarietyId" FOREIGN KEY ("VarietyId") REFERENCES "FilterVarieties" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_DynamicFilters_DynamicFilterFamilies_DynamicFilterFamilyId" FOREIGN KEY ("DynamicFilterFamilyId") REFERENCES "DynamicFilterFamilies" ("Id") ON DELETE SET NULL
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilters_VarietyId" ON "DynamicFilters" ("VarietyId");""");
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilters_DynamicFilterFamilyId" ON "DynamicFilters" ("DynamicFilterFamilyId");""");
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "DynamicFilterReplacements" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_DynamicFilterReplacements" PRIMARY KEY AUTOINCREMENT,
+                "DynamicFilterId" INTEGER NOT NULL,
+                "QuantityChanged" INTEGER NOT NULL DEFAULT 0,
+                "DateChanged" TEXT NULL,
+                CONSTRAINT "FK_DynamicFilterReplacements_DynamicFilters_DynamicFilterId" FOREIGN KEY ("DynamicFilterId") REFERENCES "DynamicFilters" ("Id") ON DELETE CASCADE
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilterReplacements_DynamicFilterId" ON "DynamicFilterReplacements" ("DynamicFilterId");""");
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "OrderLineDynamicFilters" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderLineDynamicFilters" PRIMARY KEY AUTOINCREMENT,
+                "OrderLineId" INTEGER NOT NULL,
+                "DynamicFilterId" INTEGER NOT NULL,
+                CONSTRAINT "FK_OrderLineDynamicFilters_OrderLines_OrderLineId" FOREIGN KEY ("OrderLineId") REFERENCES "OrderLines" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_OrderLineDynamicFilters_DynamicFilters_DynamicFilterId" FOREIGN KEY ("DynamicFilterId") REFERENCES "DynamicFilters" ("Id") ON DELETE CASCADE
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_OrderLineDynamicFilters_OrderLineId" ON "OrderLineDynamicFilters" ("OrderLineId");""");
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_OrderLineDynamicFilters_DynamicFilterId" ON "OrderLineDynamicFilters" ("DynamicFilterId");""");
+
+        if (!GetColumns(ctx, "OrderLines").Contains("FamilyOverrideType"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "FamilyOverrideType" TEXT NULL;""");
     }
 
     /// <summary>La famille "Filtres F7 à H13" (FamilyOverride = 100) n'existe plus : les lignes qui l'avaient

@@ -35,6 +35,11 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(DeletePeriodicHistoryCommand))]
     private int? _selectedPeriodicHistoryYear;
 
+    [ObservableProperty] private List<int> _dynamicHistoryYears = new();
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteDynamicHistoryCommand))]
+    private int? _selectedDynamicHistoryYear;
+
     [ObservableProperty] private string _historyStatusMessage = string.Empty;
 
     // ---- Logo de l'entreprise (stocké dans la base, commun à tous les postes) ----
@@ -101,9 +106,12 @@ public partial class SettingsViewModel : ObservableObject
     {
         PeriodicHistoryYears = HistoryCleanupService.GetPeriodicYears(App.Db);
         SelectedPeriodicHistoryYear = PeriodicHistoryYears.Count > 0 ? PeriodicHistoryYears[^1] : null;
+        DynamicHistoryYears = HistoryCleanupService.GetDynamicYears(App.Db);
+        SelectedDynamicHistoryYear = DynamicHistoryYears.Count > 0 ? DynamicHistoryYears[^1] : null;
     }
 
     private bool CanDeletePeriodicHistory() => SelectedPeriodicHistoryYear.HasValue;
+    private bool CanDeleteDynamicHistory() => SelectedDynamicHistoryYear.HasValue;
 
     /// <summary>Supprime l'historique de l'année choisie pour G4 plissé, G4 plan, G3 et Charbon.</summary>
     [RelayCommand(CanExecute = nameof(CanDeletePeriodicHistory))]
@@ -112,6 +120,16 @@ public partial class SettingsViewModel : ObservableObject
         if (SelectedPeriodicHistoryYear is not int year) return;
         DeleteHistory(year, "Filtres G4 plissés, G4 plan, G3 et Charbon",
             HistoryCleanupService.CountPeriodic, HistoryCleanupService.DeletePeriodicYear);
+    }
+
+    /// <summary>Supprime l'historique de l'année choisie pour les filtres "Filtres F7 à H14", toutes
+    /// variétés confondues.</summary>
+    [RelayCommand(CanExecute = nameof(CanDeleteDynamicHistory))]
+    private void DeleteDynamicHistory()
+    {
+        if (SelectedDynamicHistoryYear is not int year) return;
+        DeleteHistory(year, "Filtres F7 à H14 (toutes variétés)",
+            HistoryCleanupService.CountDynamic, HistoryCleanupService.DeleteDynamicYear);
     }
 
     private void DeleteHistory(int year, string scope,

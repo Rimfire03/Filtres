@@ -12,6 +12,7 @@ public interface IDialogService
     bool EditFields(string title, List<EditField> fields);
     List<FilterRef>? PickFilterLinks(List<FilterPickItem> items);
     void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements);
+    void ShowDynamicFilterHistory(string location, string dimension, List<DynamicFilterReplacement> replacements);
 }
 
 public class DialogService : IDialogService
@@ -41,6 +42,12 @@ public class DialogService : IDialogService
     public void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements)
     {
         var window = new FilterHistoryWindow(locationLabel, location, dimension, replacements) { Owner = Application.Current.MainWindow };
+        window.ShowDialog();
+    }
+
+    public void ShowDynamicFilterHistory(string location, string dimension, List<DynamicFilterReplacement> replacements)
+    {
+        var window = new DynamicFilterHistoryWindow(location, dimension, replacements) { Owner = Application.Current.MainWindow };
         window.ShowDialog();
     }
 }

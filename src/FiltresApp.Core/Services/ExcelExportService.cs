@@ -28,6 +28,9 @@ public class ExcelExportService
         AddPeriodicSheet(workbook, ctx, FilterCategory.G3, "Filtres G3", year, groupByFamily: true);
         AddPeriodicSheet(workbook, ctx, FilterCategory.Charbon, "Charbon", year, groupByFamily: false);
 
+        foreach (var variety in ctx.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
+            AddDynamicSheet(workbook, ctx, variety);
+
         var now = DateTime.Now;
         var fileName = $"Suivi filtres {year} du {now:dd.MM.yyyy} a {now.Hour}.{now.Minute}.xlsx";
         var fullPath = Path.Combine(exportFolder, fileName);
@@ -92,6 +95,55 @@ public class ExcelExportService
                     ws.Cell(row, realizedCol).Value = rep is { DateDone: not null } ? "Oui" : "";
                     if (rep?.DateDone is { } d) WriteDate(ws.Cell(row, realizedCol + 1), d);
                 }
+                row++;
+            }
+        }
+
+        Finish(ws, headers.Count);
+    }
+
+    // ---- Variétés du menu dépliant "Filtres F7 à H14" (pas de périodicité fixe : dates des derniers
+    // remplacements plutôt qu'un suivi mensuel de l'année) ----
+
+    private const int DynamicHistoryColumnCount = 10;
+
+    private static void AddDynamicSheet(XLWorkbook workbook, FiltresDbContext ctx, FilterVariety variety)
+    {
+        var filters = ctx.DynamicFilters.AsNoTracking()
+            .Include(f => f.Family)
+            .Include(f => f.Replacements)
+            .Where(f => f.VarietyId == variety.Id)
+            .OrderBy(f => f.DynamicFilterFamilyId == null)
+            .ThenBy(f => f.Family!.Nom)
+            .ThenBy(f => f.Location)
+            .ToList();
+
+        var headers = new List<string> { "Nom de la centrale d'air", "Dimension", "Type", "Qté en place" };
+        for (var i = 1; i <= DynamicHistoryColumnCount; i++) headers.Add($"Changement -{i}");
+
+        var ws = workbook.Worksheets.Add(SanitizeSheetName(variety.Nom));
+        WriteHeader(ws, headers);
+
+        var groups = filters.GroupBy(f => f.FamilyGroupLabel);
+        var row = 2;
+        foreach (var group in groups)
+        {
+            WriteFamilyRow(ws, row++, group.Key, headers.Count);
+            foreach (var f in group)
+            {
+                var col = 1;
+                ws.Cell(row, col++).Value = f.Location;
+                ws.Cell(row, col++).Value = f.Dimension;
+                ws.Cell(row, col++).Value = f.FilterType ?? "";
+                ws.Cell(row, col++).Value = f.QuantityInPlace;
+
+                var dates = f.Replacements
+                    .Where(r => r.DateChanged.HasValue)
+                    .Select(r => r.DateChanged!.Value)
+                    .OrderByDescending(d => d)
+                    .Take(DynamicHistoryColumnCount)
+                    .ToList();
+                foreach (var d in dates) WriteDate(ws.Cell(row, col++), d);
                 row++;
             }
         }

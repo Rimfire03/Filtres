@@ -24,7 +24,9 @@ public static class FilterLinkService
     /// N'appelle pas <c>SaveChanges</c> : à la charge de l'appelant.</summary>
     public static void SetLinks(FiltresDbContext db, OrderLine trackedLine, IEnumerable<FilterRef> selected)
     {
-        var periodicIds = selected.Select(r => r.Id).ToHashSet();
+        var selectedList = selected.ToList();
+        var periodicIds = selectedList.Where(r => r.Kind == FilterKind.Periodic).Select(r => r.Id).ToHashSet();
+        var dynamicIds = selectedList.Where(r => r.Kind == FilterKind.Dynamic).Select(r => r.Id).ToHashSet();
 
         var currentPeriodic = trackedLine.FilterLinks.Select(l => l.PeriodicFilterId).ToHashSet();
         foreach (var link in trackedLine.FilterLinks.Where(l => !periodicIds.Contains(l.PeriodicFilterId)).ToList())
@@ -40,6 +42,21 @@ public static class FilterLinkService
             foreach (var id in newPeriodic)
                 trackedLine.FilterLinks.Add(new OrderLinePeriodicFilter { OrderLineId = trackedLine.Id, PeriodicFilterId = id });
         }
+
+        var currentDynamic = trackedLine.DynamicLinks.Select(l => l.DynamicFilterId).ToHashSet();
+        foreach (var link in trackedLine.DynamicLinks.Where(l => !dynamicIds.Contains(l.DynamicFilterId)).ToList())
+        {
+            trackedLine.DynamicLinks.Remove(link);
+            db.OrderLineDynamicFilters.Remove(link);
+        }
+        var newDynamic = dynamicIds.Where(id => !currentDynamic.Contains(id)).ToList();
+        if (newDynamic.Count > 0)
+        {
+            db.OrderLineDynamicFilters.RemoveRange(db.OrderLineDynamicFilters
+                .Where(l => newDynamic.Contains(l.DynamicFilterId) && l.OrderLineId != trackedLine.Id));
+            foreach (var id in newDynamic)
+                trackedLine.DynamicLinks.Add(new OrderLineDynamicFilter { OrderLineId = trackedLine.Id, DynamicFilterId = id });
+        }
     }
 
     /// <summary>Pour chaque filtre à périodicité rattaché, la dimension (Designation) de sa ligne de
@@ -52,6 +69,17 @@ public static class FilterLinkService
         return links.Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
             .ToList()
             .GroupBy(l => l.PeriodicFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+    }
+
+    /// <summary>Même chose pour les filtres d'une variété donnée (menu "Filtres F7 à H14").</summary>
+    public static Dictionary<int, string> DynamicLinkedLines(FiltresDbContext db, int varietyId, int? excludedLineId = null)
+    {
+        var links = db.OrderLineDynamicFilters.AsNoTracking().Where(l => l.DynamicFilter!.VarietyId == varietyId);
+        if (excludedLineId is int id) links = links.Where(l => l.OrderLineId != id);
+        return links.Select(l => new { l.DynamicFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.DynamicFilterId)
             .ToDictionary(g => g.Key, g => g.First().Designation);
     }
 }

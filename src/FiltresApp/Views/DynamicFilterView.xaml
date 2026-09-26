@@ -1,0 +1,95 @@
+<UserControl x:Class="FiltresApp.Views.DynamicFilterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:app="clr-namespace:FiltresApp"
+             d:DataContext="{d:DesignInstance vm:DynamicFilterListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Filtres regroupés par famille : un bandeau titre par famille (même style que la Liste K7). -->
+        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+            <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
+        </StackPanel>
+
+        <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
+            <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding FamilyOptions}" SelectedItem="{Binding SelectedFamily}"
+                      DisplayMemberPath="Label" Width="220" VerticalContentAlignment="Center"/>
+            <Button Content="+ Nouvelle famille" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                    Command="{Binding AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Renommer la famille" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
+            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0"
+                    ToolTip="Vide les filtres nom et dimension placés sous les titres de colonnes"/>
+        </DockPanel>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
+                  ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Consulter l'historique..." Command="{Binding ShowHistoryCommand}"/>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <!-- Puce verte / rouge : filtre rattaché ou non à une ligne de Commande / Inventaire. -->
+                <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder"
+                                        CellTemplate="{StaticResource LinkDotCellTemplate}"/>
+                <!-- Filtres d'affichage dans le bas du bandeau des titres : "contient" sur le nom, liste des
+                     dimensions présentes (DynamicFilterListViewModel.HeaderFilter). -->
+                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" SortMemberPath="Location" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
+                <!-- Clic droit : menu rapide listant les types déjà utilisés (DynamicFilterView.xaml.cs). -->
+                <DataGridTextColumn x:Name="TypeColumn" Header="Type" Binding="{Binding FilterType}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.8*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="100" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Réalisé" Width="60" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
+                <DataGridTemplateColumn Header="Date du changement" Width="95">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding DateDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
+                                        DisplayDateStart="{Binding ConsultedMonthStart, Mode=OneWay}" DisplayDateEnd="{Binding ConsultedMonthEnd, Mode=OneWay}"
+                                        IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>
+            </DataGrid.GroupStyle>
+        </DataGrid>
+    </Grid>
+</UserControl>

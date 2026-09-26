@@ -232,6 +232,22 @@ l'année, et CRUD complet.
 > repassent en famille automatique). Les sections historiques ci-dessous (import des archives,
 > effectifs, etc.) mentionnant `OpacimetricFilter` restent volontairement inchangées : elles
 > documentent des décisions et migrations passées, pas l'état actuel du logiciel.
+>
+> Le même jour, un **menu dépliant « Filtres F7 à H14 »** a été recréé dans la barre latérale, en
+> généralisant l'ancien écran unique : cliquer sur le menu ouvre une page d'accueil permettant de créer
+> librement de nouvelles **variétés** de filtres (nom libre, ex. « F7 à H13 », « G5 »...), chacune
+> devenant un sous-menu déroulant avec sa propre grille — exactement la même disposition que l'ancien
+> écran (familles créées à la main, historique de remplacements par date sans périodicité mensuelle
+> fixe, colonne « Type » libre avec menu rapide, rattachement à Commande / Inventaire, impression,
+> export Excel). Voir la migration de base v18 (`DbContextFactory.AddDynamicFilterSchema`) : nouvelles
+> tables `FilterVarieties`, `DynamicFilters`, `DynamicFilterReplacements`, `DynamicFilterFamilies`,
+> `OrderLineDynamicFilters`, et réintroduction de la colonne `OrderLines.FamilyOverrideType` (même rôle
+> qu'avant v17 : choix manuel de famille de Commande/Inventaire par Type de filtre dynamique). Côté
+> code : `FilterVarietyListViewModel`/`FilterVarietyListView` (page d'accueil, CRUD des variétés),
+> `DynamicFilterListViewModel`/`DynamicFilterRowViewModel`/`DynamicFilterView` (écran générique d'une
+> variété), `DynamicFilterHistoryWindow` (fenêtre d'historique). `NavigationItem` supporte désormais des
+> enfants (`Children`, `IsExpanded`) et la barre latérale utilise une `TreeView` à la place de l'ancienne
+> `ListBox` à plat.
 
 Liste K7 (lieux regroupés par famille éditable, voir plus bas), Inventaire,
 Commande chmy : CRUD en grille, impression ; Inventaire et Commande chmy

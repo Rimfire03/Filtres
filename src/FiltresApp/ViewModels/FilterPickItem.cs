@@ -48,6 +48,22 @@ public partial class FilterPickItem : ObservableObject
         _isSelected = isSelected;
     }
 
+    /// <summary>Filtre d'une variété créée sous "Filtres F7 à H14" : pas de type média ni de périodicité
+    /// fixe. <paramref name="categoryLabel"/> est le nom de la variété (<see cref="FilterVariety.Nom"/>).</summary>
+    public FilterPickItem(DynamicFilter filter, string categoryLabel, bool isSelected, bool dimensionMatches, string? linkedElsewhereLabel)
+    {
+        Ref = FilterRef.Dynamic(filter.Id);
+        CategoryLabel = categoryLabel;
+        Location = filter.Location;
+        Dimension = filter.Dimension;
+        MediaType = filter.FilterType ?? string.Empty;
+        QuantityInPlace = filter.QuantityInPlace;
+        PeriodicityDisplay = string.Empty;
+        DimensionMatches = dimensionMatches;
+        LinkedElsewhereLabel = linkedElsewhereLabel;
+        _isSelected = isSelected;
+    }
+
     /// <summary>Texte de recherche libre utilisé par le filtre du sélecteur.</summary>
     public string SearchText => $"{CategoryLabel} {Location} {Dimension} {MediaType}".ToLowerInvariant();
 }
