@@ -50,7 +50,7 @@ public partial class FilterHistoryWindow : Window
             var replacement = _replacements.FirstOrDefault(r => r.Month == month && r.Year == year && r.DateDone.HasValue);
             return new MonthHistoryRow
             {
-                MonthLabel = PeriodicFilterListViewModel.MonthLabels[month - 1],
+                MonthLabel = ConsultedMonthOption.MonthLabels[month - 1],
                 IsDone = replacement != null,
                 DateLabel = replacement?.DateDone?.ToString("dd/MM/yyyy") ?? "-"
             };

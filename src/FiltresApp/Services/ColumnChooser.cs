@@ -3,8 +3,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
 
 namespace FiltresApp.Services;
 
@@ -75,7 +73,7 @@ public static class ColumnChooser
     {
         var grid = (DataGrid)sender;
         var key = GetKey(grid);
-        if (string.IsNullOrEmpty(key) || FindAncestor<DataGridColumnHeader>(e.OriginalSource as DependencyObject) is null) return;
+        if (string.IsNullOrEmpty(key) || (e.OriginalSource as DependencyObject).FindAncestor<DataGridColumnHeader>() is null) return;
 
         var menu = new ContextMenu();
         menu.Items.Add(new MenuItem { Header = "Colonnes affichées sur cet ordinateur :", IsEnabled = false });
@@ -134,7 +132,7 @@ public static class ColumnChooser
     {
         var grid = (DataGrid)sender;
         var key = GetKey(grid);
-        if (string.IsNullOrEmpty(key) || FindAncestor<DataGridColumnHeader>(e.OriginalSource as DependencyObject) is null) return;
+        if (string.IsNullOrEmpty(key) || (e.OriginalSource as DependencyObject).FindAncestor<DataGridColumnHeader>() is null) return;
 
         var widths = new Dictionary<string, ColumnWidth>();
         foreach (var column in grid.Columns)
@@ -155,11 +153,4 @@ public static class ColumnChooser
 
     private static string DisplayName(DataGrid grid, DataGridColumn column) =>
         column.Header is string header && header.Length > 0 ? header : $"Colonne {grid.Columns.IndexOf(column) + 1}";
-
-    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
-    {
-        while (current is not null and not T)
-            current = current is Visual or Visual3D ? VisualTreeHelper.GetParent(current) : LogicalTreeHelper.GetParent(current);
-        return current as T;
-    }
 }

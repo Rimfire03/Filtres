@@ -152,7 +152,7 @@ public partial class InventoryListViewModel : ObservableObject, IReloadable
     };
 
     private List<string[]> BuildPrintRows() =>
-        OrderFamilyFilter.BuildGroupedRows(Lines, BuildRow, BuildHeaders().Length);
+        PrintService.BuildGroupedRows(Lines, l => l.FamilyGroupLabel, BuildRow, BuildHeaders().Length);
 
     [RelayCommand]
     private void Print()

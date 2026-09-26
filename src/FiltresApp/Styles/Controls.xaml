@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:app="clr-namespace:FiltresApp">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Colors.xaml"/>
@@ -184,5 +185,65 @@
         <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
+
+    <!-- Bandeau de groupe (famille) des grilles regroupées : <GroupStyle HeaderTemplate="{StaticResource
+         GroupHeaderTemplate}"/>. Masqué quand le nom de groupe est vide (écrans à périodicité hors
+         "Filtres G3", voir PeriodicFilterRowViewModel.DimensionFamilyLabel). -->
+    <DataTemplate x:Key="GroupHeaderTemplate">
+        <Border x:Name="GroupHeaderBorder" Background="{StaticResource BrushSidebar}" Padding="10,5" Margin="0,6,0,2">
+            <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Name}" Value="">
+                <Setter TargetName="GroupHeaderBorder" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Colonne "Lié" : puce verte (filtre rattaché à une ligne de Commande / Inventaire) ou rouge,
+         masquée quand ShowsLinkDot est faux (voir LinkedFilterRowViewModel). -->
+    <DataTemplate x:Key="LinkDotCellTemplate">
+        <Ellipse Width="11" Height="11" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding LinkToolTip}">
+            <Ellipse.Style>
+                <Style TargetType="Ellipse">
+                    <Setter Property="Fill" Value="#EF4444"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLinkedToOrder}" Value="True">
+                            <Setter Property="Fill" Value="#22C55E"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowsLinkDot}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Ellipse.Style>
+        </Ellipse>
+    </DataTemplate>
+
+    <!-- Case "Réalisé" du mois consulté (écrans à périodicité et F7 à H13). -->
+    <DataTemplate x:Key="DoneCheckBoxCellTemplate">
+        <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
+                  IsChecked="{Binding IsDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
+                  IsEnabled="{x:Static app:App.IsWritable}"/>
+    </DataTemplate>
+
+    <!-- Filtres d'affichage dans le bas du bandeau des titres (voir NameDimensionFilter, propriété
+         HeaderFilter du ViewModel de l'écran) : "contient" sur le nom, liste des dimensions présentes. -->
+    <DataTemplate x:Key="NameFilterHeaderTemplate">
+        <StackPanel>
+            <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
+            <TextBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres dont le nom contient ce texte"
+                     Text="{Binding DataContext.HeaderFilter.NameFilter, RelativeSource={RelativeSource AncestorType=DataGrid}, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DimensionFilterHeaderTemplate">
+        <StackPanel>
+            <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
+            <ComboBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres de cette dimension"
+                      ItemsSource="{Binding DataContext.HeaderFilter.DimensionOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                      SelectedItem="{Binding DataContext.HeaderFilter.SelectedDimension, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+        </StackPanel>
+    </DataTemplate>
 
 </ResourceDictionary>

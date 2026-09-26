@@ -1148,6 +1148,22 @@ une boîte de confirmation proposant la correction ; l'utilisateur peut l'accept
 saisi est alors conservé tel quel). Les données existantes ont été harmonisées une fois via un script
 ponctuel (273 valeurs corrigées sur 475, le 26/09/2026).
 
+### Code partagé entre écrans (factorisation)
+
+Les éléments communs à plusieurs écrans sont écrits une seule fois :
+
+- **XAML** (`Styles/Controls.xaml`) : `GroupHeaderTemplate` (bandeau de famille des grilles regroupées,
+  masqué si le nom de groupe est vide), `LinkDotCellTemplate` (puce « Lié »), `DoneCheckBoxCellTemplate`
+  (case « Réalisé »), `NameFilterHeaderTemplate` / `DimensionFilterHeaderTemplate` (filtres sous les
+  titres de colonnes).
+- **ViewModels** : `LinkedFilterRowViewModel` (base des lignes de filtres : puce « Lié » et son
+  info-bulle, `ShowsLinkDot` faux pour les filtres lavables), `NameDimensionFilter` (filtres « nom
+  contient » / dimension, propriété `HeaderFilter` des écrans), `ConsultedMonthOption` (sélecteur
+  « Mois consulté » et noms des mois).
+- **Services** : `FilterLinkService.PeriodicLinkedLines` / `OpacimetricLinkedLines` (ligne de Commande /
+  Inventaire de chaque filtre rattaché), `PrintService.BuildGroupedRows` (ligne titre « — FAMILLE — »
+  des impressions et PDF), `VisualTreeExtensions.FindAncestor` (recherche d'un parent dans l'arbre visuel).
+
 ## Pistes d'amélioration
 
 - Ajouter des migrations EF Core si le schéma doit évoluer après mise en

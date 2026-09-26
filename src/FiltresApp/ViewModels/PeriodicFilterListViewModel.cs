@@ -37,11 +37,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private int? _monthFilter;
     [ObservableProperty] private string _monthFilterLabel = "Tous les mois";
 
-    /// <summary>Un mois consultable dans le sélecteur "Mois consulté" : porte son propre numéro d'année,
-    /// puisque la première option (Décembre de l'année précédente) n'appartient pas à l'année choisie
-    /// dans la barre latérale.</summary>
-    public record ConsultedMonthOption(int Month, int Year, string Label);
-
     /// <summary>Options du sélecteur "Mois consulté" (case à cocher/date de la grille) pour l'année
     /// choisie : Décembre de l'année précédente en premier (pratique pour finir de pointer un
     /// changement fait fin décembre une fois basculé sur la nouvelle année), puis Janvier à Décembre de
@@ -56,28 +51,16 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     /// <summary>Reconstruit <see cref="ConsultedMonthOptions"/> pour l'année choisie, en conservant la
     /// même position dans la liste (donc le même mois "relatif") qu'avant le changement d'année.</summary>
-    private void RefreshConsultedMonthOptions()
-    {
-        var year = YearContext.Year;
-        var previousIndex = SelectedConsultedMonth is null ? DateTime.Today.Month : ConsultedMonthOptions.IndexOf(SelectedConsultedMonth);
-        if (previousIndex < 0) previousIndex = DateTime.Today.Month;
-
-        var options = new List<ConsultedMonthOption> { new(12, year - 1, $"Décembre {year - 1}") };
-        options.AddRange(Enumerable.Range(1, 12).Select(m => new ConsultedMonthOption(m, year, $"{MonthLabels[m - 1]} {year}")));
-
-        ConsultedMonthOptions = options;
-        SelectedConsultedMonth = options[Math.Clamp(previousIndex, 0, options.Count - 1)];
-    }
-
-    public static readonly string[] MonthLabels =
-        { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
+    private void RefreshConsultedMonthOptions() =>
+        (ConsultedMonthOptions, SelectedConsultedMonth) =
+            ConsultedMonthOption.Rebuild(YearContext.Year, ConsultedMonthOptions, SelectedConsultedMonth);
 
     /// <summary>Source du ComboBox "Filtrer par mois" (clé nullable : null = "Tous les mois", sinon
     /// numéro de mois 1-12). La valeur interne stockée/filtrée reste toujours un entier 1-12 ; seul
     /// l'affichage montre le nom du mois en toutes lettres au lieu du chiffre.</summary>
     public List<KeyValuePair<int?, string>> MonthFilterOptions { get; } =
         new List<KeyValuePair<int?, string>> { new(null, "Tous les mois") }
-            .Concat(MonthLabels.Select((label, i) => new KeyValuePair<int?, string>(i + 1, label)))
+            .Concat(ConsultedMonthOption.MonthLabels.Select((label, i) => new KeyValuePair<int?, string>(i + 1, label)))
             .ToList();
 
     public PeriodicFilterListViewModel(FilterCategory category, string title, string locationColumnLabel)
@@ -85,6 +68,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         _category = category;
         Title = title;
         _locationColumnLabel = locationColumnLabel;
+        HeaderFilter = new NameDimensionFilter(ApplyFilters);
         RefreshConsultedMonthOptions();
         App.YearContext.PropertyChanged += (_, e) =>
         {
@@ -99,61 +83,24 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// boutons numérotés 1-12 : voir MonthFilterOptions).</summary>
     partial void OnMonthFilterChanged(int? value)
     {
-        MonthFilterLabel = value.HasValue ? MonthLabels[value.Value - 1] : "Tous les mois";
+        MonthFilterLabel = value.HasValue ? ConsultedMonthOption.MonthLabels[value.Value - 1] : "Tous les mois";
         ApplyFilters();
     }
 
     // ---- Filtres placés sous les titres de colonnes ----
 
-    public const string AllDimensions = "Toutes";
-
-    /// <summary>Colonne "Filtres" : n'affiche que les filtres dont le nom contient ce texte (sans tenir
-    /// compte des majuscules ni des accents).</summary>
-    [ObservableProperty] private string _nameFilter = string.Empty;
-
-    /// <summary>Colonne "Dimension" : "Toutes", puis les dimensions présentes sur cet écran.</summary>
-    [ObservableProperty] private List<string> _dimensionOptions = new() { AllDimensions };
-    [ObservableProperty] private string _selectedDimension = AllDimensions;
-
-    partial void OnNameFilterChanged(string value) => ApplyFilters();
-    partial void OnSelectedDimensionChanged(string value) => ApplyFilters();
+    /// <summary>Colonnes "Filtres" (nom contient) et "Dimension".</summary>
+    public NameDimensionFilter HeaderFilter { get; }
 
     private List<PeriodicFilter> _allFilters = new();
     private Dictionary<int, string> _linkedLines = new();
-    private bool _refreshingDimensions;
-
-    private void RefreshDimensionOptions()
-    {
-        var options = new List<string> { AllDimensions };
-        options.AddRange(_allFilters.Select(f => f.Dimension.Trim()).Where(d => d.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(d => d, StringComparer.CurrentCultureIgnoreCase));
-
-        _refreshingDimensions = true;
-        try
-        {
-            var previous = SelectedDimension;
-            DimensionOptions = options;
-            SelectedDimension = options.FirstOrDefault(o => string.Equals(o, previous, StringComparison.OrdinalIgnoreCase)) ?? AllDimensions;
-        }
-        finally
-        {
-            _refreshingDimensions = false;
-        }
-    }
 
     /// <summary>Applique les filtres d'affichage (mois, nom, dimension) sans relire la base.</summary>
     private void ApplyFilters()
     {
-        if (_refreshingDimensions) return;
-        var name = NameFilter.Trim();
-        var compare = System.Globalization.CultureInfo.CurrentCulture.CompareInfo;
-        const System.Globalization.CompareOptions ignore =
-            System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace;
-
         var filtered = _allFilters.Where(f =>
             (!MonthFilter.HasValue || f.GetPeriodicityMonths().Contains(MonthFilter.Value))
-            && (name.Length == 0 || compare.IndexOf(f.Location, name, ignore) >= 0)
-            && (SelectedDimension == AllDimensions || string.Equals(f.Dimension.Trim(), SelectedDimension, StringComparison.OrdinalIgnoreCase)));
+            && HeaderFilter.Matches(f.Location, f.Dimension));
 
         // Trié explicitement ici (plutôt que via CollectionViewSource.SortDescriptions, qui ne garantit
         // pas l'ordre des groupes dans la grille) : rang de famille (Filtres à remplacer avant Filtres à
@@ -175,13 +122,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private void Load()
     {
         // Ligne de Commande / Inventaire à laquelle chaque filtre est rattaché (un filtre = une ligne au plus).
-        _linkedLines = App.Db.OrderLinePeriodicFilters
-            .AsNoTracking()
-            .Where(l => l.PeriodicFilter!.Category == _category)
-            .Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
-            .ToList()
-            .GroupBy(l => l.PeriodicFilterId)
-            .ToDictionary(g => g.Key, g => g.First().Designation);
+        _linkedLines = FilterLinkService.PeriodicLinkedLines(App.Db, _category);
 
         _allFilters = App.Db.PeriodicFilters
             .Include(f => f.Replacements)
@@ -190,7 +131,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             .OrderBy(f => f.Location)
             .ToList();
 
-        RefreshDimensionOptions();
+        HeaderFilter.RefreshDimensions(_allFilters.Select(f => f.Dimension));
         ApplyFilters();
     }
 
@@ -198,8 +139,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private void ResetFilter()
     {
         MonthFilter = null;
-        NameFilter = string.Empty;
-        SelectedDimension = AllDimensions;
+        HeaderFilter.Reset();
     }
 
     [RelayCommand]
@@ -401,8 +341,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         var rows = Filters.Select(f => columns.Select(c => c.Value(f)).ToArray()).ToList();
         var title = Title;
         if (MonthFilter.HasValue) title += $" - {MonthFilterLabel}";
-        if (SelectedDimension != AllDimensions) title += $" - Dimension {SelectedDimension}";
-        if (NameFilter.Trim().Length > 0) title += $" - Nom contenant « {NameFilter.Trim()} »";
+        title += HeaderFilter.TitleSuffix;
         App.Printer.PrintTable(title, headers, rows, includeCheckboxColumn: true);
     }
 

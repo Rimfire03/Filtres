@@ -10,34 +10,26 @@ namespace FiltresApp.ViewModels;
 /// "changement réalisé" / date pour le mois en cours et l'année consultée (case à cocher de la
 /// grille), en déléguant la lecture/écriture en base au ViewModel parent.
 /// </summary>
-public partial class PeriodicFilterRowViewModel : ObservableObject
+public partial class PeriodicFilterRowViewModel : LinkedFilterRowViewModel
 {
     private readonly PeriodicFilterListViewModel _owner;
 
     public PeriodicFilter Filter { get; }
 
     public PeriodicFilterRowViewModel(PeriodicFilter filter, PeriodicFilterListViewModel owner, string? linkedOrderLine)
+        : base(linkedOrderLine)
     {
         Filter = filter;
         _owner = owner;
-        LinkedOrderLine = linkedOrderLine;
     }
-
-    /// <summary>Dimension de la ligne de Commande / Inventaire à laquelle ce filtre est rattaché, ou null.</summary>
-    public string? LinkedOrderLine { get; }
-
-    /// <summary>Puce verte (rattaché) ou rouge (non rattaché) en tête de ligne.</summary>
-    public bool IsLinkedToOrder => LinkedOrderLine is not null;
-
-    public string LinkToolTip => IsLinkedToOrder
-        ? $"Rattaché à la ligne « {LinkedOrderLine} » de Commande / Inventaire"
-        : "Rattaché à aucune ligne de Commande / Inventaire";
 
     /// <summary>True si la Dimension contient "laver" (filtre lavable, réutilisé plutôt que remplacé) :
     /// ces filtres ne peuvent jamais être rattachés à une ligne de Commande / Inventaire (voir
     /// OrderListViewModel.LoadLinkCandidates, qui les exclut des candidats), donc la fonction "Lié" n'a
     /// pas de sens pour eux et est masquée dans la grille.</summary>
     public bool IsWashable => Filter.IsWashable;
+
+    public override bool ShowsLinkDot => !IsWashable;
 
     /// <summary>Famille déduite de la Dimension pour le regroupement de la grille (voir
     /// <see cref="PeriodicFilterListViewModel.ShowDimensionFamilyGrouping"/>, écran "Filtres G3"

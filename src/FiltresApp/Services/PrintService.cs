@@ -26,6 +26,28 @@ public class PrintService
         printDialog.PrintDocument(paginator, documentTitle);
     }
 
+    /// <summary>Lignes d'impression / PDF avec, à la place d'une colonne de groupe, une ligne titre
+    /// « — GROUPE — » avant chaque groupe (<paramref name="items"/> déjà triés par groupe).</summary>
+    public static List<string[]> BuildGroupedRows<T>(IEnumerable<T> items, Func<T, string> groupOf, Func<T, string[]> buildRow, int columnCount)
+    {
+        var rows = new List<string[]>();
+        string? currentGroup = null;
+        foreach (var item in items)
+        {
+            var group = groupOf(item);
+            if (group != currentGroup)
+            {
+                currentGroup = group;
+                var title = new string[columnCount];
+                Array.Fill(title, "");
+                title[0] = "— " + group.ToUpperInvariant() + " —";
+                rows.Add(title);
+            }
+            rows.Add(buildRow(item));
+        }
+        return rows;
+    }
+
     private static FlowDocument BuildFlowDocument(string title, string[] headers, IReadOnlyList<string[]> rows, bool includeCheckboxColumn)
     {
         var doc = new FlowDocument

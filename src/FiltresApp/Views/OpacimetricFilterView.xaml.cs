@@ -2,8 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
+using FiltresApp.Services;
 using FiltresApp.ViewModels;
 
 namespace FiltresApp.Views;
@@ -21,7 +20,7 @@ public partial class OpacimetricFilterView : UserControl
     /// filtres).</summary>
     private void Grid_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
     {
-        var cell = FindAncestor<DataGridCell>(e.OriginalSource as DependencyObject);
+        var cell = (e.OriginalSource as DependencyObject).FindAncestor<DataGridCell>();
         if (cell?.Column != TypeColumn || cell.DataContext is not OpacimetricFilterRowViewModel row || DataContext is not OpacimetricFilterListViewModel vm) return;
 
         vm.SelectedFilter = row;
@@ -50,12 +49,5 @@ public partial class OpacimetricFilterView : UserControl
 
         menu.IsOpen = true;
         e.Handled = true;
-    }
-
-    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
-    {
-        while (current is not null and not T)
-            current = current is Visual or Visual3D ? VisualTreeHelper.GetParent(current) : LogicalTreeHelper.GetParent(current);
-        return current as T;
     }
 }

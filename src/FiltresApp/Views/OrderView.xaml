@@ -96,15 +96,7 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <Border Background="{StaticResource BrushSidebar}" Padding="10,5" Margin="0,6,0,2">
-                                <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
-                            </Border>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
+                <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>
             </DataGrid.GroupStyle>
         </DataGrid>
     </Grid>

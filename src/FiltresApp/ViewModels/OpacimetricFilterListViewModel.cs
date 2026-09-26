@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,30 +48,21 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
 
     /// <summary>Options du sélecteur "Mois consulté" : Décembre de l'année précédente, puis Janvier à
     /// Décembre de l'année choisie (même fonctionnement que les écrans G4 / G3 / Charbon).</summary>
-    [ObservableProperty] private List<PeriodicFilterListViewModel.ConsultedMonthOption> _consultedMonthOptions = new();
-    [ObservableProperty] private PeriodicFilterListViewModel.ConsultedMonthOption? _selectedConsultedMonth;
+    [ObservableProperty] private List<ConsultedMonthOption> _consultedMonthOptions = new();
+    [ObservableProperty] private ConsultedMonthOption? _selectedConsultedMonth;
 
-    partial void OnSelectedConsultedMonthChanged(PeriodicFilterListViewModel.ConsultedMonthOption? value)
+    partial void OnSelectedConsultedMonthChanged(ConsultedMonthOption? value)
     {
         foreach (var row in Filters) row.RefreshConsultedMonth();
     }
 
-    private void RefreshConsultedMonthOptions()
-    {
-        var year = YearContext.Year;
-        var previousIndex = SelectedConsultedMonth is null ? DateTime.Today.Month : ConsultedMonthOptions.IndexOf(SelectedConsultedMonth);
-        if (previousIndex < 0) previousIndex = DateTime.Today.Month;
-
-        var labels = PeriodicFilterListViewModel.MonthLabels;
-        var options = new List<PeriodicFilterListViewModel.ConsultedMonthOption> { new(12, year - 1, $"Décembre {year - 1}") };
-        options.AddRange(Enumerable.Range(1, 12).Select(m => new PeriodicFilterListViewModel.ConsultedMonthOption(m, year, $"{labels[m - 1]} {year}")));
-
-        ConsultedMonthOptions = options;
-        SelectedConsultedMonth = options[Math.Clamp(previousIndex, 0, options.Count - 1)];
-    }
+    private void RefreshConsultedMonthOptions() =>
+        (ConsultedMonthOptions, SelectedConsultedMonth) =
+            ConsultedMonthOption.Rebuild(YearContext.Year, ConsultedMonthOptions, SelectedConsultedMonth);
 
     public OpacimetricFilterListViewModel()
     {
+        HeaderFilter = new NameDimensionFilter(ApplyFilters);
         RefreshConsultedMonthOptions();
         App.YearContext.PropertyChanged += (_, e) =>
         {
@@ -82,8 +74,8 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
         Load();
     }
 
-    private static bool IsInMonth(OpacimetricReplacement r, PeriodicFilterListViewModel.ConsultedMonthOption m) =>
-        r.DateChanged is DateOnly d && d.Year == m.Year && d.Month == m.Month;
+    private static bool IsInMonth(OpacimetricReplacement r, ConsultedMonthOption m) =>
+        r.DateChanged is DateOnly d && m.Contains(d);
 
     /// <summary>Case "Réalisé" : cochée, crée un remplacement (quantité en place) daté du jour si le mois
     /// consulté est le mois en cours, sinon du 1er du mois consulté ; décochée, supprime les remplacements
@@ -97,7 +89,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
         if (done && inMonth.Count == 0)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
-            var date = today.Year == month.Year && today.Month == month.Month ? today : new DateOnly(month.Year, month.Month, 1);
+            var date = month.Contains(today) ? today : new DateOnly(month.Year, month.Month, 1);
             tracked.Replacements.Add(new OpacimetricReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
         }
         else if (!done)
@@ -115,7 +107,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
     public void SetReplacementDate(OpacimetricFilter filter, DateOnly? date)
     {
         if (!App.GuardWritable() || SelectedConsultedMonth is not { } month) return;
-        if (date is DateOnly d && (d.Year != month.Year || d.Month != month.Month))
+        if (date is DateOnly d && !month.Contains(d))
         {
             App.Dialogs.ShowMessage("Date du changement", $"La date doit être en {month.Label} (mois consulté). Changez de mois consulté pour saisir un autre mois.");
             return;
@@ -194,11 +186,7 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
     private void Load()
     {
         // Ligne de Commande / Inventaire à laquelle chaque filtre est rattaché (un filtre = une ligne au plus).
-        _linkedLines = App.Db.OrderLineOpacimetricFilters.AsNoTracking()
-            .Select(l => new { l.OpacimetricFilterId, l.OrderLine!.Designation })
-            .ToList()
-            .GroupBy(l => l.OpacimetricFilterId)
-            .ToDictionary(g => g.Key, g => g.First().Designation);
+        _linkedLines = FilterLinkService.OpacimetricLinkedLines(App.Db);
 
         var query = App.Db.OpacimetricFilters
             .Include(f => f.Replacements)
@@ -216,71 +204,29 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
             .ThenBy(f => f.Location)
             .ToList();
 
-        RefreshDimensionOptions();
+        HeaderFilter.RefreshDimensions(_loadedFilters.Select(f => f.Dimension));
         ApplyFilters();
     }
 
     // ---- Filtres placés sous les titres de colonnes (même fonctionnement que G4 / G3 / Charbon) ----
 
-    public const string AllDimensions = PeriodicFilterListViewModel.AllDimensions;
-
-    /// <summary>Colonne "Nom de la centrale d'air" : n'affiche que les filtres dont le nom contient ce texte
-    /// (sans tenir compte des majuscules ni des accents).</summary>
-    [ObservableProperty] private string _nameFilter = string.Empty;
-
-    /// <summary>Colonne "Dimension" : "Toutes", puis les dimensions présentes.</summary>
-    [ObservableProperty] private List<string> _dimensionOptions = new() { AllDimensions };
-    [ObservableProperty] private string _selectedDimension = AllDimensions;
-
-    partial void OnNameFilterChanged(string value) => ApplyFilters();
-    partial void OnSelectedDimensionChanged(string value) => ApplyFilters();
+    /// <summary>Colonnes "Nom de la centrale d'air" (nom contient) et "Dimension".</summary>
+    public NameDimensionFilter HeaderFilter { get; }
 
     private List<OpacimetricFilter> _loadedFilters = new();
     private Dictionary<int, string> _linkedLines = new();
-    private bool _refreshingDimensions;
-
-    private void RefreshDimensionOptions()
-    {
-        var options = new List<string> { AllDimensions };
-        options.AddRange(_loadedFilters.Select(f => f.Dimension.Trim()).Where(d => d.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(d => d, StringComparer.CurrentCultureIgnoreCase));
-
-        _refreshingDimensions = true;
-        try
-        {
-            var previous = SelectedDimension;
-            DimensionOptions = options;
-            SelectedDimension = options.FirstOrDefault(o => string.Equals(o, previous, StringComparison.OrdinalIgnoreCase)) ?? AllDimensions;
-        }
-        finally
-        {
-            _refreshingDimensions = false;
-        }
-    }
 
     /// <summary>Applique les filtres nom / dimension sans relire la base.</summary>
     private void ApplyFilters()
     {
-        if (_refreshingDimensions) return;
-        var name = NameFilter.Trim();
-        var compare = System.Globalization.CultureInfo.CurrentCulture.CompareInfo;
-        const System.Globalization.CompareOptions ignore =
-            System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace;
-
-        var filtered = _loadedFilters.Where(f =>
-            (name.Length == 0 || compare.IndexOf(f.Location, name, ignore) >= 0)
-            && (SelectedDimension == AllDimensions || string.Equals(f.Dimension.Trim(), SelectedDimension, StringComparison.OrdinalIgnoreCase)));
+        var filtered = _loadedFilters.Where(f => HeaderFilter.Matches(f.Location, f.Dimension));
 
         Filters = new ObservableCollection<OpacimetricFilterRowViewModel>(
             filtered.Select(f => new OpacimetricFilterRowViewModel(f, YearContext.Year, this, _linkedLines.GetValueOrDefault(f.Id))));
     }
 
     [RelayCommand]
-    private void ResetFilters()
-    {
-        NameFilter = string.Empty;
-        SelectedDimension = AllDimensions;
-    }
+    private void ResetFilters() => HeaderFilter.Reset();
 
     [RelayCommand]
     private void AddFamily()
@@ -407,28 +353,13 @@ public partial class OpacimetricFilterListViewModel : ObservableObject, IReloada
     private void Print()
     {
         var headers = new[] { "Nom de la centrale d'air", "Dimension", "Type", "Qté en place", $"Dernier changement ({YearContext.Year})", $"Nb remplacements ({YearContext.Year})" };
-        // Une ligne titre avant chaque famille, à la place d'une colonne Famille (lignes déjà triées).
-        var rows = new List<string[]>();
-        string? currentGroup = null;
-        foreach (var f in Filters)
+        var rows = PrintService.BuildGroupedRows(Filters, f => f.FamilyGroupLabel, f => new[]
         {
-            if (f.FamilyGroupLabel != currentGroup)
-            {
-                currentGroup = f.FamilyGroupLabel;
-                var title = new string[headers.Length];
-                Array.Fill(title, "");
-                title[0] = "— " + currentGroup.ToUpperInvariant() + " —";
-                rows.Add(title);
-            }
-            rows.Add(new[]
-            {
-                f.Location, f.Dimension, f.FilterType ?? "", f.QuantityInPlace.ToString(),
-                f.LastChangedDateInYear?.ToString("dd/MM/yyyy") ?? "-", f.ReplacementCountInYear.ToString()
-            });
-        }
+            f.Location, f.Dimension, f.FilterType ?? "", f.QuantityInPlace.ToString(),
+            f.LastChangedDateInYear?.ToString("dd/MM/yyyy") ?? "-", f.ReplacementCountInYear.ToString()
+        }, headers.Length);
         var documentTitle = SelectedFamily is null || SelectedFamily.IsAll ? Title : $"{Title} - {SelectedFamily.Label}";
-        if (SelectedDimension != AllDimensions) documentTitle += $" - Dimension {SelectedDimension}";
-        if (NameFilter.Trim().Length > 0) documentTitle += $" - Nom contenant « {NameFilter.Trim()} »";
+        documentTitle += HeaderFilter.TitleSuffix;
         App.Printer.PrintTable(documentTitle, headers, rows);
     }
 

@@ -9,29 +9,19 @@ namespace FiltresApp.ViewModels;
 /// restreindre l'affichage "Dernier changement" / "Nb remplacements" à l'année consultée, sans jamais
 /// toucher à l'historique complet conservé en base.
 /// </summary>
-public partial class OpacimetricFilterRowViewModel : ObservableObject
+public partial class OpacimetricFilterRowViewModel : LinkedFilterRowViewModel
 {
     private readonly OpacimetricFilterListViewModel _owner;
     public OpacimetricFilter Filter { get; }
     private readonly int _year;
 
     public OpacimetricFilterRowViewModel(OpacimetricFilter filter, int year, OpacimetricFilterListViewModel owner, string? linkedOrderLine)
+        : base(linkedOrderLine)
     {
         Filter = filter;
         _year = year;
         _owner = owner;
-        LinkedOrderLine = linkedOrderLine;
     }
-
-    /// <summary>Dimension de la ligne de Commande / Inventaire à laquelle ce filtre est rattaché, ou null.</summary>
-    public string? LinkedOrderLine { get; }
-
-    /// <summary>Puce verte (rattaché) ou rouge (non rattaché) en tête de ligne.</summary>
-    public bool IsLinkedToOrder => LinkedOrderLine is not null;
-
-    public string LinkToolTip => IsLinkedToOrder
-        ? $"Rattaché à la ligne « {LinkedOrderLine} » de Commande / Inventaire"
-        : "Rattaché à aucune ligne de Commande / Inventaire";
 
     /// <summary>"Consulter l'historique..." (menu contextuel de la grille) : voir
     /// <see cref="OpacimetricFilterListViewModel.ShowHistory"/>.</summary>
@@ -55,13 +45,13 @@ public partial class OpacimetricFilterRowViewModel : ObservableObject
 
     // ---- Mois consulté : case "Réalisé" et "Date du changement" ----
 
-    private PeriodicFilterListViewModel.ConsultedMonthOption? ConsultedMonth => _owner.SelectedConsultedMonth;
+    private ConsultedMonthOption? ConsultedMonth => _owner.SelectedConsultedMonth;
 
     /// <summary>Dernier remplacement daté dans le mois consulté, s'il y en a un.</summary>
     private OpacimetricReplacement? ReplacementInConsultedMonth => ConsultedMonth is not { } m
         ? null
         : Filter.Replacements
-            .Where(r => r.DateChanged is DateOnly d && d.Year == m.Year && d.Month == m.Month)
+            .Where(r => r.DateChanged is DateOnly d && m.Contains(d))
             .OrderBy(r => r.DateChanged)
             .LastOrDefault();
 

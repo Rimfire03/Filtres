@@ -83,66 +83,18 @@
                 <!-- Masquée pour les filtres lavables ("à laver") : ils ne peuvent jamais être rattachés
                      à une ligne de Commande / Inventaire (voir PeriodicFilterRowViewModel.IsWashable et
                      OrderListViewModel.LoadLinkCandidates, qui les exclut des candidats). -->
-                <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Ellipse Width="11" Height="11" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding LinkToolTip}">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#EF4444"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsLinkedToOrder}" Value="True">
-                                                <Setter Property="Fill" Value="#22C55E"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsWashable}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder"
+                                        CellTemplate="{StaticResource LinkDotCellTemplate}"/>
                 <!-- Filtres d'affichage placés dans le bas du bandeau des titres : "contient" sur le nom, liste
-                     des dimensions présentes (PeriodicFilterListViewModel.NameFilter / SelectedDimension). -->
-                <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}">
-                    <DataGridTextColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
-                                <TextBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres dont le nom contient ce texte"
-                                         Text="{Binding DataContext.NameFilter, RelativeSource={RelativeSource AncestorType=DataGrid}, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}">
-                    <DataGridTextColumn.HeaderTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2"/>
-                                <ComboBox Margin="2,4,2,0" ToolTip="N'afficher que les filtres de cette dimension"
-                                          ItemsSource="{Binding DataContext.DimensionOptions, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                          SelectedItem="{Binding DataContext.SelectedDimension, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTextColumn.HeaderTemplate>
-                </DataGridTextColumn>
+                     des dimensions présentes (PeriodicFilterListViewModel.HeaderFilter). -->
+                <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.7*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastDoneDate, StringFormat='dd/MM/yyyy'}" Width="95" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTemplateColumn Header="Réalisé" Width="60">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      IsChecked="{Binding IsDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
-                                      IsEnabled="{x:Static app:App.IsWritable}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Réalisé" Width="60" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
                 <DataGridTemplateColumn Header="Date du changement" Width="95">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -152,23 +104,7 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <!-- Bandeau masqué quand le nom de groupe est vide (toujours le cas hors
-                                 écran "Filtres G3", voir DimensionFamilyLabel) : aucun changement visuel
-                                 sur les autres écrans, qui restent une liste plate non groupée. -->
-                            <Border x:Name="GroupHeaderBorder" Background="{StaticResource BrushSidebar}" Padding="10,5" Margin="0,6,0,2">
-                                <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
-                            </Border>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Name}" Value="">
-                                    <Setter TargetName="GroupHeaderBorder" Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
+                <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>
             </DataGrid.GroupStyle>
         </DataGrid>
     </Grid>

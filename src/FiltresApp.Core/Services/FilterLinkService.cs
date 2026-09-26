@@ -1,5 +1,6 @@
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.Core.Services;
 
@@ -58,5 +59,29 @@ public static class FilterLinkService
             foreach (var id in newOpacimetric)
                 trackedLine.OpacimetricLinks.Add(new OrderLineOpacimetricFilter { OrderLineId = trackedLine.Id, OpacimetricFilterId = id });
         }
+    }
+
+    /// <summary>Pour chaque filtre à périodicité rattaché, la dimension (Designation) de sa ligne de
+    /// Commande / Inventaire. Optionnel : limité à une catégorie, ou hors d'une ligne donnée.</summary>
+    public static Dictionary<int, string> PeriodicLinkedLines(FiltresDbContext db, FilterCategory? category = null, int? excludedLineId = null)
+    {
+        var links = db.OrderLinePeriodicFilters.AsNoTracking();
+        if (category is FilterCategory c) links = links.Where(l => l.PeriodicFilter!.Category == c);
+        if (excludedLineId is int id) links = links.Where(l => l.OrderLineId != id);
+        return links.Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.PeriodicFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
+    }
+
+    /// <summary>Même chose pour les filtres F7 à H13.</summary>
+    public static Dictionary<int, string> OpacimetricLinkedLines(FiltresDbContext db, int? excludedLineId = null)
+    {
+        var links = db.OrderLineOpacimetricFilters.AsNoTracking();
+        if (excludedLineId is int id) links = links.Where(l => l.OrderLineId != id);
+        return links.Select(l => new { l.OpacimetricFilterId, l.OrderLine!.Designation })
+            .ToList()
+            .GroupBy(l => l.OpacimetricFilterId)
+            .ToDictionary(g => g.Key, g => g.First().Designation);
     }
 }

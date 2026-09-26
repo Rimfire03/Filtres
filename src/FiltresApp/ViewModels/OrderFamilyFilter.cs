@@ -140,25 +140,4 @@ public partial class OrderFamilyFilter : ObservableObject
 
     /// <summary>Ajouté au titre des impressions / exports quand un filtre est actif.</summary>
     public string TitleSuffix => Selected == AllLabel ? "" : " - " + Selected;
-
-    /// <summary>Lignes d'impression / PDF avec, à la place d'une colonne Famille, une ligne titre avant
-    /// chaque famille (lignes déjà triées par famille).</summary>
-    public static List<string[]> BuildGroupedRows(IEnumerable<OrderLine> lines, Func<OrderLine, string[]> buildRow, int columnCount)
-    {
-        var rows = new List<string[]>();
-        string? currentGroup = null;
-        foreach (var line in lines)
-        {
-            if (line.FamilyGroupLabel != currentGroup)
-            {
-                currentGroup = line.FamilyGroupLabel;
-                var title = new string[columnCount];
-                Array.Fill(title, "");
-                title[0] = "— " + currentGroup.ToUpperInvariant() + " —";
-                rows.Add(title);
-            }
-            rows.Add(buildRow(line));
-        }
-        return rows;
-    }
 }
