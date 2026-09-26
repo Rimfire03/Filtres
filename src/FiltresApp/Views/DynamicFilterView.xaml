@@ -43,15 +43,13 @@
                     Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
                     Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
-            <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
-            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0"
+            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="24,0,0,0"
                     ToolTip="Vide les filtres nom et dimension placés sous les titres de colonnes"/>
         </DockPanel>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
-                  ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
+                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow">
                     <Setter Property="ContextMenu">
@@ -76,12 +74,13 @@
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.8*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="100" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTemplateColumn Header="Réalisé" Width="60" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
-                <DataGridTemplateColumn Header="Date du changement" Width="95">
+                <!-- Pas de mois à cocher pour cette feuille : choisir une date ici enregistre directement un
+                     nouveau remplacement daté de ce jour (le champ se vide ensuite), sans jamais modifier
+                     l'historique déjà enregistré (voir "Consulter l'historique..."). -->
+                <DataGridTemplateColumn Header="Date du changement" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <DatePicker SelectedDate="{Binding DateDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}"
-                                        DisplayDateStart="{Binding ConsultedMonthStart, Mode=OneWay}" DisplayDateEnd="{Binding ConsultedMonthEnd, Mode=OneWay}"
+                            <DatePicker SelectedDate="{Binding NewChangeDate, UpdateSourceTrigger=PropertyChanged}"
                                         IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

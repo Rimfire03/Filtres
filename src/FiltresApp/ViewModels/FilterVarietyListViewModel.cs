@@ -39,6 +39,12 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
     private void AddVariety()
     {
         if (!App.GuardWritable()) return;
+        if (!App.Settings.AllowFilterVarietyCreation)
+        {
+            App.Dialogs.ShowMessage("Nouvelle variété",
+                "La création de nouvelles variétés de filtres est désactivée. Activez « Autoriser la création de nouvelles variétés de filtres (mode édition) » dans Paramètres pour en créer une.");
+            return;
+        }
         var entity = new FilterVariety
         {
             Ordre = (App.Db.FilterVarieties.Max(v => (int?)v.Ordre) ?? 0) + 1

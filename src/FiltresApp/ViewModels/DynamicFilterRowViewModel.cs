@@ -43,48 +43,30 @@ public partial class DynamicFilterRowViewModel : LinkedFilterRowViewModel
     }
     public int QuantityInPlace => Filter.QuantityInPlace;
 
-    // ---- Mois consulté : case "Réalisé" et "Date du changement" ----
+    // ---- Date de changement : pas de mois à cocher, une date saisie enregistre un nouveau remplacement ----
 
-    private ConsultedMonthOption? ConsultedMonth => _owner.SelectedConsultedMonth;
+    private DateTime? _newChangeDate;
 
-    /// <summary>Dernier remplacement daté dans le mois consulté, s'il y en a un.</summary>
-    private DynamicFilterReplacement? ReplacementInConsultedMonth => ConsultedMonth is not { } m
-        ? null
-        : Filter.Replacements
-            .Where(r => r.DateChanged is DateOnly d && m.Contains(d))
-            .OrderBy(r => r.DateChanged)
-            .LastOrDefault();
-
-    public bool IsDoneForConsultedMonth
+    /// <summary>Colonne "Date du changement" : champ de saisie (toujours vide au repos, pas l'affichage
+    /// d'une valeur existante) - choisir une date enregistre un nouveau remplacement daté de ce jour puis
+    /// se réinitialise. Voir <see cref="DynamicFilterListViewModel.AddReplacement"/>.</summary>
+    public DateTime? NewChangeDate
     {
-        get => ReplacementInConsultedMonth is not null;
+        get => _newChangeDate;
         set
         {
-            _owner.SetReplacementDone(Filter, value);
-            RefreshConsultedMonth();
+            if (value is { } picked)
+            {
+                _owner.AddReplacement(Filter, DateOnly.FromDateTime(picked));
+                RefreshHistoryColumns();
+            }
+            _newChangeDate = null;
+            OnPropertyChanged();
         }
     }
 
-    public DateTime? DateDoneForConsultedMonth
+    public void RefreshHistoryColumns()
     {
-        get => ReplacementInConsultedMonth?.DateChanged?.ToDateTime(TimeOnly.MinValue);
-        set
-        {
-            _owner.SetReplacementDate(Filter, value.HasValue ? DateOnly.FromDateTime(value.Value) : null);
-            RefreshConsultedMonth();
-        }
-    }
-
-    /// <summary>Bornes du calendrier de la colonne "Date du changement" : le mois consulté.</summary>
-    public DateTime? ConsultedMonthStart => ConsultedMonth is { } m ? new DateTime(m.Year, m.Month, 1) : null;
-    public DateTime? ConsultedMonthEnd => ConsultedMonthStart?.AddMonths(1).AddDays(-1);
-
-    public void RefreshConsultedMonth()
-    {
-        OnPropertyChanged(nameof(IsDoneForConsultedMonth));
-        OnPropertyChanged(nameof(DateDoneForConsultedMonth));
-        OnPropertyChanged(nameof(ConsultedMonthStart));
-        OnPropertyChanged(nameof(ConsultedMonthEnd));
         OnPropertyChanged(nameof(LastChangedDateInYear));
         OnPropertyChanged(nameof(ReplacementCountInYear));
     }

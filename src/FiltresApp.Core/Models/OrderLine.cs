@@ -46,18 +46,20 @@ public class OrderLine
     /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Sans famille".</summary>
     public const int NoFamilyOverride = -1;
 
-    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force comme famille un Type de filtre d'une
-    /// variété "Filtres F7 à H14", indiqué dans <see cref="FamilyOverrideType"/>.</summary>
+    /// <summary>Valeur de <see cref="FamilyOverride"/> qui force comme famille une variété "Filtres F7 à
+    /// H14", nommée dans <see cref="FamilyOverrideType"/>.</summary>
     public const int DynamicTypeOverride = 100;
 
     /// <summary>Famille choisie manuellement (fenêtre Modifier / colonne Famille) : null = automatique
     /// (d'après les filtres rattachés), <see cref="NoFamilyOverride"/> = "Sans famille",
-    /// <see cref="DynamicTypeOverride"/> = Type d'une variété "Filtres F7 à H14"
+    /// <see cref="DynamicTypeOverride"/> = variété "Filtres F7 à H14" choisie
     /// (<see cref="FamilyOverrideType"/>), sinon valeur de <see cref="FilterCategory"/>.</summary>
     public int? FamilyOverride { get; set; }
 
-    /// <summary>Type choisi comme famille quand <see cref="FamilyOverride"/> vaut
-    /// <see cref="DynamicTypeOverride"/>.</summary>
+    /// <summary>Nom de la variété "Filtres F7 à H14" choisie comme famille quand
+    /// <see cref="FamilyOverride"/> vaut <see cref="DynamicTypeOverride"/> : chaque variété créée
+    /// (<see cref="FilterVariety"/>) est elle-même une famille possible pour Commande / Inventaire,
+    /// indépendamment du Type (texte libre) éventuellement saisi sur ses filtres.</summary>
     public string? FamilyOverrideType { get; set; }
 
     public const string AutomaticFamilyChoice = "Automatique";
@@ -78,10 +80,11 @@ public class OrderLine
         int category => FamilyLabelFor((FilterCategory)category)
     };
 
-    /// <summary>Famille déduite des filtres rattachés : catégorie pour les filtres à périodicité, Type pour
-    /// les filtres d'une variété "Filtres F7 à H14" (un filtre sans Type n'apporte pas de famille). "Sans
-    /// famille" si aucune, "Plusieurs familles" si elles diffèrent. Nécessite FilterLinks (avec
-    /// PeriodicFilter) et DynamicLinks (avec DynamicFilter) chargés.</summary>
+    /// <summary>Famille déduite des filtres rattachés : catégorie pour les filtres à périodicité, nom de
+    /// la variété pour les filtres d'une variété "Filtres F7 à H14" (chaque variété créée est elle-même
+    /// une famille, voir <see cref="FamilyOverrideType"/>). "Sans famille" si aucune, "Plusieurs
+    /// familles" si elles diffèrent. Nécessite FilterLinks (avec PeriodicFilter) et DynamicLinks (avec
+    /// DynamicFilter.Variety) chargés.</summary>
     [NotMapped]
     public string AutomaticFamilyLabel
     {
@@ -89,7 +92,7 @@ public class OrderLine
         {
             var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category))
                 .Concat(DynamicLinks
-                    .Select(l => l.DynamicFilter?.FilterType?.Trim())
+                    .Select(l => l.DynamicFilter?.Variety?.Nom)
                     .Where(t => !string.IsNullOrEmpty(t))
                     .Select(t => t!))
                 .Distinct(StringComparer.CurrentCultureIgnoreCase)

@@ -16,6 +16,7 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty] private bool _autoUpdateEnabled;
     [ObservableProperty] private bool _linkDimensionFilterEnabled;
+    [ObservableProperty] private bool _allowFilterVarietyCreation;
     [ObservableProperty] private string _updateStatusMessage = string.Empty;
     [ObservableProperty] private bool _isCheckingForUpdate;
     [ObservableProperty] private bool _isInstallingUpdate;
@@ -99,6 +100,7 @@ public partial class SettingsViewModel : ObservableObject
         _pdfExportPath = App.Settings.PdfExportPath;
         _autoUpdateEnabled = App.Settings.AutoUpdateEnabled;
         _linkDimensionFilterEnabled = App.Settings.LinkDimensionFilterEnabled;
+        _allowFilterVarietyCreation = App.Settings.AllowFilterVarietyCreation;
         LoadHistoryYears();
     }
 
@@ -170,6 +172,12 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnLinkDimensionFilterEnabledChanged(bool value)
     {
         App.Settings.LinkDimensionFilterEnabled = value;
+        App.Settings.Save();
+    }
+
+    partial void OnAllowFilterVarietyCreationChanged(bool value)
+    {
+        App.Settings.AllowFilterVarietyCreation = value;
         App.Settings.Save();
     }
 

@@ -13,6 +13,12 @@ public class AppSettings
     /// correspond (approximativement) à celle de la ligne. Désactivé : tous les filtres sont affichés.</summary>
     public bool LinkDimensionFilterEnabled { get; set; } = true;
 
+    /// <summary>Menu dépliant "Filtres F7 à H14" : autorise la création de nouvelles variétés (chacune
+    /// devenant un sous-menu permanent). Désactivé par défaut pour éviter la création accidentelle de
+    /// nouveaux sous-menus ; l'ajout, la modification et la suppression des filtres d'une variété déjà
+    /// créée restent soumis uniquement au verrou d'écriture habituel (App.IsWritable).</summary>
+    public bool AllowFilterVarietyCreation { get; set; } = false;
+
     private static string SettingsFilePath => Path.Combine(AppContext.BaseDirectory, "settings.json");
 
     public static AppSettings Load()

@@ -77,6 +77,15 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Menu « Filtres F7 à H14 »" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Décoché : les sous-menus (variétés) déjà créés restent utilisables normalement (ajout/modification/suppression de leurs filtres), mais le bouton « + Nouvelle variété » de la page d'accueil du menu est désactivé, pour éviter la création accidentelle de nouveaux sous-menus permanents." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <CheckBox Content="Autoriser la création de nouvelles variétés de filtres (mode édition)"
+                              IsChecked="{Binding AllowFilterVarietyCreation}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
                               IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,12"/>

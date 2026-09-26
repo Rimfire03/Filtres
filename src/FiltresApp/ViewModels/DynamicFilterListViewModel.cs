@@ -47,92 +47,34 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
 
     private bool _refreshingFamilies;
 
-    // ---- Mois consulté (case "Réalisé" / "Date du changement" de la grille) ----
-
-    [ObservableProperty] private List<ConsultedMonthOption> _consultedMonthOptions = new();
-    [ObservableProperty] private ConsultedMonthOption? _selectedConsultedMonth;
-
-    partial void OnSelectedConsultedMonthChanged(ConsultedMonthOption? value)
-    {
-        foreach (var row in Filters) row.RefreshConsultedMonth();
-    }
-
-    private void RefreshConsultedMonthOptions() =>
-        (ConsultedMonthOptions, SelectedConsultedMonth) =
-            ConsultedMonthOption.Rebuild(YearContext.Year, ConsultedMonthOptions, SelectedConsultedMonth);
+    // ---- Date de changement (colonne de la grille) ----
 
     public DynamicFilterListViewModel(FilterVariety variety)
     {
         Variety = variety;
         HeaderFilter = new NameDimensionFilter(ApplyFilters);
-        RefreshConsultedMonthOptions();
         App.YearContext.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName != nameof(Services.YearContext.Year)) return;
-            RefreshConsultedMonthOptions();
             Load();
         };
         RefreshFamilies();
         Load();
     }
 
-    private static bool IsInMonth(DynamicFilterReplacement r, ConsultedMonthOption m) =>
-        r.DateChanged is DateOnly d && m.Contains(d);
-
-    /// <summary>Case "Réalisé" : cochée, crée un remplacement (quantité en place) daté du jour si le mois
-    /// consulté est le mois en cours, sinon du 1er du mois consulté ; décochée, supprime les remplacements
-    /// datés dans ce mois. L'historique des autres mois n'est jamais touché.</summary>
-    public void SetReplacementDone(DynamicFilter filter, bool done)
+    /// <summary>Colonne "Date du changement" : pas de mois à cocher pour cette feuille (contrairement aux
+    /// écrans à périodicité) - saisir une date enregistre directement un nouveau remplacement (quantité en
+    /// place) daté de cette date, sans jamais modifier l'historique déjà enregistré. Le champ de saisie se
+    /// vide ensuite (colonne d'ajout, pas d'affichage d'une valeur existante) : voir <see cref="ShowHistory"/>
+    /// pour consulter l'historique complet d'un filtre.</summary>
+    public void AddReplacement(DynamicFilter filter, DateOnly date)
     {
-        if (!App.GuardWritable() || SelectedConsultedMonth is not { } month) return;
+        if (!App.GuardWritable()) return;
         var tracked = App.Db.DynamicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
-        var inMonth = tracked.Replacements.Where(r => IsInMonth(r, month)).ToList();
-
-        if (done && inMonth.Count == 0)
-        {
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            var date = month.Contains(today) ? today : new DateOnly(month.Year, month.Month, 1);
-            tracked.Replacements.Add(new DynamicFilterReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
-        }
-        else if (!done)
-        {
-            foreach (var r in inMonth) App.Db.DynamicFilterReplacements.Remove(r);
-        }
-
+        tracked.Replacements.Add(new DynamicFilterReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
         App.Db.SaveChanges();
         SyncReplacements(filter, tracked.Replacements);
-        App.YearContext.EnsureYear(month.Year);
-    }
-
-    /// <summary>Colonne "Date du changement" : fixe la date du remplacement du mois consulté (le crée au
-    /// besoin), ou le supprime si la date est vidée. La date doit rester dans le mois consulté.</summary>
-    public void SetReplacementDate(DynamicFilter filter, DateOnly? date)
-    {
-        if (!App.GuardWritable() || SelectedConsultedMonth is not { } month) return;
-        if (date is DateOnly d && !month.Contains(d))
-        {
-            App.Dialogs.ShowMessage("Date du changement", $"La date doit être en {month.Label} (mois consulté). Changez de mois consulté pour saisir un autre mois.");
-            return;
-        }
-
-        var tracked = App.Db.DynamicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
-        var inMonth = tracked.Replacements.Where(r => IsInMonth(r, month)).OrderBy(r => r.DateChanged).ToList();
-
-        if (date is null)
-        {
-            foreach (var r in inMonth) App.Db.DynamicFilterReplacements.Remove(r);
-        }
-        else if (inMonth.Count > 0)
-        {
-            inMonth[^1].DateChanged = date;
-        }
-        else
-        {
-            tracked.Replacements.Add(new DynamicFilterReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
-        }
-
-        App.Db.SaveChanges();
-        SyncReplacements(filter, tracked.Replacements);
+        App.YearContext.EnsureYear(date.Year);
     }
 
     /// <summary>Répercute les remplacements enregistrés sur l'objet affiché (issu d'une requête sans suivi).</summary>

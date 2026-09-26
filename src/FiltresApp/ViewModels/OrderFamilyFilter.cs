@@ -7,8 +7,8 @@ namespace FiltresApp.ViewModels;
 
 /// <summary>Familles des écrans Inventaire et Commande : filtre d'affichage (chaque écran garde son propre
 /// choix), ordre des groupes, et choix manuel de famille. Les familles sont celles des filtres à
-/// périodicité (G4 plissés, G4 plan, G3, Charbon) et les Types saisis sur les écrans "Filtres F7 à H14"
-/// (voir <see cref="OrderLine.FamilyGroupLabel"/>).</summary>
+/// périodicité (G4 plissés, G4 plan, G3, Charbon) et les variétés créées sous le menu "Filtres F7 à
+/// H14" (chaque variété est elle-même une famille possible, voir <see cref="OrderLine.FamilyGroupLabel"/>).</summary>
 public partial class OrderFamilyFilter : ObservableObject
 {
     private const string AllLabel = "Toutes les familles";
@@ -29,15 +29,13 @@ public partial class OrderFamilyFilter : ObservableObject
         if (!_updatingOptions) _onFilterChanged();
     }
 
-    /// <summary>Types saisis sur les écrans "Filtres F7 à H14" (familles possibles dans Commande /
-    /// Inventaire), toutes variétés confondues.</summary>
-    public static List<string> LoadDynamicTypes() =>
-        App.Db.DynamicFilters.AsNoTracking()
-            .Select(f => f.FilterType)
+    /// <summary>Noms des variétés créées sous le menu "Filtres F7 à H14" (familles possibles dans
+    /// Commande / Inventaire) : chaque variété est elle-même une famille, dès sa création et
+    /// indépendamment du Type (texte libre) éventuellement saisi sur ses filtres.</summary>
+    public static List<string> LoadVarietyNames() =>
+        App.Db.FilterVarieties.AsNoTracking()
+            .Select(v => v.Nom)
             .ToList()
-            .Where(t => !string.IsNullOrWhiteSpace(t))
-            .Select(t => t!.Trim())
-            .Distinct(StringComparer.CurrentCultureIgnoreCase)
             .OrderBy(t => t, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
@@ -54,12 +52,12 @@ public partial class OrderFamilyFilter : ObservableObject
             .ToList();
     }
 
-    /// <summary>Ordre des familles : catégories, Types "Filtres F7 à H14" (plus d'éventuels types choisis
-    /// manuellement qui n'existent plus), "Plusieurs familles", "Sans famille".</summary>
+    /// <summary>Ordre des familles : catégories, variétés "Filtres F7 à H14" (plus d'éventuelles variétés
+    /// choisies manuellement qui n'existent plus), "Plusieurs familles", "Sans famille".</summary>
     private static List<string> BuildOrder(IEnumerable<OrderLine> lines)
     {
         var order = CategoryFamilies.ToList();
-        var types = LoadDynamicTypes()
+        var types = LoadVarietyNames()
             .Concat(lines.Select(l => l.FamilyGroupLabel))
             .Where(f => !CategoryFamilies.Contains(f) && f != OrderLine.MultipleFamiliesLabel && f != OrderLine.NoFamilyLabel)
             .Distinct()
@@ -96,10 +94,10 @@ public partial class OrderFamilyFilter : ObservableObject
 
     private sealed record ManualChoice(string Label, int Override, string? Type);
 
-    /// <summary>Familles au choix manuel : catégories, Types "Filtres F7 à H14", "Sans famille".</summary>
+    /// <summary>Familles au choix manuel : catégories, variétés "Filtres F7 à H14", "Sans famille".</summary>
     private static List<ManualChoice> ManualChoices() =>
         Enum.GetValues<FilterCategory>().Select(c => new ManualChoice(OrderLine.FamilyLabelFor(c), (int)c, null))
-            .Concat(LoadDynamicTypes().Select(t => new ManualChoice(t, OrderLine.DynamicTypeOverride, t)))
+            .Concat(LoadVarietyNames().Select(t => new ManualChoice(t, OrderLine.DynamicTypeOverride, t)))
             .Append(new ManualChoice(OrderLine.NoFamilyLabel, OrderLine.NoFamilyOverride, null))
             .ToList();
 
