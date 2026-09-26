@@ -32,10 +32,6 @@ public partial class MainViewModel : ObservableObject
         _dynamicFiltersMenu = new NavigationItem("Filtres F7 à H14", "🟪", () => new FilterVarietyListViewModel(this));
         foreach (var variety in App.Db.FilterVarieties.OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
             _dynamicFiltersMenu.Children.Add(CreateVarietyItem(variety));
-        // Déplié dès le lancement (plutôt qu'au premier clic) : les variétés déjà créées sont visibles
-        // immédiatement dans la barre latérale, sans étape supplémentaire pour les découvrir. Reste
-        // repliable ensuite comme n'importe quel menu (voir OnSelectedItemChanged).
-        _dynamicFiltersMenu.IsExpanded = _dynamicFiltersMenu.Children.Count > 0;
 
         NavigationItems = new ObservableCollection<NavigationItem>
         {
@@ -145,6 +141,10 @@ public partial class MainViewModel : ObservableObject
             SelectedItem = _dynamicFiltersMenu.Children[0];
             return;
         }
+
+        // Sélectionner le menu lui-même (création de variétés autorisée) le déplie aussi : sans ce
+        // garde-fou, il ne se déplierait qu'au clic sur le chevron.
+        if (value == _dynamicFiltersMenu) _dynamicFiltersMenu.IsExpanded = true;
 
         _lastDisplayedItem = value;
         foreach (var item in NavigationItems) item.IsSelected = item == value;
