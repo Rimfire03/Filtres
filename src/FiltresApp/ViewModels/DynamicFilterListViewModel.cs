@@ -70,25 +70,8 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
     public void AddReplacement(DynamicFilter filter, DateOnly date)
     {
         if (!App.GuardWritable()) return;
-        var tracked = App.Db.DynamicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
-        tracked.Replacements.Add(new DynamicFilterReplacement { QuantityChanged = tracked.QuantityInPlace, DateChanged = date });
-        App.Db.SaveChanges();
-        SyncReplacements(filter, tracked.Replacements);
+        filter.Replacements = ReplacementTrackingService.AddDynamicReplacement(App.Db, filter.Id, date);
         App.YearContext.EnsureYear(date.Year);
-    }
-
-    /// <summary>Répercute les remplacements enregistrés sur l'objet affiché (issu d'une requête sans suivi).</summary>
-    private void SyncReplacements(DynamicFilter filter, List<DynamicFilterReplacement> tracked)
-    {
-        filter.Replacements = tracked
-            .Where(r => App.Db.Entry(r).State != EntityState.Deleted && App.Db.Entry(r).State != EntityState.Detached)
-            .Select(r => new DynamicFilterReplacement
-            {
-                Id = r.Id,
-                DynamicFilterId = r.DynamicFilterId,
-                QuantityChanged = r.QuantityChanged,
-                DateChanged = r.DateChanged
-            }).ToList();
     }
 
     partial void OnSelectedFamilyChanged(FamilyOption? value)
@@ -285,7 +268,7 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
             EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v)
         };
         var ok = App.Dialogs.EditFields(isNew ? $"Ajouter un filtre « {Variety.Nom} »" : "Modifier le filtre", fields);
-        if (ok) PeriodicFilterListViewModel.ProposeDimensionCorrection(() => entity.Dimension, v => entity.Dimension = v);
+        if (ok) DimensionCorrectionPrompt.Propose(() => entity.Dimension, v => entity.Dimension = v);
         return ok;
     }
 

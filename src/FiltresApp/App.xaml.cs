@@ -16,10 +16,6 @@ public partial class App : Application
     public static PdfExportService PdfExport { get; private set; } = null!;
     public static ExcelExportService ExcelExport { get; private set; } = null!;
     public static YearContext YearContext { get; private set; } = null!;
-    public static UpdateService Updater { get; } = new();
-
-    private static DbWriteLock? _writeLock;
-    private static string? _writeLockPath;
 
     /// <summary>Vrai si un autre poste détenait déjà l'accès en écriture au démarrage (voir
     /// <see cref="DbWriteLock"/>) : ce poste peut consulter les données mais pas les modifier.</summary>
@@ -28,60 +24,6 @@ public partial class App : Application
 
     /// <summary>Poste qui détient l'accès en écriture, affiché dans le bandeau "lecture seule".</summary>
     public static string? WriteLockOwner { get; private set; }
-
-    /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
-    public static int DatabaseVersion { get; private set; }
-
-    /// <summary>Logo de l'entreprise stocké dans la base (null si aucun), et son image prête à afficher.</summary>
-    public static byte[]? CompanyLogo { get; private set; }
-    public static System.Windows.Media.ImageSource? CompanyLogoImage { get; private set; }
-    public static event Action? CompanyLogoChanged;
-
-    /// <summary>Enregistre (ou retire, si null) le logo dans la base et met à jour l'affichage.</summary>
-    public static void SetCompanyLogo(byte[]? data)
-    {
-        if (data is null) CompanyLogoService.Remove(Db);
-        else CompanyLogoService.Set(Db, data);
-        LoadCompanyLogo();
-    }
-
-    private static void LoadCompanyLogo()
-    {
-        CompanyLogo = CompanyLogoService.Get(Db);
-        CompanyLogoImage = CompanyLogo is null ? null : TryCreateImage(CompanyLogo);
-        CompanyLogoChanged?.Invoke();
-    }
-
-    /// <summary>Image WPF à partir d'un fichier en mémoire, ou null si le contenu n'est pas une image lisible.</summary>
-    public static System.Windows.Media.ImageSource? TryCreateImage(byte[] data)
-    {
-        try
-        {
-            var image = new System.Windows.Media.Imaging.BitmapImage();
-            using var stream = new MemoryStream(data);
-            image.BeginInit();
-            image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-            image.StreamSource = stream;
-            image.EndInit();
-            image.Freeze();
-            return image;
-        }
-        catch (Exception ex) when (ex is NotSupportedException or FileFormatException or InvalidOperationException or ArgumentException)
-        {
-            return null;
-        }
-    }
-
-    /// <summary>Version courante de l'application (définie par &lt;Version&gt; dans le .csproj),
-    /// comparée à la dernière release GitHub par <see cref="Updater"/>.</summary>
-    public static string CurrentVersion
-    {
-        get
-        {
-            var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            return v is null ? "0.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
-        }
-    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -134,157 +76,11 @@ public partial class App : Application
         if (Settings.AutoUpdateEnabled) _ = CheckForUpdateOnStartupAsync();
     }
 
-    /// <summary>Vérification silencieuse au démarrage : ne bloque jamais le lancement de l'application
-    /// et n'interrompt l'utilisateur que si une mise à jour est réellement disponible.</summary>
-    private static async Task CheckForUpdateOnStartupAsync()
-    {
-        try
-        {
-            var info = await Updater.CheckForUpdateAsync(CurrentVersion);
-            if (info is null) return;
-
-            var proceed = Dialogs.ShowConfirm("Mise à jour disponible",
-                $"Une nouvelle version {info.Version} est disponible (version actuelle : {CurrentVersion}).\n\n" +
-                "Voulez-vous la télécharger et l'installer maintenant ? L'application va se fermer puis redémarrer automatiquement.\n\n" +
-                "Vous pouvez désactiver cette vérification automatique dans Paramètres.");
-            if (!proceed) return;
-
-            await Updater.DownloadAndApplyAsync(info);
-            Current.Shutdown();
-        }
-        catch (Exception ex)
-        {
-            // La vérification/installation de mise à jour ne doit jamais faire planter l'application.
-            Dialogs.ShowMessage("Mise à jour", $"La mise à jour automatique a échoué : {ex.Message}");
-        }
-    }
-
-    /// <summary>Tant qu'aucun fichier de base de données n'existe à l'emplacement configuré (ex. tout
-    /// premier lancement après un clone du dépôt, qui ne contient volontairement aucune DB), propose à
-    /// l'utilisateur d'en créer une nouvelle (vide) ou de choisir un fichier .db existant (ex. une
-    /// sauvegarde). Retourne false si l'utilisateur annule, auquel cas l'application doit se fermer.</summary>
-    private static bool EnsureDatabaseSelected()
-    {
-        while (!File.Exists(Settings.ResolvedDatabasePath))
-        {
-            var choice = MessageBox.Show(
-                $"Aucune base de données trouvée à l'emplacement :\n{Settings.ResolvedDatabasePath}\n\n" +
-                "Oui : créer une nouvelle base de données vide à cet emplacement.\n" +
-                "Non : choisir un fichier de base de données existant (.db).\n" +
-                "Annuler : fermer l'application.",
-                "Base de données introuvable", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-
-            switch (choice)
-            {
-                case MessageBoxResult.Yes:
-                    return true; // EnsureDatabaseUpToDate() créera la base juste après
-
-                case MessageBoxResult.No:
-                    var dialog = new Microsoft.Win32.OpenFileDialog
-                    {
-                        Title = "Choisir une base de données existante",
-                        Filter = "Base de données SQLite (*.db)|*.db|Tous les fichiers (*.*)|*.*"
-                    };
-                    if (dialog.ShowDialog() == true)
-                    {
-                        Settings.DatabasePath = dialog.FileName;
-                        Settings.Save();
-                    }
-                    break; // reboucle : re-teste File.Exists avec le chemin (éventuellement) mis à jour
-
-                default:
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
     protected override void OnExit(ExitEventArgs e)
     {
         Db?.Dispose();
         _writeLock?.Dispose();
         base.OnExit(e);
-    }
-
-    /// <summary>Prend l'accès en écriture si aucun autre poste ne l'a déjà, sinon ouvre la base en
-    /// lecture seule.</summary>
-    private static void OpenDatabase(string path)
-    {
-        // Rechargement du même fichier par le rédacteur : on garde le verrou pour ne pas le céder.
-        if (_writeLock is null || !string.Equals(_writeLockPath, path, StringComparison.OrdinalIgnoreCase))
-        {
-            _writeLock?.Dispose();
-            _writeLock = DbWriteLock.TryAcquire(path);
-            _writeLockPath = path;
-        }
-        IsReadOnly = _writeLock is null;
-        WriteLockOwner = IsReadOnly ? DbWriteLock.ReadOwner(path) : null;
-
-        DbFactory = new DbContextFactory(path, IsReadOnly);
-        CheckDatabaseVersion(path);
-        DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
-        DatabaseVersion = DbFactory.GetDatabaseVersion();
-        Db = DbFactory.Create();
-        LoadCompanyLogo();
-    }
-
-    /// <summary>Bloque l'ouverture si ce logiciel et la base ne sont pas à la même version : logiciel trop
-    /// ancien pour une base déjà mise à jour, ou poste en lecture seule qui ne peut pas mettre la base à
-    /// jour lui-même.</summary>
-    private static void CheckDatabaseVersion(string path)
-    {
-        if (!File.Exists(path)) return; // base neuve, créée directement à la dernière version
-
-        var dbVersion = DbFactory.GetDatabaseVersion();
-        var expected = DbContextFactory.LatestVersion;
-
-        if (dbVersion > expected)
-        {
-            var by = DbFactory.GetLastMigratedByAppVersion();
-            throw new DatabaseVersionException(
-                $"Cette version du logiciel ({CurrentVersion}) est trop ancienne pour ouvrir la base de données.\n\n" +
-                $"Version de la base : {dbVersion}" + (by is null ? "" : $" (mise à jour par le logiciel version {by})") + "\n" +
-                $"Version de base gérée par ce logiciel : {expected}\n\n" +
-                "Installez la dernière version du logiciel sur ce poste" + (by is null ? "" : $" ({by} ou plus récente)") +
-                ", puis relancez-le. Rien n'a été modifié dans la base.");
-        }
-
-        if (dbVersion < expected && !IsReadOnly)
-        {
-            var changes = string.Join("\n", DbContextFactory.PendingMigrations(dbVersion).Select(c => "  • " + c));
-            var accepted = MessageBox.Show(
-                $"La base de données est en version {dbVersion} ; cette version du logiciel ({CurrentVersion}) a besoin de la version {expected}.\n\n" +
-                $"Modifications à appliquer :\n{changes}\n\n" +
-                "Une copie de sauvegarde complète de la base sera faite à côté du fichier avant la mise à jour. " +
-                "Après la mise à jour, les postes équipés d'une version plus ancienne du logiciel ne pourront plus l'ouvrir.\n\n" +
-                "Mettre à jour la base maintenant ?",
-                "Mise à jour de la base de données", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
-            if (accepted != MessageBoxResult.Yes)
-                throw new DatabaseVersionException(
-                    $"La base de données n'a pas été mise à jour : elle reste en version {dbVersion}, et cette version du logiciel ({CurrentVersion}) " +
-                    $"ne peut pas l'ouvrir sans la mettre en version {expected}.\n\n" +
-                    "Relancez le logiciel et acceptez la mise à jour, ou utilisez sur ce poste la version du logiciel qui correspond à la base.");
-        }
-
-        if (dbVersion < expected && IsReadOnly)
-        {
-            var owner = WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner;
-            throw new DatabaseVersionException(
-                $"La base de données doit être mise à jour (version {dbVersion} → {expected}) pour cette version du logiciel ({CurrentVersion}), " +
-                $"mais elle est actuellement ouverte en écriture par {owner}, qui utilise une version plus ancienne du logiciel.\n\n" +
-                "La mise à jour de la base se fera automatiquement au prochain lancement du logiciel à jour sur un poste " +
-                $"ayant l'accès en écriture. Demandez à {owner} de fermer le logiciel (et de le mettre à jour), puis relancez-le ici.");
-        }
-    }
-
-    /// <summary>Recrée le contexte de base de données courant (après changement de chemin
-    /// dans les paramètres, ou après un import qui a remplacé le fichier).</summary>
-    public static void ReloadDatabase(string newPath)
-    {
-        Db?.Dispose();
-        OpenDatabase(newPath);
-        YearContext = CreateYearContext();
     }
 
     /// <summary>À appeler avant toute modification de données : sur un poste en lecture seule, prévient
@@ -302,15 +98,4 @@ public partial class App : Application
 
     public static string ReadOnlyMessage =>
         ReadOnlyTitle + ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
-
-    /// <summary>Construit le contexte d'année partagé par les écrans de suivi : année courante par
-    /// défaut, plus toutes les années déjà présentes dans l'historique de remplacements en base.</summary>
-    private static YearContext CreateYearContext()
-    {
-        var yearsInData = Db.FilterReplacements.Select(r => r.Year).Distinct().ToList();
-        return new YearContext(DateTime.Today.Year, yearsInData);
-    }
 }
-
-/// <summary>Logiciel et base de données à des versions incompatibles : le démarrage est bloqué.</summary>
-public class DatabaseVersionException(string message) : Exception(message);

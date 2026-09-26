@@ -130,7 +130,7 @@ public partial class MainViewModel : ObservableObject
             // forcerait IsExpanded à true et rouvrirait le menu immédiatement - le rendant impossible à
             // replier. Le menu reste repliable à tout moment, la redirection ne joue qu'à l'entrée dans la
             // section depuis un autre écran.
-            var alreadyInSection = _lastDisplayedItem == _dynamicFiltersMenu || _dynamicFiltersMenu.Children.Contains(_lastDisplayedItem);
+            var alreadyInSection = _lastDisplayedItem == _dynamicFiltersMenu || (_lastDisplayedItem is not null && _dynamicFiltersMenu.Children.Contains(_lastDisplayedItem));
             if (alreadyInSection)
             {
                 SelectedItem = _lastDisplayedItem;

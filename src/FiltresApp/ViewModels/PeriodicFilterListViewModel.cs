@@ -190,28 +190,9 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         if (ok)
         {
             entity.Periodicity = PeriodicFilter.FormatPeriodicityMonths(months);
-            ProposeDimensionCorrection(() => entity.Dimension, v => entity.Dimension = v);
+            DimensionCorrectionPrompt.Propose(() => entity.Dimension, v => entity.Dimension = v);
         }
         return ok;
-    }
-
-    /// <summary>Propose une correction du champ Dimension selon la norme harmonisée ("aaaa x bbbb x
-    /// cccc", voir <see cref="DimensionFormatService"/>) juste après validation du formulaire, si le
-    /// texte saisi ne correspond pas déjà exactement à cette norme. N'affiche rien si aucun motif de
-    /// dimension n'a pu être reconnu (le texte reste inchangé, ex. "A laver").</summary>
-    internal static void ProposeDimensionCorrection(Func<string> get, Action<string> set)
-    {
-        var raw = get();
-        var normalized = DimensionFormatService.Normalize(raw);
-        if (normalized is null || normalized == raw) return;
-
-        if (App.Dialogs.ShowConfirm("Format de dimension",
-                "Le format standard des dimensions est « aaaa x bbbb x cccc » (le plus grand des deux " +
-                "premiers nombres en premier, l'épaisseur toujours en dernier).\n\n" +
-                $"Remplacer :\n« {raw} »\n\npar :\n« {normalized} » ?"))
-        {
-            set(normalized);
-        }
     }
 
     [RelayCommand]
@@ -227,37 +208,21 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    /// <summary>Case à cocher de la grille : trouve ou crée la ligne de suivi (mois consulté, voir
-    /// <see cref="SelectedConsultedMonth"/>) et fixe la date du jour. Ne supprime jamais les lignes des
-    /// autres mois/années : c'est ce qui permet de changer d'année sans perdre l'historique.</summary>
-    public void SetReplacementDone(PeriodicFilter filter, bool done)
+    /// <summary>Case à cocher de la grille : fixe la date du jour sur le remplacement du mois consulté (voir
+    /// <see cref="SelectedConsultedMonth"/>) ; décocher le supprime. Ne touche jamais aux autres mois /
+    /// années : c'est ce qui permet de changer d'année sans perdre l'historique.</summary>
+    public void SetReplacementDone(PeriodicFilter filter, bool done) =>
+        SaveConsultedMonthReplacement(filter, done ? DateOnly.FromDateTime(DateTime.Today) : null, refreshQuantity: true);
+
+    /// <summary>Colonne "Date du changement" : même enregistrement, date choisie (vide = supprimé).</summary>
+    public void SetReplacementDate(PeriodicFilter filter, DateOnly? date) =>
+        SaveConsultedMonthReplacement(filter, date, refreshQuantity: false);
+
+    private void SaveConsultedMonthReplacement(PeriodicFilter filter, DateOnly? date, bool refreshQuantity)
     {
         if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
-        var year = consulted.Year;
-        var month = consulted.Month;
-        var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
-        var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
-
-        if (done)
-        {
-            if (existing is null)
-            {
-                existing = new FilterReplacement { Month = month, Year = year };
-                tracked.Replacements.Add(existing);
-            }
-            existing.DateDone = DateOnly.FromDateTime(DateTime.Today);
-            existing.QuantityDone = filter.QuantityInPlace;
-        }
-        else if (existing is not null)
-        {
-            // Décocher réinitialise le statut et vide la date plutôt que de laisser une ligne
-            // "réalisée sans date" ambiguë ; la ligne de suivi du mois est simplement supprimée.
-            tracked.Replacements.Remove(existing);
-            App.Db.FilterReplacements.Remove(existing);
-        }
-
-        App.Db.SaveChanges();
-        SyncReplacements(filter, tracked.Replacements);
+        filter.Replacements = ReplacementTrackingService.SetMonthReplacement(App.Db, filter.Id,
+            consulted.Year, consulted.Month, date, filter.QuantityInPlace, refreshQuantity);
     }
 
     /// <summary>Bascule l'option "Changé tous les 15 jours" (menu contextuel de la grille, G4 plissé
@@ -282,51 +247,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             .Where(r => r.PeriodicFilterId == filter.Id)
             .ToList();
         App.Dialogs.ShowFilterHistory(_locationColumnLabel, filter.Location, filter.Dimension, replacements);
-    }
-
-    public void SetReplacementDate(PeriodicFilter filter, DateOnly? date)
-    {
-        if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
-        var year = consulted.Year;
-        var month = consulted.Month;
-        var tracked = App.Db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filter.Id);
-        var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
-
-        if (date is null)
-        {
-            if (existing is not null)
-            {
-                tracked.Replacements.Remove(existing);
-                App.Db.FilterReplacements.Remove(existing);
-            }
-        }
-        else
-        {
-            if (existing is null)
-            {
-                existing = new FilterReplacement { Month = month, Year = year, QuantityDone = filter.QuantityInPlace };
-                tracked.Replacements.Add(existing);
-            }
-            existing.DateDone = date;
-        }
-
-        App.Db.SaveChanges();
-        SyncReplacements(filter, tracked.Replacements);
-    }
-
-    /// <summary>Répercute l'état des remplacements sur l'objet affiché (issu d'une requête AsNoTracking)
-    /// pour rafraîchir la ligne concernée sans recharger toute la grille.</summary>
-    private static void SyncReplacements(PeriodicFilter filter, List<FilterReplacement> trackedReplacements)
-    {
-        filter.Replacements = trackedReplacements.Select(r => new FilterReplacement
-        {
-            Id = r.Id,
-            PeriodicFilterId = r.PeriodicFilterId,
-            Month = r.Month,
-            Year = r.Year,
-            QuantityDone = r.QuantityDone,
-            DateDone = r.DateDone
-        }).ToList();
     }
 
     /// <summary>Seule impression de l'écran : feuille de terrain reprenant uniquement ce qui est visible

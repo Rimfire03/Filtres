@@ -79,7 +79,7 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         var data = System.IO.File.ReadAllBytes(dialog.FileName);
-        if (App.TryCreateImage(data) is null)
+        if (ImageLoader.TryCreate(data) is null)
         {
             LogoStatusMessage = "Ce fichier n'est pas une image lisible.";
             return;

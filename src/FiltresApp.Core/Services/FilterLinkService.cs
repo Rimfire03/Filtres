@@ -72,10 +72,11 @@ public static class FilterLinkService
             .ToDictionary(g => g.Key, g => g.First().Designation);
     }
 
-    /// <summary>Même chose pour les filtres d'une variété donnée (menu "Filtres F7 à H14").</summary>
-    public static Dictionary<int, string> DynamicLinkedLines(FiltresDbContext db, int varietyId, int? excludedLineId = null)
+    /// <summary>Même chose pour les filtres du menu "Filtres F7 à H14" (optionnel : d'une seule variété).</summary>
+    public static Dictionary<int, string> DynamicLinkedLines(FiltresDbContext db, int? varietyId = null, int? excludedLineId = null)
     {
-        var links = db.OrderLineDynamicFilters.AsNoTracking().Where(l => l.DynamicFilter!.VarietyId == varietyId);
+        var links = db.OrderLineDynamicFilters.AsNoTracking();
+        if (varietyId is int v) links = links.Where(l => l.DynamicFilter!.VarietyId == v);
         if (excludedLineId is int id) links = links.Where(l => l.OrderLineId != id);
         return links.Select(l => new { l.DynamicFilterId, l.OrderLine!.Designation })
             .ToList()

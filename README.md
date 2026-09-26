@@ -163,8 +163,8 @@ logiciel et base — sont affichées en haut de l'écran **Paramètres**.
 - Les versions du logiciel antérieures à ce système ne contrôlent pas la version de la base : elles
   ne sont pas bloquées et doivent être mises à jour en priorité.
 
-Pour les développeurs : les évolutions du schéma se déclarent dans la liste `Migrations` de
-`DbContextFactory` (`src\FiltresApp.Core\Services\DbContextFactory.cs`). Ne jamais modifier ni
+Pour les développeurs : les évolutions du schéma se déclarent dans la liste `All` de
+`DatabaseMigrations` (`src\FiltresApp.Core\Data\Migrations\DatabaseMigrations.cs`). Ne jamais modifier ni
 renuméroter une migration déjà publiée, toujours en ajouter une nouvelle à la fin, et écrire les
 modifications de données en SQL brut (pas via le modèle EF, qui aura évolué). Une base neuve est créée
 directement à la dernière version. Les versions 1 à 5 reprennent les mises à jour faites avant ce
@@ -1103,7 +1103,7 @@ reconnaissable ("NxN" ou "NxNxN", ex. "A laver"), `Normalize` retourne `null` : 
 inchangée, aucune règle ne s'y applique.
 
 À l'ajout/la modification d'un filtre (`PeriodicFilterListViewModel.EditEntity`), si le texte saisi ne
-correspond pas déjà exactement à la norme, `PeriodicFilterListViewModel.ProposeDimensionCorrection`
+correspond pas déjà exactement à la norme, `DimensionCorrectionPrompt.Propose`
 affiche une boîte de confirmation proposant la correction ; l'utilisateur peut l'accepter ou la refuser
 (le texte saisi est alors conservé tel quel). Les données existantes ont été harmonisées une fois via un
 script ponctuel (273 valeurs corrigées sur 475, le 26/09/2026).

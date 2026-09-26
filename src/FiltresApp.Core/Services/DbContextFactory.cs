@@ -1,7 +1,6 @@
 using FiltresApp.Core.Data;
-using FiltresApp.Core.Models;
+using FiltresApp.Core.Data.Migrations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace FiltresApp.Core.Services;
 
@@ -20,49 +19,15 @@ public class DbContextFactory
 
     public FiltresDbContext Create() => new(_dbPath, _readOnly);
 
-    /// <summary>Migrations du schéma, dans l'ordre. La version atteinte est enregistrée dans la base
-    /// (<c>PRAGMA user_version</c>) : au lancement, le poste rédacteur applique uniquement celles qui
-    /// manquent. Règles : ne jamais modifier ni renuméroter une migration publiée, toujours en ajouter
-    /// une nouvelle à la fin, et écrire les données en SQL brut (le modèle EF évolue, pas la migration).
-    /// Les migrations 1 à 5 reprennent les mises à jour appliquées avant l'existence de ce système ;
-    /// elles sont idempotentes car les bases existantes les ont déjà (en partie) reçues.</summary>
-    private static readonly (int Version, string Description, Action<FiltresDbContext> Apply)[] Migrations =
-    {
-        (1, "Rattachement filtres / lignes de commande", EnsureOrderLinePeriodicFilterTable),
-        (2, "Fusion Inventaire / Commande", ctx =>
-        {
-            EnsureInventoryOrderMergeSchema(ctx);
-            MigrateInventoryLinesIntoOrderLines(ctx);
-        }),
-        (3, "Familles K7", ctx =>
-        {
-            EnsureK7FamilySchema(ctx);
-            K7FamilyReconstructionService.ReconstructIfNeeded(ctx);
-        }),
-        (4, "Suppression « pour devis » et « filtres à refacturer »", RemovePourDevisAndRefacturingData),
-        (5, "Option « changé tous les 15 jours »", EnsureChangedEvery15DaysColumn),
-        (6, "Colonne Destination (Commande / Inventaire)", EnsureOrderLineDestinationColumn),
-        (7, "Suppression de la colonne Unité (Inventaire) et de son contenu", DropOrderLineUniteColumn),
-        (8, "Colonne Inventaire (écran Inventaire)", AddOrderLineInventaireColumn),
-        (9, "Familles des écrans Inventaire et Commande", AddOrderFamilies),
-        (10, "Colonne Type des filtres F7 à H13", AddOpacimetricFilterTypeColumn),
-        (11, "Choix manuel de la famille (Inventaire / Commande)", AddOrderLineFamilyOverrideColumn),
-        (12, "Besoin saisi (Commande, familles hors G4 / G3)", AddOrderLineManualNeedColumn),
-        (13, "Logo de l'entreprise (stockage dans la base)", AddSharedAssetsTable),
-        (14, "Familles des filtres F7 à H13", AddOpacimetricFamilies),
-        (15, "Rattachement des filtres F7 à H13 à Commande / Inventaire", AddOrderLineOpacimetricFilters),
-        (16, "Familles Commande / Inventaire : Type des filtres F7 à H13 au lieu de « Filtres F7 à H13 »", AddOrderLineFamilyOverrideTypeColumn),
-        (17, "Suppression de la fonctionnalité Filtres F7 à H13", RemoveOpacimetricFeature),
-        (18, "Menu dépliant « Filtres F7 à H14 » : variétés de filtres créées librement", AddDynamicFilterSchema),
-    };
+    // Migrations du schéma : voir Data/Migrations/DatabaseMigrations.cs (règles de rédaction incluses).
 
     /// <summary>Version de base attendue par cette version de l'application.</summary>
-    public static int LatestVersion => Migrations[^1].Version;
+    public static int LatestVersion => DatabaseMigrations.All[^1].Version;
 
     /// <summary>Libellés des migrations à appliquer depuis <paramref name="fromVersion"/>, pour la demande
     /// de confirmation.</summary>
     public static IReadOnlyList<string> PendingMigrations(int fromVersion) =>
-        Migrations.Where(m => m.Version > fromVersion).Select(m => $"v{m.Version} : {m.Description}").ToList();
+        DatabaseMigrations.All.Where(m => m.Version > fromVersion).Select(m => $"v{m.Version} : {m.Description}").ToList();
 
     /// <summary>Version actuelle du fichier de base (0 = base antérieure au système de version).</summary>
     public int GetDatabaseVersion()
@@ -75,7 +40,7 @@ public class DbContextFactory
     public string? GetLastMigratedByAppVersion()
     {
         using var ctx = Create();
-        if (!GetColumns(ctx, "DbInfo").Contains("Value")) return null;
+        if (!SchemaInspector.GetColumns(ctx, "DbInfo").Contains("Value")) return null;
         return ctx.Database.SqlQueryRaw<string>("""SELECT "Value" AS "Value" FROM "DbInfo" WHERE "Key" = 'AppVersion'""").FirstOrDefault();
     }
 
@@ -94,7 +59,7 @@ public class DbContextFactory
         }
 
         var current = ReadVersion(ctx);
-        var pending = Migrations.Where(m => m.Version > current).ToList();
+        var pending = DatabaseMigrations.All.Where(m => m.Version > current).ToList();
         if (pending.Count == 0) return;
 
         Backup(ctx, current);
@@ -146,351 +111,5 @@ public class DbContextFactory
         var backupPath = $"{_dbPath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
-    }
-
-    /// <summary>Suppression définitive de la fonctionnalité "Filtres F7 à H13" (demandée explicitement par
-    /// l'utilisateur), données ET structure : table des filtres, de leurs remplacements, de leurs familles,
-    /// et de leur rattachement à Commande / Inventaire. Les lignes de Commande / Inventaire dont la famille
-    /// était un Type F7 à H13 (FamilyOverrideType) repassent en famille automatique.</summary>
-    private static void RemoveOpacimetricFeature(FiltresDbContext ctx)
-    {
-        if (GetColumns(ctx, "OrderLines").Contains("FamilyOverrideType"))
-        {
-            ctx.Database.ExecuteSqlRaw("""UPDATE "OrderLines" SET "FamilyOverride" = NULL WHERE "FamilyOverrideType" IS NOT NULL;""");
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" DROP COLUMN "FamilyOverrideType";""");
-        }
-        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OrderLineOpacimetricFilters";""");
-        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricReplacements";""");
-        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricFilters";""");
-        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "OpacimetricFamilies";""");
-    }
-
-    /// <summary>Menu dépliant "Filtres F7 à H14" (barre latérale) : variétés de filtres créées librement
-    /// par l'utilisateur (<see cref="FilterVariety"/>), chacune avec ses propres filtres
-    /// (<see cref="DynamicFilter"/>), familles (<see cref="DynamicFilterFamily"/>) et rattachement à
-    /// Commande / Inventaire (<see cref="OrderLineDynamicFilter"/>). Généralisation de l'ancienne
-    /// fonctionnalité "Filtres F7 à H13" (une seule variété codée en dur, supprimée en v17) à un nombre
-    /// quelconque de variétés créées à la main. Réutilise le champ "FamilyOverrideType" (colonne texte
-    /// libre) pour le choix manuel de famille par Type, comme l'ancienne fonctionnalité : cette colonne
-    /// avait été supprimée en v17, elle est recréée ici avec le même rôle.</summary>
-    private static void AddDynamicFilterSchema(FiltresDbContext ctx)
-    {
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "FilterVarieties" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_FilterVarieties" PRIMARY KEY AUTOINCREMENT,
-                "Nom" TEXT NOT NULL,
-                "Ordre" INTEGER NOT NULL DEFAULT 0
-            );
-            """);
-
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "DynamicFilterFamilies" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_DynamicFilterFamilies" PRIMARY KEY AUTOINCREMENT,
-                "VarietyId" INTEGER NOT NULL,
-                "Nom" TEXT NOT NULL,
-                CONSTRAINT "FK_DynamicFilterFamilies_FilterVarieties_VarietyId" FOREIGN KEY ("VarietyId") REFERENCES "FilterVarieties" ("Id") ON DELETE CASCADE
-            );
-            """);
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilterFamilies_VarietyId" ON "DynamicFilterFamilies" ("VarietyId");""");
-
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "DynamicFilters" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_DynamicFilters" PRIMARY KEY AUTOINCREMENT,
-                "VarietyId" INTEGER NOT NULL,
-                "Location" TEXT NOT NULL DEFAULT '',
-                "Dimension" TEXT NOT NULL DEFAULT '',
-                "FilterType" TEXT NULL,
-                "QuantityInPlace" INTEGER NOT NULL DEFAULT 0,
-                "Notes" TEXT NULL,
-                "DynamicFilterFamilyId" INTEGER NULL,
-                CONSTRAINT "FK_DynamicFilters_FilterVarieties_VarietyId" FOREIGN KEY ("VarietyId") REFERENCES "FilterVarieties" ("Id") ON DELETE CASCADE,
-                CONSTRAINT "FK_DynamicFilters_DynamicFilterFamilies_DynamicFilterFamilyId" FOREIGN KEY ("DynamicFilterFamilyId") REFERENCES "DynamicFilterFamilies" ("Id") ON DELETE SET NULL
-            );
-            """);
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilters_VarietyId" ON "DynamicFilters" ("VarietyId");""");
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilters_DynamicFilterFamilyId" ON "DynamicFilters" ("DynamicFilterFamilyId");""");
-
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "DynamicFilterReplacements" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_DynamicFilterReplacements" PRIMARY KEY AUTOINCREMENT,
-                "DynamicFilterId" INTEGER NOT NULL,
-                "QuantityChanged" INTEGER NOT NULL DEFAULT 0,
-                "DateChanged" TEXT NULL,
-                CONSTRAINT "FK_DynamicFilterReplacements_DynamicFilters_DynamicFilterId" FOREIGN KEY ("DynamicFilterId") REFERENCES "DynamicFilters" ("Id") ON DELETE CASCADE
-            );
-            """);
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_DynamicFilterReplacements_DynamicFilterId" ON "DynamicFilterReplacements" ("DynamicFilterId");""");
-
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "OrderLineDynamicFilters" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderLineDynamicFilters" PRIMARY KEY AUTOINCREMENT,
-                "OrderLineId" INTEGER NOT NULL,
-                "DynamicFilterId" INTEGER NOT NULL,
-                CONSTRAINT "FK_OrderLineDynamicFilters_OrderLines_OrderLineId" FOREIGN KEY ("OrderLineId") REFERENCES "OrderLines" ("Id") ON DELETE CASCADE,
-                CONSTRAINT "FK_OrderLineDynamicFilters_DynamicFilters_DynamicFilterId" FOREIGN KEY ("DynamicFilterId") REFERENCES "DynamicFilters" ("Id") ON DELETE CASCADE
-            );
-            """);
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLineDynamicFilters_OrderLineId" ON "OrderLineDynamicFilters" ("OrderLineId");""");
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLineDynamicFilters_DynamicFilterId" ON "OrderLineDynamicFilters" ("DynamicFilterId");""");
-
-        if (!GetColumns(ctx, "OrderLines").Contains("FamilyOverrideType"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "FamilyOverrideType" TEXT NULL;""");
-    }
-
-    /// <summary>La famille "Filtres F7 à H13" (FamilyOverride = 100) n'existe plus : les lignes qui l'avaient
-    /// repassent en automatique ; 100 désigne désormais un Type F7 à H13 choisi (FamilyOverrideType).</summary>
-    private static void AddOrderLineFamilyOverrideTypeColumn(FiltresDbContext ctx)
-    {
-        if (!GetColumns(ctx, "OrderLines").Contains("FamilyOverrideType"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "FamilyOverrideType" TEXT NULL;""");
-        ctx.Database.ExecuteSqlRaw("""UPDATE "OrderLines" SET "FamilyOverride" = NULL WHERE "FamilyOverride" = 100 AND "FamilyOverrideType" IS NULL;""");
-    }
-
-    private static void AddOrderLineOpacimetricFilters(FiltresDbContext ctx)
-    {
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "OrderLineOpacimetricFilters" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderLineOpacimetricFilters" PRIMARY KEY AUTOINCREMENT,
-                "OrderLineId" INTEGER NOT NULL,
-                "OpacimetricFilterId" INTEGER NOT NULL,
-                CONSTRAINT "FK_OrderLineOpacimetricFilters_OrderLines_OrderLineId" FOREIGN KEY ("OrderLineId") REFERENCES "OrderLines" ("Id") ON DELETE CASCADE,
-                CONSTRAINT "FK_OrderLineOpacimetricFilters_OpacimetricFilters_OpacimetricFilterId" FOREIGN KEY ("OpacimetricFilterId") REFERENCES "OpacimetricFilters" ("Id") ON DELETE CASCADE
-            );
-            """);
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLineOpacimetricFilters_OrderLineId" ON "OrderLineOpacimetricFilters" ("OrderLineId");""");
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLineOpacimetricFilters_OpacimetricFilterId" ON "OrderLineOpacimetricFilters" ("OpacimetricFilterId");""");
-    }
-
-    private static void AddOpacimetricFamilies(FiltresDbContext ctx)
-    {
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "OpacimetricFamilies" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_OpacimetricFamilies" PRIMARY KEY AUTOINCREMENT,
-                "Nom" TEXT NOT NULL
-            );
-            """);
-        if (!GetColumns(ctx, "OpacimetricFilters").Contains("OpacimetricFamilyId"))
-            ctx.Database.ExecuteSqlRaw(
-                """ALTER TABLE "OpacimetricFilters" ADD COLUMN "OpacimetricFamilyId" INTEGER NULL REFERENCES "OpacimetricFamilies" ("Id") ON DELETE SET NULL;""");
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OpacimetricFilters_OpacimetricFamilyId" ON "OpacimetricFilters" ("OpacimetricFamilyId");""");
-    }
-
-    private static void AddSharedAssetsTable(FiltresDbContext ctx) =>
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "SharedAssets" (
-                "Key" TEXT NOT NULL CONSTRAINT "PK_SharedAssets" PRIMARY KEY,
-                "Data" BLOB NOT NULL
-            );
-            """);
-
-    private static void AddOrderLineManualNeedColumn(FiltresDbContext ctx)
-    {
-        if (!GetColumns(ctx, "OrderLines").Contains("ManualNeed"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "ManualNeed" INTEGER NULL;""");
-    }
-
-    private static void AddOrderLineFamilyOverrideColumn(FiltresDbContext ctx)
-    {
-        if (!GetColumns(ctx, "OrderLines").Contains("FamilyOverride"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "FamilyOverride" INTEGER NULL;""");
-    }
-
-    private static void AddOpacimetricFilterTypeColumn(FiltresDbContext ctx)
-    {
-        if (!GetColumns(ctx, "OpacimetricFilters").Contains("FilterType"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OpacimetricFilters" ADD COLUMN "FilterType" TEXT NULL;""");
-    }
-
-    /// <summary>Familles saisies manuellement, remplacées depuis par des familles déduites des filtres
-    /// rattachés : la table et la colonne restent en base mais ne sont plus utilisées.</summary>
-    private static void AddOrderFamilies(FiltresDbContext ctx)
-    {
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "OrderFamilies" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderFamilies" PRIMARY KEY AUTOINCREMENT,
-                "Nom" TEXT NOT NULL
-            );
-            """);
-        if (!GetColumns(ctx, "OrderLines").Contains("OrderFamilyId"))
-            ctx.Database.ExecuteSqlRaw(
-                """ALTER TABLE "OrderLines" ADD COLUMN "OrderFamilyId" INTEGER NULL REFERENCES "OrderFamilies" ("Id") ON DELETE SET NULL;""");
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLines_OrderFamilyId" ON "OrderLines" ("OrderFamilyId");""");
-    }
-
-    private static void AddOrderLineInventaireColumn(FiltresDbContext ctx)
-    {
-        if (!GetColumns(ctx, "OrderLines").Contains("Inventaire"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "Inventaire" INTEGER NULL;""");
-    }
-
-    private static void DropOrderLineUniteColumn(FiltresDbContext ctx)
-    {
-        if (GetColumns(ctx, "OrderLines").Contains("Unite"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" DROP COLUMN "Unite";""");
-    }
-
-    /// <summary>Colonne "Destination" des écrans Commande et Inventaire, vide pour les lignes existantes.</summary>
-    private static void EnsureOrderLineDestinationColumn(FiltresDbContext ctx)
-    {
-        var cols = GetColumns(ctx, "OrderLines");
-        if (!cols.Contains("Destination"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "Destination" TEXT NULL;""");
-    }
-
-    /// <summary>Option "Changé tous les 15 jours" (G4 plissé, voir README) : ajoute à "PeriodicFilters"
-    /// la colonne booléenne correspondante, à 0 (false) par défaut pour toutes les lignes existantes,
-    /// sans toucher aux données déjà en base.</summary>
-    private static void EnsureChangedEvery15DaysColumn(FiltresDbContext ctx)
-    {
-        var cols = GetColumns(ctx, "PeriodicFilters");
-        if (!cols.Contains("ChangedEvery15Days"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicFilters" ADD COLUMN "ChangedEvery15Days" INTEGER NOT NULL DEFAULT 0;""");
-    }
-
-    /// <summary>Suppression définitive de "pour devis" et "filtres à refacturer" (voir README, section
-    /// "Suppression définitive de « pour devis » et « filtres à refacturer »"), demandée explicitement
-    /// par l'utilisateur le 25/09/2026 : données ET structure. Déjà exécutée une fois sur la base de
-    /// production réelle via un script ponctuel ; ce nettoyage est reproduit ici (idempotent, ne fait
-    /// rien si déjà appliqué) uniquement en filet de sécurité pour toute copie de la base antérieure à
-    /// cette date (ex. une sauvegarde restaurée) qui contiendrait encore ces données/cette table.
-    /// L'entité et le DbSet <c>RefacturingLine</c> n'existent plus dans le code : on ne peut donc plus
-    /// utiliser EF Core pour cette table, uniquement du SQL brut.</summary>
-    private static void RemovePourDevisAndRefacturingData(FiltresDbContext ctx)
-    {
-        var cols = GetColumns(ctx, "OrderLines");
-        if (cols.Count > 0)
-        {
-            // OrderDocumentType.PourDevis valait 1 (CommandeChmy = 0) avant sa suppression de l'enum.
-            ctx.Database.ExecuteSqlRaw("""DELETE FROM "OrderLinePeriodicFilters" WHERE "OrderLineId" IN (SELECT "Id" FROM "OrderLines" WHERE "DocumentType" = 1);""");
-            ctx.Database.ExecuteSqlRaw("""DELETE FROM "OrderLines" WHERE "DocumentType" = 1;""");
-        }
-        ctx.Database.ExecuteSqlRaw("""DROP TABLE IF EXISTS "RefacturingLines";""");
-    }
-
-    private static HashSet<string> GetColumns(FiltresDbContext ctx, string table)
-    {
-        var cols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var conn = ctx.Database.GetDbConnection();
-        var mustClose = conn.State != System.Data.ConnectionState.Open;
-        if (mustClose) conn.Open();
-        try
-        {
-            using var cmd = conn.CreateCommand();
-            cmd.Transaction = ctx.Database.CurrentTransaction?.GetDbTransaction();
-            cmd.CommandText = $"PRAGMA table_info(\"{table}\")";
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read()) cols.Add(reader.GetString(1));
-        }
-        finally
-        {
-            if (mustClose) conn.Close();
-        }
-        return cols;
-    }
-
-    /// <summary>Fusion Inventaire / Commande chmy (voir README) : ajoute à "OrderLines" les colonnes
-    /// nécessaires à l'accueil des anciennes lignes "InventoryLine" ("Unite" et le marqueur technique
-    /// "MigratedFromInventoryLineId"), sans toucher aux données existantes.</summary>
-    private static void EnsureInventoryOrderMergeSchema(FiltresDbContext ctx)
-    {
-        var cols = GetColumns(ctx, "OrderLines");
-        if (!cols.Contains("Unite"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "Unite" TEXT NULL;""");
-        if (!cols.Contains("MigratedFromInventoryLineId"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "OrderLines" ADD COLUMN "MigratedFromInventoryLineId" INTEGER NULL;""");
-    }
-
-    /// <summary>Migration de données (une fois, idempotente via "MigratedFromInventoryLineId") : copie
-    /// chaque ligne "InventoryLine" pas encore migrée vers "OrderLines" (type CommandeChmy), pour que les
-    /// écrans "Inventaire" et "Commande chmy" partagent désormais les mêmes lignes. La table
-    /// "InventoryLines" d'origine n'est ni vidée ni modifiée : elle reste une copie de sauvegarde inerte.</summary>
-    private static void MigrateInventoryLinesIntoOrderLines(FiltresDbContext ctx)
-    {
-        var alreadyMigrated = ctx.OrderLines
-            .Where(o => o.MigratedFromInventoryLineId != null)
-            .Select(o => o.MigratedFromInventoryLineId!.Value)
-            .ToHashSet();
-
-        var toMigrate = ctx.InventoryLines
-            .Where(i => !alreadyMigrated.Contains(i.Id))
-            .OrderBy(i => i.Ordre)
-            .ToList();
-
-        if (toMigrate.Count == 0) return;
-
-        var nextOrdre = (ctx.OrderLines.Where(o => o.DocumentType == OrderDocumentType.CommandeChmy)
-            .Select(o => (int?)o.Ordre).Max() ?? 0) + 1;
-
-        // SQL brut et non ctx.OrderLines.Add : les colonnes ajoutées par les migrations suivantes
-        // n'existent pas encore à ce stade.
-        var documentType = (int)OrderDocumentType.CommandeChmy;
-        foreach (var inv in toMigrate)
-        {
-            var ordre = nextOrdre++;
-            ctx.Database.ExecuteSqlInterpolated($"""
-                INSERT INTO "OrderLines" ("DocumentType", "Ordre", "Designation", "Dimension", "Quantite", "Unite", "Notes", "MigratedFromInventoryLineId")
-                VALUES ({documentType}, {ordre}, {inv.Designation}, {inv.Dimension}, {inv.Quantite}, {inv.Unite}, {inv.Notes}, {inv.Id});
-                """);
-        }
-    }
-
-    /// <summary>Familles K7 (voir README) : crée la table "K7Families" et ajoute à "K7Locations" les
-    /// colonnes de rattachement, sans toucher aux données existantes.</summary>
-    private static void EnsureK7FamilySchema(FiltresDbContext ctx)
-    {
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "K7Families" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_K7Families" PRIMARY KEY AUTOINCREMENT,
-                "Nom" TEXT NOT NULL,
-                "Periodicite" TEXT NOT NULL DEFAULT ''
-            );
-            """);
-
-        var cols = GetColumns(ctx, "K7Locations");
-        if (!cols.Contains("K7FamilyId"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "K7Locations" ADD COLUMN "K7FamilyId" INTEGER NULL;""");
-        if (!cols.Contains("IsFamilyHeader"))
-            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "K7Locations" ADD COLUMN "IsFamilyHeader" INTEGER NOT NULL DEFAULT 0;""");
-
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_K7Locations_K7FamilyId" ON "K7Locations" ("K7FamilyId");""");
-    }
-
-    private static void EnsureOrderLinePeriodicFilterTable(FiltresDbContext ctx)
-    {
-        ctx.Database.ExecuteSqlRaw(
-            """
-            CREATE TABLE IF NOT EXISTS "OrderLinePeriodicFilters" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_OrderLinePeriodicFilters" PRIMARY KEY AUTOINCREMENT,
-                "OrderLineId" INTEGER NOT NULL,
-                "PeriodicFilterId" INTEGER NOT NULL,
-                CONSTRAINT "FK_OrderLinePeriodicFilters_OrderLines_OrderLineId" FOREIGN KEY ("OrderLineId") REFERENCES "OrderLines" ("Id") ON DELETE CASCADE,
-                CONSTRAINT "FK_OrderLinePeriodicFilters_PeriodicFilters_PeriodicFilterId" FOREIGN KEY ("PeriodicFilterId") REFERENCES "PeriodicFilters" ("Id") ON DELETE CASCADE
-            );
-            """);
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLinePeriodicFilters_OrderLineId" ON "OrderLinePeriodicFilters" ("OrderLineId");""");
-        ctx.Database.ExecuteSqlRaw(
-            """CREATE INDEX IF NOT EXISTS "IX_OrderLinePeriodicFilters_PeriodicFilterId" ON "OrderLinePeriodicFilters" ("PeriodicFilterId");""");
     }
 }
