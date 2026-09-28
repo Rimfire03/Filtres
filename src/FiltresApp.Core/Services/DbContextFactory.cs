@@ -6,6 +6,12 @@ namespace FiltresApp.Core.Services;
 
 public class DbContextFactory
 {
+    /// <summary>Version de schéma courante, stockée dans le fichier SQLite via PRAGMA user_version après
+    /// chaque migration réussie (voir <see cref="DatabaseBackupService"/>) : sert uniquement à savoir,
+    /// lors de l'import d'une sauvegarde, si son schéma était antérieur et vient d'être mis à jour. À
+    /// incrémenter lors de l'ajout d'une nouvelle étape de migration ci-dessous.</summary>
+    public const int CurrentSchemaVersion = 1;
+
     private readonly string _dbPath;
 
     public DbContextFactory(string dbPath)
@@ -35,6 +41,7 @@ public class DbContextFactory
         K7FamilyReconstructionService.ReconstructIfNeeded(ctx);
         RemovePourDevisAndRefacturingData(ctx);
         EnsureChangedEvery15DaysColumn(ctx);
+        ctx.Database.ExecuteSqlRaw($"PRAGMA user_version = {CurrentSchemaVersion};");
     }
 
     /// <summary>Option "Changé tous les 15 jours" (G4 plissé, voir README) : ajoute à "PeriodicFilters"

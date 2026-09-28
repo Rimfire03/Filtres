@@ -66,6 +66,20 @@
                 </StackPanel>
             </Border>
 
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Sauvegarde de la base de données" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Exporte une copie complète du fichier .db (nommée save_db_filtre_DATE_VERSION.db), ou restaure une sauvegarde en mettant à jour son schéma si besoin." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <Button Content="Exporter la base de données" Style="{StaticResource SecondaryButton}" Command="{Binding ExportDatabaseCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
+                    <DockPanel Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowseBackupSourceCommand}"/>
+                        <TextBox Text="{Binding BackupSourcePath, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
+                    <Button Content="Importer une sauvegarde" Style="{StaticResource DangerButton}" Command="{Binding ImportDatabaseCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding BackupStatusMessage}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource CardBorder}">
                 <StackPanel>
                     <TextBlock Text="Importer depuis Excel" FontWeight="SemiBold" Margin="0,0,0,4"/>

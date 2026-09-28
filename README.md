@@ -213,6 +213,29 @@ s'agissait déjà du dossier d'export générique de l'application, ajouter un
 réglage séparé pour un simple changement de format de fichier n'apportait
 rien.
 
+### Sauvegarde / restauration de la base de données
+
+Écran Paramètres, section "Sauvegarde de la base de données" (indépendante de
+l'import/export Excel existant) :
+
+- **Exporter la base de données** : copie cohérente du fichier `.db` courant
+  (via l'API de sauvegarde SQLite, `DatabaseBackupService.Export`, donc sans
+  risque même si la base est ouverte par l'application), sous le nom par
+  défaut `save_db_filtre_AAAAMMJJ_HHMMSS_VERSION.db` (`VERSION` = version de
+  l'application, `App.CurrentVersion`) — un `SaveFileDialog` permet de choisir
+  l'emplacement et de modifier ce nom.
+- **Importer une sauvegarde** : remplace le fichier de base courant par celui
+  sélectionné (et ses éventuels fichiers annexes `-wal`/`-shm`), puis recharge
+  la base (`App.ReloadDatabase`). Ce rechargement passe par
+  `DbContextFactory.EnsureDatabaseCreated`, qui applique déjà toutes les
+  migrations idempotentes de schéma (ajout de colonnes/tables manquantes) —
+  une sauvegarde plus ancienne est donc automatiquement mise à niveau. La
+  version de schéma réellement stockée dans le fichier SQLite
+  (`PRAGMA user_version`, `DbContextFactory.CurrentSchemaVersion`, à
+  incrémenter avec chaque nouvelle étape de migration) ne sert qu'à détecter
+  et afficher qu'une mise à jour a eu lieu (message "Schéma de la base mis à
+  jour (version X → Y)").
+
 ### Impression du mois consulté
 
 En plus de l'impression générale existante (déjà basée sur un `FlowDocument`

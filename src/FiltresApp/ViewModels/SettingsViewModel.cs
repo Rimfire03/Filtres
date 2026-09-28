@@ -15,6 +15,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private string _exportStatusMessage = string.Empty;
 
+    [ObservableProperty] private string _backupSourcePath = string.Empty;
+    [ObservableProperty] private string _backupStatusMessage = string.Empty;
+
     [ObservableProperty] private bool _autoUpdateEnabled;
     [ObservableProperty] private string _updateStatusMessage = string.Empty;
     [ObservableProperty] private bool _isCheckingForUpdate;
@@ -155,6 +158,69 @@ public partial class SettingsViewModel : ObservableObject
 
         App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
         StatusMessage = "Paramètres enregistrés. La base de données a été rechargée.";
+    }
+
+    [RelayCommand]
+    private void ExportDatabase()
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "Base de données SQLite (*.db)|*.db",
+            FileName = DatabaseBackupService.BuildExportFileName(App.CurrentVersion),
+            InitialDirectory = Path.GetDirectoryName(App.Settings.ResolvedDatabasePath)
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            DatabaseBackupService.Export(App.Settings.ResolvedDatabasePath, dialog.FileName);
+            BackupStatusMessage = $"Sauvegarde exportée : {dialog.FileName}";
+        }
+        catch (Exception ex)
+        {
+            BackupStatusMessage = $"Erreur pendant l'export de la base : {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void BrowseBackupSource()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Sauvegarde de base de données (*.db)|*.db"
+        };
+        if (dialog.ShowDialog() == true) BackupSourcePath = dialog.FileName;
+    }
+
+    [RelayCommand]
+    private void ImportDatabase()
+    {
+        if (string.IsNullOrWhiteSpace(BackupSourcePath) || !File.Exists(BackupSourcePath))
+        {
+            BackupStatusMessage = "Merci de choisir un fichier de sauvegarde .db valide.";
+            return;
+        }
+
+        if (!App.Dialogs.ShowConfirm("Importer une sauvegarde",
+                "Cette opération va REMPLACER toutes les données actuelles de l'application par celles du fichier de sauvegarde sélectionné. Continuer ?"))
+        {
+            return;
+        }
+
+        try
+        {
+            App.Db.Dispose();
+            var previousVersion = DatabaseBackupService.ReplaceDatabaseFile(BackupSourcePath, App.Settings.ResolvedDatabasePath);
+            App.ReloadDatabase(App.Settings.ResolvedDatabasePath);
+
+            BackupStatusMessage = previousVersion < DbContextFactory.CurrentSchemaVersion
+                ? $"Import terminé. Schéma de la base mis à jour (version {previousVersion} → {DbContextFactory.CurrentSchemaVersion})."
+                : "Import terminé. Le schéma de la base était déjà à jour.";
+        }
+        catch (Exception ex)
+        {
+            BackupStatusMessage = $"Erreur pendant l'import de la sauvegarde : {ex.Message}";
+        }
     }
 
     [RelayCommand]
