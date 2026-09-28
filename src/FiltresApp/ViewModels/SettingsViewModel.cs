@@ -15,12 +15,10 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private string _exportStatusMessage = string.Empty;
 
-    [ObservableProperty] private string _backupSourcePath = string.Empty;
     [ObservableProperty] private string _backupStatusMessage = string.Empty;
 
     [ObservableProperty] private bool _autoUpdateEnabled;
     [ObservableProperty] private bool _linkDimensionFilterEnabled;
-    [ObservableProperty] private bool _allowFilterVarietyCreation;
 
     public string CurrentVersion => App.CurrentVersion;
     public int DatabaseVersion => App.DatabaseVersion;
@@ -46,7 +44,6 @@ public partial class SettingsViewModel : ObservableObject
         _pdfExportPath = App.Settings.PdfExportPath;
         _autoUpdateEnabled = App.Settings.AutoUpdateEnabled;
         _linkDimensionFilterEnabled = App.Settings.LinkDimensionFilterEnabled;
-        _allowFilterVarietyCreation = App.Settings.AllowFilterVarietyCreation;
         LoadHistoryYears();
     }
 
@@ -61,12 +58,6 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnLinkDimensionFilterEnabledChanged(bool value)
     {
         App.Settings.LinkDimensionFilterEnabled = value;
-        App.Settings.Save();
-    }
-
-    partial void OnAllowFilterVarietyCreationChanged(bool value)
-    {
-        App.Settings.AllowFilterVarietyCreation = value;
         App.Settings.Save();
     }
 
@@ -162,26 +153,17 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void BrowseBackupSource()
-    {
-        var dialog = new OpenFileDialog { Filter = "Sauvegarde de base de données (*.db)|*.db" };
-        if (dialog.ShowDialog() == true) BackupSourcePath = dialog.FileName;
-    }
-
-    /// <summary>Remplace le fichier de base courant par la sauvegarde choisie, puis redémarre : voir
-    /// <see cref="App.ImportDatabaseBackup"/>, qui déclenche au redémarrage la vérification/mise à jour
-    /// automatique de la version de schéma de la sauvegarde importée.</summary>
+    /// <summary>Ouvre directement le sélecteur de fichier, puis remplace le fichier de base courant par la
+    /// sauvegarde choisie et redémarre : voir <see cref="App.ImportDatabaseBackup"/>, qui déclenche au
+    /// redémarrage la vérification/mise à jour automatique de la version de schéma de la sauvegarde
+    /// importée.</summary>
     [RelayCommand]
     private void ImportDatabase()
     {
         if (!App.GuardWritable()) return;
 
-        if (string.IsNullOrWhiteSpace(BackupSourcePath) || !System.IO.File.Exists(BackupSourcePath))
-        {
-            BackupStatusMessage = "Merci de choisir un fichier de sauvegarde .db valide.";
-            return;
-        }
+        var dialog = new OpenFileDialog { Filter = "Sauvegarde de base de données (*.db)|*.db" };
+        if (dialog.ShowDialog() != true) return;
 
         if (!App.Dialogs.ShowConfirm("Importer une sauvegarde",
                 "Cette opération va REMPLACER toutes les données actuelles de l'application par celles du fichier de sauvegarde sélectionné, " +
@@ -192,7 +174,7 @@ public partial class SettingsViewModel : ObservableObject
 
         try
         {
-            App.ImportDatabaseBackup(BackupSourcePath);
+            App.ImportDatabaseBackup(dialog.FileName);
         }
         catch (Exception ex)
         {
