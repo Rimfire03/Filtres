@@ -213,6 +213,19 @@ s'agissait déjà du dossier d'export générique de l'application, ajouter un
 réglage séparé pour un simple changement de format de fichier n'apportait
 rien.
 
+### Mode édition des onglets filtres
+
+Sur les 5 écrans de suivi de filtres (G4 plissés, G4 plan, G3, Charbon via
+`PeriodicFilterView`/`PeriodicFilterListViewModel`, et F7-H13 via
+`OpacimetricFilterView`/`OpacimetricFilterListViewModel`), les boutons "+
+Ajouter", "Modifier" et "Supprimer" sont **masqués par défaut** et
+n'apparaissent qu'après avoir cliqué sur le bouton "Mode édition" (qui devient
+alors "Quitter le mode édition"). But : éviter les suppressions/modifications
+accidentelles lors de la consultation courante (cocher les remplacements du
+mois, changer d'année, imprimer...), qui reste possible en permanence. Chaque
+écran a son propre état `IsEditMode` (pas de mode global partagé entre les
+onglets).
+
 ### Sauvegarde / restauration de la base de données
 
 Écran Paramètres, section "Sauvegarde de la base de données" (indépendante de

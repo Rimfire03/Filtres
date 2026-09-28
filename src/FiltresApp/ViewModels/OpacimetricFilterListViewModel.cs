@@ -21,6 +21,17 @@ public partial class OpacimetricFilterListViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<OpacimetricFilterRowViewModel> _filters = new();
     [ObservableProperty] private OpacimetricFilterRowViewModel? _selectedFilter;
 
+    /// <summary>Mode édition (bouton "Mode édition" / "Quitter le mode édition") : masque par défaut les
+    /// boutons Ajouter/Modifier/Supprimer pour éviter les modifications accidentelles sur le terrain.</summary>
+    [ObservableProperty] private bool _isEditMode;
+
+    public string EditModeButtonLabel => IsEditMode ? "Quitter le mode édition" : "Mode édition";
+
+    partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(EditModeButtonLabel));
+
+    [RelayCommand]
+    private void ToggleEditMode() => IsEditMode = !IsEditMode;
+
     public OpacimetricFilterListViewModel()
     {
         App.YearContext.PropertyChanged += (_, e) =>
