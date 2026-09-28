@@ -37,6 +37,19 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private int? _monthFilter;
     [ObservableProperty] private string _monthFilterLabel = "Tous les mois";
 
+    /// <summary>Mode édition (bouton "Mode édition" / "Quitter le mode édition") : masque par défaut les
+    /// boutons Ajouter/Modifier/Supprimer pour éviter les modifications accidentelles sur le terrain (le
+    /// pointage courant, lui, reste toujours accessible). Propre à cet écran, remis à false à chaque
+    /// ouverture.</summary>
+    [ObservableProperty] private bool _isEditMode;
+
+    public string EditModeButtonLabel => IsEditMode ? "Quitter le mode édition" : "Mode édition";
+
+    partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(EditModeButtonLabel));
+
+    [RelayCommand]
+    private void ToggleEditMode() => IsEditMode = !IsEditMode;
+
     /// <summary>Options du sélecteur "Mois consulté" (case à cocher/date de la grille) pour l'année
     /// choisie : Décembre de l'année précédente en premier (pratique pour finir de pointer un
     /// changement fait fin décembre une fois basculé sur la nouvelle année), puis Janvier à Décembre de

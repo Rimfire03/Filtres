@@ -181,6 +181,23 @@ colonne « Unité » et son contenu (récupérable dans la sauvegarde `.bak` fai
 La version 8 ajoute la colonne « Inventaire », la 9 les familles Inventaire/Commande, la 10 la
 colonne « Type » des filtres F7 à H13.
 
+## Sauvegarde manuelle de la base de données (export / import)
+
+Écran **Paramètres**, carte "Sauvegarde de la base de données" (indépendante des sauvegardes
+automatiques `.bak` décrites ci-dessus, qui restent à côté du fichier et ne sont jamais déplacées) :
+
+- **Exporter la base de données** : copie cohérente du fichier de base (`VACUUM INTO`,
+  `DbContextFactory.ExportTo`, donc sans risque même pendant que l'application a la base ouverte) vers
+  un emplacement choisi par l'utilisateur, avec pour nom par défaut
+  `save_db_filtre_AAAAMMJJ_HHMMSS_VERSION.db` (`VERSION` = version du logiciel, `App.CurrentVersion`) —
+  un `SaveFileDialog` permet de changer l'emplacement et le nom.
+- **Importer une sauvegarde** : remplace le fichier de base courant par celui sélectionné puis
+  redémarre l'application (`App.ImportDatabaseBackup`). C'est ce redémarrage qui déclenche le contrôle
+  de version normal (voir section précédente) : si la sauvegarde importée est dans une version
+  antérieure, la mise à jour est proposée et appliquée automatiquement comme pour toute base plus
+  ancienne (confirmation, sauvegarde `.bak` préalable, migrations transactionnelles). Réservé au poste
+  rédacteur (`App.GuardWritable`, bouton désactivé en lecture seule).
+
 ## Import Excel (supprimé)
 
 Le système d'import a été **supprimé** : bouton « Importer depuis Excel » de l'écran Paramètres,
@@ -230,6 +247,15 @@ seul moyen d'enregistrer un remplacement, l'ancien bouton « Enregistrer un remp
 supprimé),
 impression (feuille de terrain avec cases à cocher, voir plus bas), export Excel de
 l'année, et CRUD complet.
+
+**Mode édition (écrans G4 plissés, G4 plan, G3, Charbon, et chaque variété « F7 à H14 »)** : les
+boutons « + Ajouter », « Modifier » et « Supprimer » sont masqués par défaut et n'apparaissent qu'après
+avoir cliqué sur le bouton « Mode édition » (qui devient alors « Quitter le mode édition »),
+`PeriodicFilterListViewModel.IsEditMode` / `DynamicFilterListViewModel.IsEditMode`. But : éviter les
+suppressions/modifications accidentelles pendant la consultation courante (cocher un remplacement,
+changer d'année, imprimer...), qui reste possible en permanence. Propre à chaque écran (pas d'état
+partagé entre les onglets), remis à masqué à chaque ouverture. Indépendant du réglage lecture seule
+multi-poste (`App.IsWritable`) : les boutons restent grisés en lecture seule même en mode édition.
 
 > La fonctionnalité **« Filtres F7 à H13 »** (écran dédié, remplacements par date, familles créées à
 > la main, rattachement à Commande / Inventaire) a été **supprimée définitivement** le 26/09/2026,

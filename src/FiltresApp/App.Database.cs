@@ -127,6 +127,22 @@ public partial class App
         }
     }
 
+    /// <summary>Remplace le fichier de base courant par une sauvegarde choisie (bouton "Importer une
+    /// sauvegarde", écran Paramètres), puis relance l'application : c'est ce redémarrage qui déclenche,
+    /// via <see cref="OpenDatabase"/> → <see cref="CheckDatabaseVersion"/> → <see cref="DbContextFactory.EnsureDatabaseUpToDate"/>,
+    /// la vérification de la version de la sauvegarde importée et sa mise à jour automatique si elle est
+    /// antérieure (avec la même confirmation et la même sauvegarde préalable que pour toute autre mise à
+    /// jour de base). Réservé au poste rédacteur (voir <see cref="GuardWritable"/>, appelé par l'appelant).</summary>
+    public static void ImportDatabaseBackup(string backupPath)
+    {
+        Db.Dispose();
+        // Les connexions Sqlite peuvent rester mises en pool après Dispose() et garder le fichier
+        // verrouillé : on les libère explicitement avant d'écraser le fichier.
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        File.Copy(backupPath, Settings.ResolvedDatabasePath, overwrite: true);
+        Restart();
+    }
+
     /// <summary>Relance l'application dans un nouveau processus puis ferme celui-ci. Utilisé après un
     /// changement de chemin de base de données (Paramètres) : un simple rechargement du contexte ne
     /// suffirait pas, tous les écrans déjà ouverts (barre latérale, année consultée...) gardant sinon des

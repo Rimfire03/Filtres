@@ -26,6 +26,19 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
     [ObservableProperty] private ObservableCollection<DynamicFilterRowViewModel> _filters = new();
     [ObservableProperty] private DynamicFilterRowViewModel? _selectedFilter;
 
+    /// <summary>Mode édition (bouton "Mode édition" / "Quitter le mode édition") : masque par défaut les
+    /// boutons Ajouter/Modifier/Supprimer pour éviter les modifications accidentelles sur le terrain (le
+    /// pointage courant, lui, reste toujours accessible). Propre à cet écran, remis à false à chaque
+    /// ouverture.</summary>
+    [ObservableProperty] private bool _isEditMode;
+
+    public string EditModeButtonLabel => IsEditMode ? "Quitter le mode édition" : "Mode édition";
+
+    partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(EditModeButtonLabel));
+
+    [RelayCommand]
+    private void ToggleEditMode() => IsEditMode = !IsEditMode;
+
     public DynamicFilterListViewModel(FilterVariety variety)
     {
         Variety = variety;

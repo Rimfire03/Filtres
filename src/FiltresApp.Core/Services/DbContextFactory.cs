@@ -112,4 +112,14 @@ public class DbContextFactory
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
     }
+
+    /// <summary>Copie cohérente de la base (VACUUM INTO) vers un emplacement choisi par l'utilisateur
+    /// (bouton "Exporter la base de données", écran Paramètres) : contrairement à <see cref="CreateBackup"/>,
+    /// qui nomme et place le fichier automatiquement à côté de la base, le chemin de destination est
+    /// entièrement choisi par l'appelant.</summary>
+    public void ExportTo(string destinationPath)
+    {
+        using var ctx = Create();
+        ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", destinationPath);
+    }
 }
