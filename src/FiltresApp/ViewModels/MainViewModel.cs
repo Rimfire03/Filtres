@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
 using FiltresApp.Services;
 using Microsoft.EntityFrameworkCore;
@@ -28,15 +27,6 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Logo de l'entreprise en haut de la barre latérale (null si aucun).</summary>
     public System.Windows.Media.ImageSource? LogoImage => App.CompanyLogoImage;
 
-    /// <summary>Bouton "Mode édition" de la barre latérale (rouge = désactivé, vert = activé) : autorise ou
-    /// non la création de nouvelles variétés sous "Filtres F7 à H14" (App.Settings.AllowFilterVarietyCreation,
-    /// non persisté, toujours désactivé au lancement).</summary>
-    [ObservableProperty] private bool _isEditModeEnabled = App.Settings.AllowFilterVarietyCreation;
-
-    public string EditModeButtonLabel => IsEditModeEnabled ? "Quitter mode édition" : "Mode édition";
-
-    partial void OnIsEditModeEnabledChanged(bool value) => OnPropertyChanged(nameof(EditModeButtonLabel));
-
     public MainViewModel()
     {
         _dynamicFiltersMenu = new NavigationItem("Filtres F7 à H14", "🟪", () => new FilterVarietyListViewModel(this));
@@ -63,26 +53,17 @@ public partial class MainViewModel : ObservableObject
         SelectedItem = NavigationItems[0];
     }
 
-    /// <summary>Bascule le mode édition (bouton rouge/vert de la barre latérale). Si on le désactive alors
-    /// que la page d'accueil "Filtres F7 à H14" est affichée, elle n'a plus rien à y montrer : redirige
-    /// vers la première variété, comme le ferait une (re)sélection du menu (voir <see cref="OnSelectedItemChanged"/>).</summary>
-    [RelayCommand]
-    private void ToggleEditMode()
+    /// <summary>Appelé par <see cref="FilterVarietyListViewModel.ToggleEditMode"/> (bouton rouge/vert
+    /// "Mode édition" de la page d'accueil "Filtres F7 à H14") après avoir basculé le réglage : si on
+    /// vient de désactiver le mode alors qu'on est justement sur cette page, elle n'a plus rien à y
+    /// montrer - redirige vers la première variété, comme le ferait une (re)sélection du menu (voir
+    /// <see cref="OnSelectedItemChanged"/>).</summary>
+    public void RefreshAfterEditModeChange()
     {
-        App.Settings.AllowFilterVarietyCreation = !App.Settings.AllowFilterVarietyCreation;
-        App.Settings.Save();
-        IsEditModeEnabled = App.Settings.AllowFilterVarietyCreation;
-
-        if (!IsEditModeEnabled && SelectedItem == _dynamicFiltersMenu && _dynamicFiltersMenu.Children.Count > 0)
+        if (!App.Settings.AllowFilterVarietyCreation && SelectedItem == _dynamicFiltersMenu && _dynamicFiltersMenu.Children.Count > 0)
         {
             _dynamicFiltersMenu.IsExpanded = true;
             SelectedItem = _dynamicFiltersMenu.Children[0];
-        }
-        else if (CurrentViewModel is IReloadable reloadable)
-        {
-            // Rafraîchit l'écran affiché (ex. la page d'accueil elle-même, pour montrer/masquer ses
-            // boutons Créer/Modifier/Supprimer selon le nouvel état).
-            reloadable.Reload();
         }
     }
 

@@ -59,7 +59,7 @@
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
                     <TextBlock Text="Comportement" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <TextBlock Text="Le mode édition (variétés « Filtres F7 à H14 ») se trouve désormais en haut de la barre latérale : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                    <TextBlock Text="Le mode édition (variétés « Filtres F7 à H14 ») se trouve désormais sur l'écran « Filtres F7 à H14 » lui-même : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <CheckBox Content="Rattacher des filtres... : n'afficher par défaut que les dimensions correspondantes (±5 mm)"
                               IsChecked="{Binding LinkDimensionFilterEnabled}" Margin="0,0,0,8"/>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"

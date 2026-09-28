@@ -25,6 +25,11 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
     public bool CanManageVarieties => App.Settings.AllowFilterVarietyCreation;
     public bool CannotManageVarieties => !CanManageVarieties;
 
+    /// <summary>Bouton "Mode édition" de cette page (rouge = désactivé, vert = activé, voir
+    /// <see cref="CanManageVarieties"/>) : autorise la création de nouvelles variétés. Non persisté, toujours
+    /// désactivé au lancement de l'application (App.Settings.AllowFilterVarietyCreation).</summary>
+    public string EditModeButtonLabel => CanManageVarieties ? "Quitter mode édition" : "Mode édition";
+
     [ObservableProperty] private ObservableCollection<FilterVariety> _varieties = new();
 
     [ObservableProperty]
@@ -45,6 +50,19 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
             App.Db.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList());
         OnPropertyChanged(nameof(CanManageVarieties));
         OnPropertyChanged(nameof(CannotManageVarieties));
+        OnPropertyChanged(nameof(EditModeButtonLabel));
+    }
+
+    /// <summary>Bouton "Mode édition" (rouge/vert) : bascule directement le réglage, pas de garde d'écriture
+    /// (App.GuardWritable) ni de vérification supplémentaire - c'est une préférence d'affichage locale, pas
+    /// une donnée de la base.</summary>
+    [RelayCommand]
+    private void ToggleEditMode()
+    {
+        App.Settings.AllowFilterVarietyCreation = !App.Settings.AllowFilterVarietyCreation;
+        App.Settings.Save();
+        _main.RefreshAfterEditModeChange();
+        Load();
     }
 
     [RelayCommand]
@@ -54,7 +72,7 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
         if (!App.Settings.AllowFilterVarietyCreation)
         {
             App.Dialogs.ShowMessage("Nouvelle variété",
-                "La création de nouvelles variétés de filtres est désactivée. Activez « Autoriser la création de nouvelles variétés de filtres (mode édition) » dans Paramètres pour en créer une.");
+                "La création de nouvelles variétés de filtres est désactivée. Cliquez sur « Mode édition » pour en créer une.");
             return;
         }
         var entity = new FilterVariety();

@@ -36,37 +36,6 @@
                             <TextBlock DockPanel.Dock="Left" Text="Année :" Foreground="#D1D5DB" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding YearContext.Year}"/>
                         </DockPanel>
-
-                        <!-- Mode édition : rouge quand désactivé (par défaut à chaque lancement), vert
-                             une fois activé. Autorise la création de nouvelles variétés "Filtres F7 à H14". -->
-                        <Button Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
-                                HorizontalAlignment="Left" Margin="0,12,0,0" Padding="14,8" BorderThickness="0"
-                                Foreground="White" FontWeight="SemiBold" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Opacity" Value="0.88"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsEditModeEnabled}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
                     </StackPanel>
 
                     <TreeView x:Name="NavigationTree" ItemsSource="{Binding NavigationItems}"
