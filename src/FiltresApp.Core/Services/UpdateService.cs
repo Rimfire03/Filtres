@@ -75,10 +75,14 @@ public class UpdateService
         return new UpdateInfo(versionText, htmlUrl, notes, assetUrl, assetName);
     }
 
-    /// <summary>Télécharge l'archive de la nouvelle version, en extrait le nouvel exécutable, puis
-    /// prépare et lance un script qui attend la fermeture du processus courant pour remplacer
-    /// l'exécutable en place et relancer l'application. L'appelant doit fermer l'application
-    /// juste après (le remplacement du fichier ne peut se faire tant qu'il est verrouillé).</summary>
+    /// <summary>Télécharge l'archive .zip de la nouvelle version, la décompresse intégralement, puis
+    /// prépare et lance un script qui attend la fermeture du processus courant pour copier TOUT le
+    /// contenu décompressé (l'exécutable, mais aussi tout autre fichier requis à côté - ex. FiltreData\
+    /// LatoFont) par-dessus le dossier d'installation, avant de relancer l'application. Seuls les
+    /// fichiers présents dans l'archive sont écrasés/ajoutés : les données propres à l'utilisateur qui
+    /// n'y figurent jamais (FiltreData\filtres.db, settings.json, exports...) ne sont jamais touchées.
+    /// L'appelant doit fermer l'application juste après (le remplacement de l'exécutable ne peut se
+    /// faire tant qu'il est verrouillé).</summary>
     public async Task DownloadAndApplyAsync(UpdateInfo info, IProgress<double>? progress = null)
     {
         var tempDir = Path.Combine(Path.GetTempPath(), "FiltresApp-Update-" + Guid.NewGuid().ToString("N"));
@@ -105,15 +109,20 @@ public class UpdateService
         var extractDir = Path.Combine(tempDir, "extracted");
         ZipFile.ExtractToDirectory(zipPath, extractDir);
 
-        var newExePath = Directory.GetFiles(extractDir, "FiltresApp.exe", SearchOption.AllDirectories).FirstOrDefault()
-            ?? throw new InvalidOperationException("FiltresApp.exe introuvable dans l'archive téléchargée.");
+        // L'archive publiée place toujours FiltresApp.exe directement à sa racine (voir "Publier
+        // l'exécutable portable" dans le README) : vérifie que la structure est bien celle attendue
+        // avant de lancer le remplacement, plutôt que d'échouer silencieusement plus tard.
+        if (!File.Exists(Path.Combine(extractDir, "FiltresApp.exe")))
+            throw new InvalidOperationException("FiltresApp.exe introuvable à la racine de l'archive téléchargée.");
 
         var currentExePath = Environment.ProcessPath
             ?? throw new InvalidOperationException("Impossible de déterminer l'exécutable en cours d'exécution.");
+        var installDir = Path.GetDirectoryName(currentExePath)
+            ?? throw new InvalidOperationException("Impossible de déterminer le dossier d'installation.");
         var currentPid = Environment.ProcessId;
 
         var scriptPath = Path.Combine(tempDir, "update.bat");
-        File.WriteAllText(scriptPath, BuildUpdateScript(currentPid, newExePath, currentExePath, extractDir));
+        File.WriteAllText(scriptPath, BuildUpdateScript(currentPid, extractDir, installDir, currentExePath, tempDir));
 
         Process.Start(new ProcessStartInfo
         {
@@ -141,7 +150,12 @@ public class UpdateService
         return (Part(0), Part(1), Part(2));
     }
 
-    private static string BuildUpdateScript(int pid, string newExePath, string targetExePath, string extractDir) => $"""
+    /// <summary>robocopy (toujours présent sur Windows) copie tout le contenu décompressé par-dessus le
+    /// dossier d'installation : sans /MIR, il n'efface jamais un fichier absent de la source (les
+    /// données de l'utilisateur dans FiltreData\ restent donc intactes), et ses tentatives intégrées
+    /// (/R /W) couvrent l'attente de la libération de l'exécutable par l'ancien processus, déjà
+    /// garantie une première fois par la boucle tasklist ci-dessous.</summary>
+    private static string BuildUpdateScript(int pid, string extractDir, string installDir, string targetExePath, string tempDir) => $"""
         @echo off
         setlocal
 
@@ -152,14 +166,9 @@ public class UpdateService
             goto waitloop
         )
 
-        :copyloop
-        copy /y "{newExePath}" "{targetExePath}" >nul 2>&1
-        if errorlevel 1 (
-            timeout /t 1 /nobreak >nul
-            goto copyloop
-        )
+        robocopy "{extractDir}" "{installDir}" /E /R:5 /W:1 /NFL /NDL /NJH /NJS
 
-        rd /s /q "{extractDir}" >nul 2>&1
+        rd /s /q "{tempDir}" >nul 2>&1
         start "" "{targetExePath}"
         del "%~f0" >nul 2>&1
         """;

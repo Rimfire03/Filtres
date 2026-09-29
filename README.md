@@ -52,16 +52,26 @@ dotnet run --project src\FiltresApp\FiltresApp.csproj
 $env:PATH = "$env:LOCALAPPDATA\Microsoft\dotnet;$env:PATH"
 dotnet publish src\FiltresApp\FiltresApp.csproj -c Release -r win-x64 `
   --self-contained true -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=false
+  -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=false `
+  -p:EnableCompressionInSingleFile=true -p:DebugType=None
 ```
 
 Le résultat se trouve dans :
 ```
 src\FiltresApp\bin\Release\net8.0-windows\win-x64\publish\
-  FiltresApp.exe               <- exécutable unique, autonome (~190 Mo) - seul fichier à la racine
-  FiltreData\
-    LatoFont\                  <- police embarquée utilisée par la génération PDF
+  FiltresApp.exe               <- exécutable unique, autonome (~83 Mo) - seul fichier à la racine
+  LatoFont\                    <- copié ici par le package QuestPDF (contentFiles) : à déplacer à la
+                                   main dans FiltreData\LatoFont\ avant de zipper (voir plus bas), le
+                                   .csproj ne peut pas rediriger cette copie automatiquement
 ```
+
+`EnableCompressionInSingleFile` compresse le runtime .NET embarqué dans l'exécutable unique
+(~190 Mo → ~83 Mo) sans changer son comportement (toujours autonome, aucune installation de .NET
+requise sur la machine cible) ; `DebugType=None` retire les fichiers `.pdb` (symboles de débogage,
+inutiles pour une distribution). `FiltresApp.exe` reste le seul fichier attendu à la racine du dossier
+distribué : déplacer manuellement `LatoFont\` dans `FiltreData\LatoFont\` avant de créer le `.zip` de
+release (l'application le fait aussi automatiquement elle-même, au premier lancement, si ce déplacement
+a été oublié - voir `App.RelocateLatoFontIntoFiltreData`).
 
 Aucun fichier `.db` n'est inclus dans ce résultat (volontaire : voir « Ne
 jamais publier le fichier de base de données » ci-dessous) ; `settings.json`
