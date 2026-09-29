@@ -23,6 +23,10 @@ public class K7Location
     /// visuel avec l'en-tête de groupe.</summary>
     public bool IsFamilyHeader { get; set; }
 
+    /// <summary>Couleur de ligne (clic droit sur la grille), référence libre vers <see cref="RowColor.Id"/>
+    /// (voir Paramètres, "Couleurs de ligne") - null si aucune couleur choisie.</summary>
+    public int? RowColorId { get; set; }
+
     [NotMapped]
     public string FamilyGroupLabel => Family is null
         ? "Non classé"

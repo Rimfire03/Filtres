@@ -41,7 +41,42 @@ internal static class DatabaseMigrations
         (16, "Familles Commande / Inventaire : Type des filtres F7 à H13 au lieu de « Filtres F7 à H13 »", AddOrderLineFamilyOverrideTypeColumn),
         (17, "Suppression de la fonctionnalité Filtres F7 à H13", RemoveOpacimetricFeature),
         (18, "Menu dépliant « Filtres F7 à H14 » : variétés de filtres créées librement", AddDynamicFilterSchema),
+        (19, "Colonne Commentaire (écrans de filtres)", AddFilterCommentaireColumns),
+        (20, "Colorisation des lignes (filtres, K7, Commande, Inventaire)", AddRowColorSchema),
     };
+
+    /// <summary>Colorisation de ligne (clic droit) : palette de couleurs nommées réglée dans Paramètres
+    /// (table "RowColors", partagée en base comme les familles K7), et colonne "RowColorId" sur chaque
+    /// table dont les lignes peuvent être colorées.</summary>
+    private static void AddRowColorSchema(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "RowColors" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_RowColors" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL,
+                "Hex" TEXT NOT NULL DEFAULT '#FFFFFF',
+                "Ordre" INTEGER NOT NULL DEFAULT 0
+            );
+            """);
+
+        foreach (var table in new[] { "PeriodicFilters", "DynamicFilters", "K7Locations", "OrderLines" })
+        {
+            if (!SchemaInspector.GetColumns(ctx, table).Contains("RowColorId"))
+                ctx.Database.ExecuteSqlRaw($"""ALTER TABLE "{table}" ADD COLUMN "RowColorId" INTEGER NULL;""");
+        }
+    }
+
+    /// <summary>Colonne "Commentaire" affichée en dernière position sur tous les écrans de filtres (G4
+    /// plissés, G4 plan, G3, Charbon, et chaque variété "Filtres F7 à H14") - pas sur Commande ni
+    /// Inventaire.</summary>
+    private static void AddFilterCommentaireColumns(FiltresDbContext ctx)
+    {
+        if (!SchemaInspector.GetColumns(ctx, "PeriodicFilters").Contains("Commentaire"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicFilters" ADD COLUMN "Commentaire" TEXT NULL;""");
+        if (!SchemaInspector.GetColumns(ctx, "DynamicFilters").Contains("Commentaire"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "DynamicFilters" ADD COLUMN "Commentaire" TEXT NULL;""");
+    }
 
     /// <summary>Suppression définitive de la fonctionnalité "Filtres F7 à H13" (demandée explicitement par
     /// l'utilisateur), données ET structure : table des filtres, de leurs remplacements, de leurs familles,

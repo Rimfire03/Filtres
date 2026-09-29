@@ -1,6 +1,7 @@
 using System.Windows;
 using FiltresApp.Core.Models;
 using FiltresApp.ViewModels;
+using FiltresApp.ViewModels.Filtres;
 
 namespace FiltresApp.Views.Dialogs;
 

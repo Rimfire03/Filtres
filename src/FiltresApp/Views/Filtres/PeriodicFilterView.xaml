@@ -1,0 +1,155 @@
+<UserControl x:Class="FiltresApp.Views.Filtres.PeriodicFilterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels.Filtres"
+             xmlns:app="clr-namespace:FiltresApp"
+             d:DataContext="{d:DesignInstance vm:PeriodicFilterListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Regroupement par famille déduite de la Dimension (voir DimensionFamilyLabel) : n'a d'effet
+             visuel que sur l'écran "Filtres G3" (ShowDimensionFamilyGrouping), les autres écrans ayant
+             toujours un nom de groupe vide (bandeau masqué, voir GroupStyle plus bas). L'ordre des
+             groupes ("Filtres à remplacer" avant "Filtres à laver" avant "Sans dimension") est garanti en
+             triant la collection Filters elle-même dans PeriodicFilterListViewModel.ApplyFilters (les
+             SortDescriptions d'un CollectionViewSource ne garantissent pas l'ordre des groupes créés). -->
+        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="DimensionFamilyLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+
+            <!-- Mode édition : rouge tant que désactivé (par défaut à chaque ouverture de l'écran), vert
+                 une fois activé. Placé à l'extrême droite de la page. -->
+            <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
+                    VerticalAlignment="Top" Padding="14,8" BorderThickness="0"
+                    Foreground="White" FontWeight="SemiBold" Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.88"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="Filtrer par mois :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding MonthFilterOptions}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding MonthFilter}" Width="150"/>
+            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFilterCommand}" Margin="12,0,0,0"/>
+
+            <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                  svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
+                  ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
+            <DataGrid.Resources>
+                <!-- Menu contextuel "Changé tous les 15 jours" : uniquement proposé sur l'écran
+                     "Filtres G4 plissés" (voir PeriodicFilterRowViewModel.ShowChangedEvery15DaysOption).
+                     Le DataContext du ContextMenu est hérité du PlacementTarget (la ligne), donc des
+                     mêmes propriétés que celles de la ligne (comportement WPF depuis .NET 4.5). -->
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Value="{Binding RowColorBrush}"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Changé tous les 15 jours (besoin doublé)"
+                                          IsCheckable="True"
+                                          Visibility="{Binding ShowChangedEvery15DaysOption, Converter={StaticResource BoolToVis}}"
+                                          IsChecked="{Binding ChangedEvery15Days, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{x:Static app:App.IsWritable}"/>
+                                <!-- Contrairement à l'option "15 jours" ci-dessus (G4 plissé uniquement),
+                                     "Consulter l'historique..." est proposé sur toutes les catégories. -->
+                                <MenuItem Header="Consulter l'historique..." Command="{Binding ShowHistoryCommand}"/>
+                                <!-- Sous-menu construit dynamiquement (PeriodicFilterView.xaml.cs) à partir des
+                                     couleurs réglées dans Paramètres, "Couleurs de ligne" (voir RowColorMenu). -->
+                                <MenuItem Header="Couleur" IsEnabled="{x:Static app:App.IsWritable}"/>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <!-- Surlignage jaune léger des filtres "Changé tous les 15 jours" (même pattern
+                             que le surlignage rouge "déjà rattaché" de FilterLinkWindow.xaml). -->
+                        <DataTrigger Binding="{Binding ChangedEvery15Days}" Value="True">
+                            <Setter Property="Background" Value="#FFF9C4"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <!-- Puce verte / rouge : filtre rattaché ou non à une ligne de Commande / Inventaire. -->
+                <!-- Masquée pour les filtres lavables ("à laver") : ils ne peuvent jamais être rattachés
+                     à une ligne de Commande / Inventaire (voir PeriodicFilterRowViewModel.IsWashable et
+                     OrderListViewModel.LoadLinkCandidates, qui les exclut des candidats). -->
+                <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder"
+                                        CellTemplate="{StaticResource LinkDotCellTemplate}"/>
+                <!-- Filtres d'affichage placés dans le bas du bandeau des titres : "contient" sur le nom, liste
+                     des dimensions présentes (PeriodicFilterListViewModel.HeaderFilter). -->
+                <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="1.02*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="0.92*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.65*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="1.04*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="1.06*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastDoneDate, StringFormat='dd/MM/yyyy'}" Width="93" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Réalisé" Width="62" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
+                <DataGridTemplateColumn Header="Date du changement" Width="94">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding DateDoneForConsultedMonth, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- Toujours en dernière position (voir README) : pas éditable directement dans la grille,
+                     via "Modifier" comme "Notes". -->
+                <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="1.3*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}"/>
+            </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>
+            </DataGrid.GroupStyle>
+        </DataGrid>
+    </Grid>
+</UserControl>

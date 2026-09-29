@@ -31,6 +31,10 @@ public class OrderLine
 
     public string? Destination { get; set; }
 
+    /// <summary>Couleur de ligne (clic droit sur la grille), référence libre vers <see cref="RowColor.Id"/>
+    /// (voir Paramètres, "Couleurs de ligne") - null si aucune couleur choisie.</summary>
+    public int? RowColorId { get; set; }
+
     public const string NoFamilyLabel = "Sans famille";
     public const string MultipleFamiliesLabel = "Plusieurs familles";
 

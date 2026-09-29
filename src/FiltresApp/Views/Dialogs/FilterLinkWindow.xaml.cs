@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using FiltresApp.Core.Models;
 using FiltresApp.ViewModels;
+using FiltresApp.ViewModels.Filtres;
 
 namespace FiltresApp.Views.Dialogs;
 

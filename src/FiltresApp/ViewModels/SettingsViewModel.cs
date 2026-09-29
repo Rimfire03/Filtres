@@ -45,6 +45,8 @@ public partial class SettingsViewModel : ObservableObject
         _autoUpdateEnabled = App.Settings.AutoUpdateEnabled;
         _linkDimensionFilterEnabled = App.Settings.LinkDimensionFilterEnabled;
         LoadHistoryYears();
+        InitializePrintColumns();
+        InitializeRowColors();
     }
 
     /// <summary>La case à cocher se sauvegarde immédiatement : contrairement aux autres champs, il n'y

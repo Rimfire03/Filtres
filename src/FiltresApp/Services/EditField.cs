@@ -48,6 +48,17 @@ public class EditField
         SetValue = v => set(string.IsNullOrWhiteSpace((string?)v) ? null : (string)v!)
     };
 
+    /// <summary>Comme <see cref="Multiline(string,Func{string},Action{string},bool)"/> mais pour un champ
+    /// texte non-nullable (ex. "Nom de la centrale d'air"), avec validation "requis" comme <see cref="Text"/>.</summary>
+    public static EditField Multiline(string label, Func<string> get, Action<string> set, bool required) => new()
+    {
+        Label = label,
+        Type = EditFieldType.MultilineText,
+        GetValue = () => get(),
+        SetValue = v => set((string?)v ?? string.Empty),
+        Required = required
+    };
+
     public static EditField IntField(string label, Func<int> get, Action<int> set, bool required = false) => new()
     {
         Label = label,

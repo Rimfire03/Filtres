@@ -19,6 +19,13 @@ public class DynamicFilter
     public int QuantityInPlace { get; set; }
     public string? Notes { get; set; }
 
+    /// <summary>Commentaire libre, affiché en dernière colonne de la grille (voir README).</summary>
+    public string? Commentaire { get; set; }
+
+    /// <summary>Couleur de ligne (clic droit sur la grille), référence libre vers <see cref="RowColor.Id"/>
+    /// (voir Paramètres, "Couleurs de ligne") - null si aucune couleur choisie.</summary>
+    public int? RowColorId { get; set; }
+
     public int? DynamicFilterFamilyId { get; set; }
     public DynamicFilterFamily? Family { get; set; }
 

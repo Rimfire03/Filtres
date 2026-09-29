@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:FiltresApp"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
              xmlns:views="clr-namespace:FiltresApp.Views"
+             xmlns:vmf="clr-namespace:FiltresApp.ViewModels.Filtres"
+             xmlns:viewsf="clr-namespace:FiltresApp.Views.Filtres"
              xmlns:conv="clr-namespace:FiltresApp.Converters">
     <Application.Resources>
         <ResourceDictionary>
@@ -15,27 +17,28 @@
             <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
             <conv:InverseBoolConverter x:Key="InverseBool"/>
             <conv:NullToCollapsedConverter x:Key="NullToCollapsed"/>
+            <conv:RowColorIdToBrushConverter x:Key="RowColorIdToBrush"/>
 
-            <DataTemplate DataType="{x:Type vm:PeriodicFilterListViewModel}">
-                <views:PeriodicFilterView/>
+            <DataTemplate DataType="{x:Type vmf:PeriodicFilterListViewModel}">
+                <viewsf:PeriodicFilterView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:K7ListViewModel}">
-                <views:K7View/>
+            <DataTemplate DataType="{x:Type vmf:K7ListViewModel}">
+                <viewsf:K7View/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:InventoryListViewModel}">
-                <views:InventoryView/>
+            <DataTemplate DataType="{x:Type vmf:InventoryListViewModel}">
+                <viewsf:InventoryView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:OrderListViewModel}">
-                <views:OrderView/>
+            <DataTemplate DataType="{x:Type vmf:OrderListViewModel}">
+                <viewsf:OrderView/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                 <views:SettingsView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:FilterVarietyListViewModel}">
-                <views:FilterVarietyListView/>
+            <DataTemplate DataType="{x:Type vmf:FilterVarietyListViewModel}">
+                <viewsf:FilterVarietyListView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:DynamicFilterListViewModel}">
-                <views:DynamicFilterView/>
+            <DataTemplate DataType="{x:Type vmf:DynamicFilterListViewModel}">
+                <viewsf:DynamicFilterView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

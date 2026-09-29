@@ -1,0 +1,87 @@
+<UserControl x:Class="FiltresApp.Views.Filtres.InventoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels.Filtres"
+             xmlns:app="clr-namespace:FiltresApp"
+             d:DataContext="{d:DesignInstance vm:InventoryListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Lignes regroupées par famille : un bandeau titre par famille (même style que la Liste K7). -->
+        <CollectionViewSource x:Key="GroupedLines" Source="{Binding Lines}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Vider la colonne Inventaire" Style="{StaticResource DangerButton}" Command="{Binding ClearInventaireCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+            <Button Content="Exporter en PDF" Style="{StaticResource SecondaryButton}" Command="{Binding ExportPdfCommand}"/>
+        </StackPanel>
+
+        <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
+            <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+            <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
+                      Width="220" VerticalContentAlignment="Center"/>
+            <TextBlock Text="Famille déduite des filtres rattachés à la ligne, ou choisie manuellement dans « Modifier »."
+                       Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
+        </DockPanel>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True"
+                  ContextMenuOpening="Grid_ContextMenuOpening">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Value="{Binding RowColorId, Converter={StaticResource RowColorIdToBrush}}"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <!-- Sous-menu construit dynamiquement (InventoryView.xaml.cs) à partir des
+                                     couleurs réglées dans Paramètres, "Couleurs de ligne" (voir RowColorMenu). -->
+                                <MenuItem Header="Couleur" IsEnabled="{x:Static app:App.IsWritable}"/>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Besoin mars (calculé)" Binding="{Binding NeedMars}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Besoin septembre (calculé)" Binding="{Binding NeedSeptembre}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTemplateColumn Header="Inventaire" Width="0.8*" SortMemberPath="Inventaire">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Inventaire, Mode=OneWay}" Style="{StaticResource InlineEditTextBox}"
+                                     IsReadOnly="{x:Static app:App.IsReadOnly}"
+                                     GotKeyboardFocus="InventaireBox_GotKeyboardFocus" LostKeyboardFocus="InventaireBox_LostKeyboardFocus"
+                                     PreviewKeyDown="InventaireBox_PreviewKeyDown"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- Calculée : max(Besoin mars, Besoin septembre) - Inventaire (OrderLine.InventoryQuantity). -->
+                <DataGridTextColumn x:Name="QuantityColumn" Header="Quantité" Binding="{Binding InventoryQuantity}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+            </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>
+            </DataGrid.GroupStyle>
+        </DataGrid>
+    </Grid>
+</UserControl>

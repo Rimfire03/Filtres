@@ -15,6 +15,10 @@ public class GridPreferences
     public HashSet<string> Shown { get; set; } = new();
 
     public Dictionary<string, ColumnWidth> Widths { get; set; } = new();
+
+    /// <summary>Colonnes exclues de l'impression (Paramètres, "Colonnes imprimées") : indépendant de
+    /// <see cref="Hidden"/>, qui ne concerne que l'affichage à l'écran.</summary>
+    public HashSet<string> PrintHidden { get; set; } = new();
 }
 
 /// <summary>Préférences d'affichage des grilles, propres à chaque ordinateur : stockées dans le profil
@@ -65,6 +69,19 @@ public static class ColumnPreferences
         var prefs = For(gridKey);
         prefs.Hidden.Clear();
         prefs.Shown.UnionWith(hiddenByDefault);
+        Save();
+    }
+
+    /// <summary>Colonne exclue de l'impression (Paramètres, "Colonnes imprimées"), indépendamment de son
+    /// affichage à l'écran.</summary>
+    public static bool IsPrintHidden(string gridKey, string columnKey) =>
+        Grids.GetValueOrDefault(gridKey)?.PrintHidden.Contains(columnKey) == true;
+
+    public static void SetPrintHidden(string gridKey, string columnKey, bool hidden)
+    {
+        var prefs = For(gridKey);
+        if (hidden) prefs.PrintHidden.Add(columnKey);
+        else prefs.PrintHidden.Remove(columnKey);
         Save();
     }
 

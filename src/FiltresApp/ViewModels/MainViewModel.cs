@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FiltresApp.Core.Models;
 using FiltresApp.Services;
+using FiltresApp.ViewModels.Filtres;
 using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.ViewModels;
@@ -67,8 +68,18 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private static NavigationItem CreateVarietyItem(FilterVariety variety) =>
-        new(variety.Nom, "▫", () => new DynamicFilterListViewModel(variety), variety.Id);
+    /// <summary>Appelé par <see cref="DynamicFilterListViewModel.ToggleVarietyManagement"/> (bouton "Gérer
+    /// les variétés" de l'écran d'une variété) une fois le mode édition activé : ouvre la page d'accueil
+    /// "Filtres F7 à H14", seul endroit où créer/modifier/supprimer des variétés - sinon inatteignable
+    /// tant que le mode est désactivé (redirection automatique vers la première variété).</summary>
+    public void NavigateToVarietyManagement()
+    {
+        _dynamicFiltersMenu.IsExpanded = true;
+        SelectedItem = _dynamicFiltersMenu;
+    }
+
+    private NavigationItem CreateVarietyItem(FilterVariety variety) =>
+        new(variety.Nom, "▫", () => new DynamicFilterListViewModel(variety, this), variety.Id);
 
     /// <summary>Appelé par <see cref="FilterVarietyListViewModel.AddVariety"/> juste après la création en
     /// base : ajoute le sous-menu correspondant et le sélectionne.</summary>

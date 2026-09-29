@@ -33,6 +33,13 @@ public class PeriodicFilter
 
     public string? Notes { get; set; }
 
+    /// <summary>Commentaire libre, affiché en dernière colonne de la grille (voir README).</summary>
+    public string? Commentaire { get; set; }
+
+    /// <summary>Couleur de ligne (clic droit sur la grille), référence libre vers <see cref="RowColor.Id"/>
+    /// (voir Paramètres, "Couleurs de ligne") - null si aucune couleur choisie.</summary>
+    public int? RowColorId { get; set; }
+
     /// <summary>Uniquement pertinent pour G4 plissé : quand activé, le filtre est changé tous les 15
     /// jours (deux fois plus souvent que le rythme habituel), et le besoin calculé par
     /// <see cref="Services.OrderNeedCalculationService"/> pour ce filtre est doublé.</summary>

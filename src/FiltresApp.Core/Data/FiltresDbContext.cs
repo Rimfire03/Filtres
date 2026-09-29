@@ -28,6 +28,7 @@ public class FiltresDbContext : DbContext
     public DbSet<DynamicFilterReplacement> DynamicFilterReplacements => Set<DynamicFilterReplacement>();
     public DbSet<DynamicFilterFamily> DynamicFilterFamilies => Set<DynamicFilterFamily>();
     public DbSet<OrderLineDynamicFilter> OrderLineDynamicFilters => Set<OrderLineDynamicFilter>();
+    public DbSet<RowColor> RowColors => Set<RowColor>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
