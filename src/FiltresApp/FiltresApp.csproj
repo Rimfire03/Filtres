@@ -23,7 +23,9 @@
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app-logo-white.png" />
-    <None Include="data\filtres.db" CopyToOutputDirectory="PreserveNewest" Condition="Exists('data\filtres.db')" />
+    <!-- Copiée dans FiltreData\ (et non à la racine) : seul l'exécutable doit rester à la racine du
+         dossier publié, voir AppSettings.DataDirectory. -->
+    <None Include="data\filtres.db" CopyToOutputDirectory="PreserveNewest" TargetPath="FiltreData\filtres.db" Condition="Exists('data\filtres.db')" />
   </ItemGroup>
 
 </Project>

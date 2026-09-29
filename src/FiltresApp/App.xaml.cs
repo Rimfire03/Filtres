@@ -37,6 +37,7 @@ public partial class App : Application
         try
         {
             Settings = AppSettings.Load();
+            RelocateLatoFontIntoFiltreData();
             if (!EnsureDatabaseSelected())
             {
                 Shutdown(-1);
@@ -98,4 +99,28 @@ public partial class App : Application
 
     public static string ReadOnlyMessage =>
         ReadOnlyTitle + ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
+
+    /// <summary>Déplace le dossier "LatoFont" (copié à côté de l'exécutable par le package NuGet
+    /// QuestPDF, via ses contentFiles) dans FiltreData : seul l'exécutable doit rester à la racine du
+    /// dossier publié. Ne fait rien s'il n'y est pas (déjà déplacé, ou absent) ; ne doit jamais empêcher
+    /// le démarrage.</summary>
+    private static void RelocateLatoFontIntoFiltreData()
+    {
+        try
+        {
+            var oldPath = Path.Combine(AppContext.BaseDirectory, "LatoFont");
+            if (!Directory.Exists(oldPath)) return;
+
+            var dataDir = Path.Combine(AppContext.BaseDirectory, "FiltreData");
+            Directory.CreateDirectory(dataDir);
+            var newPath = Path.Combine(dataDir, "LatoFont");
+            if (Directory.Exists(newPath)) return;
+
+            Directory.Move(oldPath, newPath);
+        }
+        catch
+        {
+            // Best-effort : un LatoFont resté à la racine n'empêche rien de fonctionner.
+        }
+    }
 }

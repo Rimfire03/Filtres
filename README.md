@@ -58,23 +58,29 @@ dotnet publish src\FiltresApp\FiltresApp.csproj -c Release -r win-x64 `
 Le résultat se trouve dans :
 ```
 src\FiltresApp\bin\Release\net8.0-windows\win-x64\publish\
-  FiltresApp.exe        <- exécutable unique, autonome (~190 Mo)
-  data\filtres.db        <- base de données SQLite pré-remplie (voir plus bas)
-  LatoFont\               <- police embarquée utilisée par la génération PDF
+  FiltresApp.exe               <- exécutable unique, autonome (~190 Mo) - seul fichier à la racine
+  FiltreData\
+    filtres.db                 <- base de données SQLite pré-remplie (voir plus bas)
+    LatoFont\                  <- police embarquée utilisée par la génération PDF
+    settings.json              <- créé au premier lancement
 ```
 
 Pour distribuer l'application, copier tout le contenu de ce dossier
-`publish\` (l'exe a besoin du dossier `data\` et, après premier lancement, du
-fichier `settings.json` généré à côté de lui). L'exécutable démarre sans
+`publish\` (l'exe a besoin du dossier `FiltreData\` qui l'accompagne, et y
+crée `settings.json` au premier lancement). L'exécutable démarre sans
 qu'aucune version de .NET ne soit installée sur la machine cible.
 
 ## Emplacement des données (mode portable)
 
-- `settings.json` est créé au premier lancement **à côté de l'exécutable**
-  (jamais dans le registre ni dans `%AppData%`). Seule exception : le choix des
-  colonnes affichées et leurs largeurs, propres à chaque ordinateur (voir « Affichage des grilles »). Il contient :
-  - `DatabasePath` : chemin (relatif ou absolu) vers le fichier SQLite.
-    Par défaut `data\filtres.db`, relatif au dossier de l'exe.
+Seul l'exécutable reste à la racine du dossier publié : tout le reste (base
+de données, exports, réglages, police PDF) est dans le sous-dossier
+**`FiltreData\`**, à côté de l'exe.
+
+- `FiltreData\settings.json` est créé au premier lancement (jamais dans le
+  registre ni dans `%AppData%`). Seule exception : le choix des colonnes
+  affichées et leurs largeurs, propres à chaque ordinateur (voir « Affichage des grilles »). Il contient :
+  - `DatabasePath` : chemin (relatif à `FiltreData\`, ou absolu) vers le
+    fichier SQLite. Par défaut `filtres.db`.
   - `PdfExportPath` : dossier de destination des exports PDF (remplace le
     chemin réseau codé en dur de l'ancienne macro `exportcmd`).
 - Ces deux chemins sont modifiables dans l'écran **Paramètres** de
@@ -84,9 +90,15 @@ qu'aucune version de .NET ne soit installée sur la machine cible.
   suffirait pas : les écrans déjà ouverts garderaient des données de
   l'ancienne base en mémoire). Changer uniquement le dossier d'export PDF
   n'entraîne pas de redémarrage.
-- La base fournie (`data\filtres.db`) a été pré-remplie via l'import du
+- La base fournie (`FiltreData\filtres.db`) a été pré-remplie via l'import du
   classeur Excel source réel (voir ci-dessous), afin que l'utilisateur
   retrouve immédiatement toutes ses données actuelles.
+- **Migration automatique** : une installation mise à jour depuis une version
+  antérieure à cette réorganisation (où `settings.json`, `data\filtres.db` et
+  `LatoFont\` étaient directement à côté de l'exe) migre automatiquement ces
+  fichiers vers `FiltreData\` au premier lancement après la mise à jour - un
+  chemin de base de données personnalisé en absolu (ex. réseau) n'est jamais
+  déplacé.
 
 ## Utilisation à plusieurs (base sur disque réseau)
 

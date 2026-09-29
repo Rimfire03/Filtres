@@ -1,3 +1,4 @@
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Services;
@@ -89,7 +90,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             Filter = "Base de données SQLite (*.db)|*.db",
             FileName = "filtres.db",
-            InitialDirectory = AppContext.BaseDirectory
+            InitialDirectory = Path.Combine(AppContext.BaseDirectory, "FiltreData")
         };
         if (dialog.ShowDialog() == true) DatabasePath = dialog.FileName;
     }
@@ -99,7 +100,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         var dialog = new OpenFolderDialog
         {
-            InitialDirectory = AppContext.BaseDirectory
+            InitialDirectory = Path.Combine(AppContext.BaseDirectory, "FiltreData")
         };
         if (dialog.ShowDialog() == true) PdfExportPath = dialog.FolderName;
     }
