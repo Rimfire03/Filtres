@@ -19,27 +19,38 @@ public partial class App
     }
 
     /// <summary>Vérification silencieuse au démarrage : ne bloque jamais le lancement de l'application
-    /// et n'interrompt l'utilisateur que si une mise à jour est réellement disponible.</summary>
+    /// et n'interrompt l'utilisateur que si une mise à jour est réellement disponible. Un échec de la
+    /// vérification elle-même (réseau, API GitHub indisponible...) reste silencieux ici - ce n'est pas
+    /// le rôle d'un contrôle en arrière-plan au démarrage de le signaler à chaque lancement ; utiliser
+    /// "Vérifier maintenant" dans Paramètres pour voir l'erreur réelle le cas échéant (voir
+    /// UpdateService.CheckForUpdateAsync).</summary>
     private static async Task CheckForUpdateOnStartupAsync()
     {
+        UpdateInfo? info;
         try
         {
-            var info = await Updater.CheckForUpdateAsync(CurrentVersion);
-            if (info is null) return;
+            info = await Updater.CheckForUpdateAsync(CurrentVersion);
+        }
+        catch
+        {
+            return;
+        }
+        if (info is null) return;
 
-            var proceed = Dialogs.ShowConfirm("Mise à jour disponible",
-                $"Une nouvelle version {info.Version} est disponible (version actuelle : {CurrentVersion}).\n\n" +
-                "Voulez-vous la télécharger et l'installer maintenant ? L'application va se fermer puis redémarrer automatiquement.\n\n" +
-                "Vous pouvez désactiver cette vérification automatique dans Paramètres.");
-            if (!proceed) return;
+        var proceed = Dialogs.ShowConfirm("Mise à jour disponible",
+            $"Une nouvelle version {info.Version} est disponible (version actuelle : {CurrentVersion}).\n\n" +
+            "Voulez-vous la télécharger et l'installer maintenant ? L'application va se fermer puis redémarrer automatiquement.\n\n" +
+            "Vous pouvez désactiver cette vérification automatique dans Paramètres.");
+        if (!proceed) return;
 
+        try
+        {
             await Updater.DownloadAndApplyAsync(info);
             Current.Shutdown();
         }
         catch (Exception ex)
         {
-            // La vérification/installation de mise à jour ne doit jamais faire planter l'application.
-            Dialogs.ShowMessage("Mise à jour", $"La mise à jour automatique a échoué : {ex.Message}");
+            Dialogs.ShowMessage("Mise à jour", $"L'installation de la mise à jour a échoué : {ex.Message}");
         }
     }
 }

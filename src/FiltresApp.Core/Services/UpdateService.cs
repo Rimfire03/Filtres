@@ -26,49 +26,53 @@ public class UpdateService
     }
 
     /// <summary>Interroge la dernière release GitHub et retourne ses infos si sa version est plus
-    /// récente que <paramref name="currentVersion"/> (format "MAJOR.MINOR.PATCH"). Retourne null en
-    /// l'absence de mise à jour ou en cas d'erreur (réseau, API indisponible, etc.) : la vérification
-    /// ne doit jamais faire échouer l'appelant.</summary>
+    /// récente que <paramref name="currentVersion"/> (format "MAJOR.MINOR.PATCH"). Retourne null
+    /// UNIQUEMENT quand la vérification a réussi et qu'il n'y a pas de mise à jour disponible.
+    /// Lève une exception en cas d'échec réel (réseau, API indisponible, réponse inattendue) : avaler
+    /// ces erreurs en silence (comme avant) rendait impossible de distinguer "à jour" de "la
+    /// vérification a échoué", ce qui empêchait de diagnostiquer un vrai problème (ex. limite de débit
+    /// de l'API GitHub, pare-feu). L'appelant du démarrage silencieux (voir App.Updates.cs) est
+    /// responsable de ne pas déranger l'utilisateur pour ces erreurs ; le bouton "Vérifier maintenant"
+    /// (Paramètres) les affiche telles quelles.</summary>
     public async Task<UpdateInfo?> CheckForUpdateAsync(string currentVersion)
     {
-        try
+        using var response = await Http.GetAsync(
+            $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest");
+        if (!response.IsSuccessStatusCode)
         {
-            using var response = await Http.GetAsync(
-                $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest");
-            if (!response.IsSuccessStatusCode) return null;
+            var body = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException(
+                $"L'API GitHub a répondu {(int)response.StatusCode} {response.ReasonPhrase} : {body}");
+        }
 
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var doc = await JsonDocument.ParseAsync(stream);
-            var root = doc.RootElement;
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var doc = await JsonDocument.ParseAsync(stream);
+        var root = doc.RootElement;
 
-            var tag = root.TryGetProperty("tag_name", out var tagEl) ? tagEl.GetString() ?? "" : "";
-            var versionText = tag.TrimStart('v', 'V');
-            if (!IsNewer(versionText, currentVersion)) return null;
+        var tag = root.TryGetProperty("tag_name", out var tagEl) ? tagEl.GetString() ?? "" : "";
+        var versionText = tag.TrimStart('v', 'V');
+        if (!IsNewer(versionText, currentVersion)) return null;
 
-            string? assetUrl = null;
-            string? assetName = null;
-            if (root.TryGetProperty("assets", out var assets))
+        string? assetUrl = null;
+        string? assetName = null;
+        if (root.TryGetProperty("assets", out var assets))
+        {
+            foreach (var asset in assets.EnumerateArray())
             {
-                foreach (var asset in assets.EnumerateArray())
-                {
-                    var name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
-                    if (!name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) continue;
-                    assetUrl = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() : null;
-                    assetName = name;
-                    break;
-                }
+                var name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+                if (!name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) continue;
+                assetUrl = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() : null;
+                assetName = name;
+                break;
             }
-            if (assetUrl == null || assetName == null) return null;
-
-            var notes = root.TryGetProperty("body", out var bodyEl) ? bodyEl.GetString() ?? "" : "";
-            var htmlUrl = root.TryGetProperty("html_url", out var urlEl) ? urlEl.GetString() ?? "" : "";
-
-            return new UpdateInfo(versionText, htmlUrl, notes, assetUrl, assetName);
         }
-        catch
-        {
-            return null;
-        }
+        if (assetUrl == null || assetName == null)
+            throw new InvalidOperationException($"La release {tag} sur GitHub n'a pas de fichier .zip en pièce jointe.");
+
+        var notes = root.TryGetProperty("body", out var bodyEl) ? bodyEl.GetString() ?? "" : "";
+        var htmlUrl = root.TryGetProperty("html_url", out var urlEl) ? urlEl.GetString() ?? "" : "";
+
+        return new UpdateInfo(versionText, htmlUrl, notes, assetUrl, assetName);
     }
 
     /// <summary>Télécharge l'archive de la nouvelle version, en extrait le nouvel exécutable, puis
