@@ -60,7 +60,7 @@ public abstract partial class OrderLineListViewModelBase : ObservableObject, IRe
     }
 
     /// <summary>Copie la ligne sélectionnée (sans son rattachement à des filtres, ni la quantité relevée
-    /// à l'inventaire).</summary>
+    /// à l'inventaire) et ouvre directement son édition. N'enregistre rien si l'édition est annulée.</summary>
     [RelayCommand]
     private void Duplicate()
     {
@@ -81,6 +81,7 @@ public abstract partial class OrderLineListViewModelBase : ObservableObject, IRe
             FamilyOverrideType = source.FamilyOverrideType,
             ManualNeed = source.ManualNeed
         };
+        if (!EditEntity(copy, true, source.AutomaticFamilyLabel)) return;
         App.Db.OrderLines.Add(copy);
         App.Db.SaveChanges();
         Load();

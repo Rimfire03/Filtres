@@ -72,7 +72,8 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
         Load();
     }
 
-    /// <summary>Copie le lieu sélectionné.</summary>
+    /// <summary>Copie le lieu sélectionné et ouvre directement son édition. N'enregistre rien si
+    /// l'édition est annulée.</summary>
     [RelayCommand]
     private void Duplicate()
     {
@@ -88,6 +89,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
             K7FamilyId = source.K7FamilyId,
             RowColorId = source.RowColorId
         };
+        if (!EditEntity(copy, true)) return;
         App.Db.K7Locations.Add(copy);
         App.Db.SaveChanges();
         Load();

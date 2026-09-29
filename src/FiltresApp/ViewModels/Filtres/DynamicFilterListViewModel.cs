@@ -161,7 +161,8 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
     }
 
     /// <summary>Copie la ligne sélectionnée (sans son historique de remplacements ni son rattachement à
-    /// Commande / Inventaire).</summary>
+    /// Commande / Inventaire) et ouvre directement son édition. N'enregistre rien si l'édition est
+    /// annulée.</summary>
     [RelayCommand]
     private void DuplicateFilter()
     {
@@ -180,6 +181,7 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
             DynamicFilterFamilyId = source.DynamicFilterFamilyId,
             RowColorId = source.RowColorId
         };
+        if (!EditEntity(copy, true)) return;
         App.Db.DynamicFilters.Add(copy);
         App.Db.SaveChanges();
         Load();

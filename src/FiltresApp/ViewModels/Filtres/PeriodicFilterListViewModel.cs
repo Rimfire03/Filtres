@@ -181,8 +181,9 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     }
 
     /// <summary>Copie la ligne sélectionnée (sans son historique de remplacements ni son rattachement à
-    /// Commande / Inventaire) : pratique pour saisir plusieurs filtres très proches (même dimension,
-    /// périodicité...) sans tout ressaisir.</summary>
+    /// Commande / Inventaire) et ouvre directement son édition, pour ajuster les quelques champs qui
+    /// diffèrent avant d'enregistrer : pratique pour saisir plusieurs filtres très proches (même
+    /// dimension, périodicité...) sans tout ressaisir. N'enregistre rien si l'édition est annulée.</summary>
     [RelayCommand]
     private void DuplicateFilter()
     {
@@ -204,6 +205,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             ChangedEvery15Days = source.ChangedEvery15Days,
             RowColorId = source.RowColorId
         };
+        if (!EditEntity(copy, isNew: true)) return;
         App.Db.PeriodicFilters.Add(copy);
         App.Db.SaveChanges();
         Load();
