@@ -23,9 +23,11 @@
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app-logo-white.png" />
-    <!-- Copiée dans FiltreData\ (et non à la racine) : seul l'exécutable doit rester à la racine du
-         dossier publié, voir AppSettings.DataDirectory. -->
-    <None Include="data\filtres.db" CopyToOutputDirectory="PreserveNewest" TargetPath="FiltreData\filtres.db" Condition="Exists('data\filtres.db')" />
+    <!-- Uniquement en Debug (confort de développement local) : le fichier .db ne doit jamais être
+         inclus dans une release publiée (voir Configuration Release / dotnet publish), ni donc dans le
+         .zip distribué. Copiée dans FiltreData\ (et non à la racine) : seul l'exécutable doit rester à
+         la racine du dossier publié, voir AppSettings.DataDirectory. -->
+    <None Include="data\filtres.db" CopyToOutputDirectory="PreserveNewest" TargetPath="FiltreData\filtres.db" Condition="'$(Configuration)' != 'Release' AND Exists('data\filtres.db')" />
   </ItemGroup>
 
 </Project>

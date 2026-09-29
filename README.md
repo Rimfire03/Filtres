@@ -60,15 +60,30 @@ Le résultat se trouve dans :
 src\FiltresApp\bin\Release\net8.0-windows\win-x64\publish\
   FiltresApp.exe               <- exécutable unique, autonome (~190 Mo) - seul fichier à la racine
   FiltreData\
-    filtres.db                 <- base de données SQLite pré-remplie (voir plus bas)
     LatoFont\                  <- police embarquée utilisée par la génération PDF
-    settings.json              <- créé au premier lancement
 ```
 
+Aucun fichier `.db` n'est inclus dans ce résultat (volontaire : voir « Ne
+jamais publier le fichier de base de données » ci-dessous) ; `settings.json`
+et `filtres.db` sont créés au premier lancement.
+
 Pour distribuer l'application, copier tout le contenu de ce dossier
-`publish\` (l'exe a besoin du dossier `FiltreData\` qui l'accompagne, et y
-crée `settings.json` au premier lancement). L'exécutable démarre sans
-qu'aucune version de .NET ne soit installée sur la machine cible.
+`publish\` (l'exe a besoin du dossier `FiltreData\` qui l'accompagne). Au
+tout premier lancement, l'application propose de créer une base vide ou de
+choisir un fichier `.db` existant (voir `App.Database.EnsureDatabaseSelected`).
+L'exécutable démarre sans qu'aucune version de .NET ne soit installée sur la
+machine cible.
+
+### Ne jamais publier le fichier de base de données
+
+Le fichier `data\filtres.db` du dépôt (base de développement local, servant
+uniquement de confort pour les builds **Debug**) ne doit **jamais** se
+retrouver dans une release publiée ni dans le `.zip` distribué - il peut
+contenir des données réelles. Le `.csproj` ne le copie donc que pour la
+configuration Debug (`Condition="'$(Configuration)' != 'Release'"`) : un
+`dotnet publish -c Release` ne l'inclut jamais. Avant de créer un `.zip` de
+release, vérifier qu'aucun fichier `.db` ne s'est glissé dans le dossier
+`publish\` (aucun ne devrait, sauf modification accidentelle de cette règle).
 
 ## Emplacement des données (mode portable)
 
@@ -90,9 +105,10 @@ de données, exports, réglages, police PDF) est dans le sous-dossier
   suffirait pas : les écrans déjà ouverts garderaient des données de
   l'ancienne base en mémoire). Changer uniquement le dossier d'export PDF
   n'entraîne pas de redémarrage.
-- La base fournie (`FiltreData\filtres.db`) a été pré-remplie via l'import du
-  classeur Excel source réel (voir ci-dessous), afin que l'utilisateur
-  retrouve immédiatement toutes ses données actuelles.
+- Aucun fichier `.db` n'est distribué avec l'application (voir « Ne jamais
+  publier le fichier de base de données » ci-dessus) : au premier lancement,
+  l'utilisateur crée une base vide ou choisit un fichier `.db` existant
+  (ex. une sauvegarde, ou celle utilisée en développement local).
 - **Migration automatique** : une installation mise à jour depuis une version
   antérieure à cette réorganisation (où `settings.json`, `data\filtres.db` et
   `LatoFont\` étaient directement à côté de l'exe) migre automatiquement ces
