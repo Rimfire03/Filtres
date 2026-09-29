@@ -45,13 +45,16 @@ public partial class SettingsViewModel
         }
     }
 
+    /// <summary>Télécharge l'archive dans le dossier Téléchargements et l'y révèle dans l'explorateur :
+    /// l'installation (fermer l'application, extraire l'archive, remplacer le contenu du dossier
+    /// d'installation) reste manuelle, voir UpdateService.</summary>
     [RelayCommand]
     private async Task InstallUpdate()
     {
         if (_pendingUpdate is null) return;
 
-        if (!App.Dialogs.ShowConfirm("Installer la mise à jour",
-                $"Télécharger et installer la version {_pendingUpdate.Version} ? L'application va se fermer puis redémarrer automatiquement."))
+        if (!App.Dialogs.ShowConfirm("Télécharger la mise à jour",
+                $"Télécharger la version {_pendingUpdate.Version} ? Elle devra ensuite être installée manuellement : fermez l'application, extrayez l'archive téléchargée, puis remplacez le contenu du dossier d'installation."))
         {
             return;
         }
@@ -60,12 +63,16 @@ public partial class SettingsViewModel
         UpdateStatusMessage = "Téléchargement de la mise à jour...";
         try
         {
-            await App.Updater.DownloadAndApplyAsync(_pendingUpdate);
-            System.Windows.Application.Current.Shutdown();
+            var zipPath = await App.Updater.DownloadUpdateAsync(_pendingUpdate);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{zipPath}\"") { UseShellExecute = true });
+            UpdateStatusMessage = $"Mise à jour téléchargée : {zipPath}. Fermez l'application puis installez-la manuellement.";
         }
         catch (Exception ex)
         {
-            UpdateStatusMessage = $"Erreur pendant l'installation : {ex.Message}";
+            UpdateStatusMessage = $"Erreur pendant le téléchargement : {ex.Message}";
+        }
+        finally
+        {
             IsInstallingUpdate = false;
         }
     }

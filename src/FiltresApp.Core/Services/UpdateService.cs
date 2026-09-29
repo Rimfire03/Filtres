@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -8,8 +6,12 @@ namespace FiltresApp.Core.Services;
 /// <summary>Informations sur une nouvelle version disponible, extraites de la release GitHub.</summary>
 public record UpdateInfo(string Version, string ReleaseUrl, string ReleaseNotes, string AssetUrl, string AssetName);
 
-/// <summary>Vérifie et applique les mises à jour de l'application en s'appuyant sur les releases
-/// GitHub du dépôt (exécutable portable publié en asset .zip sur chaque release).</summary>
+/// <summary>Vérifie les mises à jour disponibles en s'appuyant sur les releases GitHub du dépôt
+/// (exécutable portable publié en asset .zip sur chaque release) et propose de télécharger l'archive.
+/// L'installation elle-même (extraire l'archive, remplacer les fichiers) reste manuelle : un
+/// remplacement automatique de l'exécutable en place s'est avéré peu fiable (voir historique des
+/// versions 1.2.5/1.2.6 - le processus qui remplaçait l'exe pouvait échouer silencieusement,
+/// laissant l'ancienne version tourner après un "redémarrage" apparent).</summary>
 public class UpdateService
 {
     private const string RepoOwner = "Rimfire03";
@@ -75,62 +77,32 @@ public class UpdateService
         return new UpdateInfo(versionText, htmlUrl, notes, assetUrl, assetName);
     }
 
-    /// <summary>Télécharge l'archive .zip de la nouvelle version, la décompresse intégralement, puis
-    /// prépare et lance un script qui attend la fermeture du processus courant pour copier TOUT le
-    /// contenu décompressé (l'exécutable, mais aussi tout autre fichier requis à côté - ex. FiltreData\
-    /// LatoFont) par-dessus le dossier d'installation, avant de relancer l'application. Seuls les
-    /// fichiers présents dans l'archive sont écrasés/ajoutés : les données propres à l'utilisateur qui
-    /// n'y figurent jamais (FiltreData\filtres.db, settings.json, exports...) ne sont jamais touchées.
-    /// L'appelant doit fermer l'application juste après (le remplacement de l'exécutable ne peut se
-    /// faire tant qu'il est verrouillé).</summary>
-    public async Task DownloadAndApplyAsync(UpdateInfo info, IProgress<double>? progress = null)
+    /// <summary>Télécharge l'archive .zip de la nouvelle version dans le dossier Téléchargements de
+    /// l'utilisateur (créé si besoin) et retourne son chemin complet. Ne touche à rien d'autre :
+    /// l'installation (extraire l'archive, remplacer le contenu du dossier de l'application) reste à
+    /// faire manuellement par l'utilisateur, l'application fermée.</summary>
+    public async Task<string> DownloadUpdateAsync(UpdateInfo info, IProgress<double>? progress = null)
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), "FiltresApp-Update-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempDir);
-        var zipPath = Path.Combine(tempDir, info.AssetName);
+        var downloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        Directory.CreateDirectory(downloadsDir);
+        var zipPath = Path.Combine(downloadsDir, info.AssetName);
 
-        using (var response = await Http.GetAsync(info.AssetUrl, HttpCompletionOption.ResponseHeadersRead))
+        using var response = await Http.GetAsync(info.AssetUrl, HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+        var total = response.Content.Headers.ContentLength ?? -1L;
+        await using var source = await response.Content.ReadAsStreamAsync();
+        await using var destination = File.Create(zipPath);
+        var buffer = new byte[81920];
+        long readTotal = 0;
+        int read;
+        while ((read = await source.ReadAsync(buffer)) > 0)
         {
-            response.EnsureSuccessStatusCode();
-            var total = response.Content.Headers.ContentLength ?? -1L;
-            await using var source = await response.Content.ReadAsStreamAsync();
-            await using var destination = File.Create(zipPath);
-            var buffer = new byte[81920];
-            long readTotal = 0;
-            int read;
-            while ((read = await source.ReadAsync(buffer)) > 0)
-            {
-                await destination.WriteAsync(buffer.AsMemory(0, read));
-                readTotal += read;
-                if (total > 0) progress?.Report(readTotal * 100.0 / total);
-            }
+            await destination.WriteAsync(buffer.AsMemory(0, read));
+            readTotal += read;
+            if (total > 0) progress?.Report(readTotal * 100.0 / total);
         }
 
-        var extractDir = Path.Combine(tempDir, "extracted");
-        ZipFile.ExtractToDirectory(zipPath, extractDir);
-
-        // L'archive publiée place toujours FiltresApp.exe directement à sa racine (voir "Publier
-        // l'exécutable portable" dans le README) : vérifie que la structure est bien celle attendue
-        // avant de lancer le remplacement, plutôt que d'échouer silencieusement plus tard.
-        if (!File.Exists(Path.Combine(extractDir, "FiltresApp.exe")))
-            throw new InvalidOperationException("FiltresApp.exe introuvable à la racine de l'archive téléchargée.");
-
-        var currentExePath = Environment.ProcessPath
-            ?? throw new InvalidOperationException("Impossible de déterminer l'exécutable en cours d'exécution.");
-        var installDir = Path.GetDirectoryName(currentExePath)
-            ?? throw new InvalidOperationException("Impossible de déterminer le dossier d'installation.");
-        var currentPid = Environment.ProcessId;
-
-        var scriptPath = Path.Combine(tempDir, "update.bat");
-        File.WriteAllText(scriptPath, BuildUpdateScript(currentPid, extractDir, installDir, currentExePath, tempDir));
-
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = scriptPath,
-            UseShellExecute = true,
-            WindowStyle = ProcessWindowStyle.Hidden,
-            CreateNoWindow = true
-        });
+        return zipPath;
     }
 
     private static bool IsNewer(string candidate, string current)
@@ -149,31 +121,4 @@ public class UpdateService
         int Part(int i) => i < parts.Length && int.TryParse(parts[i], out var n) ? n : 0;
         return (Part(0), Part(1), Part(2));
     }
-
-    /// <summary>robocopy (toujours présent sur Windows) copie tout le contenu décompressé par-dessus le
-    /// dossier d'installation : sans /MIR, il n'efface jamais un fichier absent de la source (les
-    /// données de l'utilisateur dans FiltreData\ restent donc intactes), et ses tentatives intégrées
-    /// (/R /W) couvrent l'attente de la libération de l'exécutable par l'ancien processus, déjà
-    /// garantie une première fois par la boucle tasklist ci-dessous.
-    /// <para>Important : ce script ne supprime JAMAIS <paramref name="tempDir"/> (qui le contient lui-
-    /// même) pendant qu'il s'exécute encore - cmd.exe peut interrompre le traitement du fichier .bat en
-    /// cours dès que son dossier disparaît, empêchant alors "start" (relance de l'application) de
-    /// s'exécuter. Le nettoyage est donc délégué à un second processus cmd totalement détaché, qui
-    /// démarre après un court délai (le temps que ce script-ci ait fini de s'exécuter).</para></summary>
-    private static string BuildUpdateScript(int pid, string extractDir, string installDir, string targetExePath, string tempDir) => $"""
-        @echo off
-        setlocal
-
-        :waitloop
-        tasklist /FI "PID eq {pid}" 2>NUL | find /I "{pid}" >NUL
-        if "%ERRORLEVEL%"=="0" (
-            timeout /t 1 /nobreak >nul
-            goto waitloop
-        )
-
-        robocopy "{extractDir}" "{installDir}" /E /R:5 /W:1 /NFL /NDL /NJH /NJS
-
-        start "" "{targetExePath}"
-        start "" cmd /c "timeout /t 3 /nobreak >nul & rd /s /q ""{tempDir}"" >nul 2>&1"
-        """;
 }

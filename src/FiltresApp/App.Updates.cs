@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FiltresApp.Core.Services;
 
 namespace FiltresApp;
@@ -39,18 +40,21 @@ public partial class App
 
         var proceed = Dialogs.ShowConfirm("Mise à jour disponible",
             $"Une nouvelle version {info.Version} est disponible (version actuelle : {CurrentVersion}).\n\n" +
-            "Voulez-vous la télécharger et l'installer maintenant ? L'application va se fermer puis redémarrer automatiquement.\n\n" +
+            "Voulez-vous la télécharger maintenant ? Elle devra ensuite être installée manuellement : fermez l'application, extrayez l'archive téléchargée, puis remplacez le contenu du dossier d'installation.\n\n" +
             "Vous pouvez désactiver cette vérification automatique dans Paramètres.");
         if (!proceed) return;
 
         try
         {
-            await Updater.DownloadAndApplyAsync(info);
-            Current.Shutdown();
+            var zipPath = await Updater.DownloadUpdateAsync(info);
+            Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{zipPath}\"") { UseShellExecute = true });
+            Dialogs.ShowMessage("Mise à jour téléchargée",
+                $"La mise à jour {info.Version} a été téléchargée :\n{zipPath}\n\n" +
+                "Fermez l'application, extrayez l'archive, puis remplacez le contenu du dossier d'installation par celui de l'archive.");
         }
         catch (Exception ex)
         {
-            Dialogs.ShowMessage("Mise à jour", $"L'installation de la mise à jour a échoué : {ex.Message}");
+            Dialogs.ShowMessage("Mise à jour", $"Le téléchargement de la mise à jour a échoué : {ex.Message}");
         }
     }
 }
