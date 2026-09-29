@@ -154,7 +154,12 @@ public class UpdateService
     /// dossier d'installation : sans /MIR, il n'efface jamais un fichier absent de la source (les
     /// données de l'utilisateur dans FiltreData\ restent donc intactes), et ses tentatives intégrées
     /// (/R /W) couvrent l'attente de la libération de l'exécutable par l'ancien processus, déjà
-    /// garantie une première fois par la boucle tasklist ci-dessous.</summary>
+    /// garantie une première fois par la boucle tasklist ci-dessous.
+    /// <para>Important : ce script ne supprime JAMAIS <paramref name="tempDir"/> (qui le contient lui-
+    /// même) pendant qu'il s'exécute encore - cmd.exe peut interrompre le traitement du fichier .bat en
+    /// cours dès que son dossier disparaît, empêchant alors "start" (relance de l'application) de
+    /// s'exécuter. Le nettoyage est donc délégué à un second processus cmd totalement détaché, qui
+    /// démarre après un court délai (le temps que ce script-ci ait fini de s'exécuter).</para></summary>
     private static string BuildUpdateScript(int pid, string extractDir, string installDir, string targetExePath, string tempDir) => $"""
         @echo off
         setlocal
@@ -168,8 +173,7 @@ public class UpdateService
 
         robocopy "{extractDir}" "{installDir}" /E /R:5 /W:1 /NFL /NDL /NJH /NJS
 
-        rd /s /q "{tempDir}" >nul 2>&1
         start "" "{targetExePath}"
-        del "%~f0" >nul 2>&1
+        start "" cmd /c "timeout /t 3 /nobreak >nul & rd /s /q ""{tempDir}"" >nul 2>&1"
         """;
 }
