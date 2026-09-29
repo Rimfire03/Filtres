@@ -72,6 +72,27 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
         Load();
     }
 
+    /// <summary>Copie le lieu sélectionné.</summary>
+    [RelayCommand]
+    private void Duplicate()
+    {
+        if (!App.GuardWritable()) return;
+        if (SelectedLocation is null) return;
+        var source = SelectedLocation;
+        var copy = new K7Location
+        {
+            Lieu = source.Lieu,
+            NumeroPorte = source.NumeroPorte,
+            ChangementRealise = source.ChangementRealise,
+            NbFiltres = source.NbFiltres,
+            K7FamilyId = source.K7FamilyId,
+            RowColorId = source.RowColorId
+        };
+        App.Db.K7Locations.Add(copy);
+        App.Db.SaveChanges();
+        Load();
+    }
+
     private bool EditEntity(K7Location entity, bool isNew)
     {
         var familyList = Families.ToList();

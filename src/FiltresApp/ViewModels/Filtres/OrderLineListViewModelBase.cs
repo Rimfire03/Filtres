@@ -59,6 +59,33 @@ public abstract partial class OrderLineListViewModelBase : ObservableObject, IRe
         Load();
     }
 
+    /// <summary>Copie la ligne sélectionnée (sans son rattachement à des filtres, ni la quantité relevée
+    /// à l'inventaire).</summary>
+    [RelayCommand]
+    private void Duplicate()
+    {
+        if (!App.GuardWritable()) return;
+        if (SelectedLine is null) return;
+        var source = SelectedLine;
+        var copy = new OrderLine
+        {
+            DocumentType = DocumentType,
+            Ordre = OrderLineQueries.NextOrdre(App.Db, DocumentType),
+            Designation = source.Designation,
+            Dimension = source.Dimension,
+            Quantite = source.Quantite,
+            Notes = source.Notes,
+            Destination = source.Destination,
+            RowColorId = source.RowColorId,
+            FamilyOverride = source.FamilyOverride,
+            FamilyOverrideType = source.FamilyOverrideType,
+            ManualNeed = source.ManualNeed
+        };
+        App.Db.OrderLines.Add(copy);
+        App.Db.SaveChanges();
+        Load();
+    }
+
     private bool EditEntity(OrderLine entity, bool isNew, string automaticFamilyLabel)
     {
         var fields = new List<EditField>

@@ -28,6 +28,7 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
             <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Vider la colonne Inventaire" Style="{StaticResource DangerButton}" Command="{Binding ClearInventaireCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>

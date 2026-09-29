@@ -180,16 +180,42 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         Load();
     }
 
+    /// <summary>Copie la ligne sélectionnée (sans son historique de remplacements ni son rattachement à
+    /// Commande / Inventaire) : pratique pour saisir plusieurs filtres très proches (même dimension,
+    /// périodicité...) sans tout ressaisir.</summary>
+    [RelayCommand]
+    private void DuplicateFilter()
+    {
+        if (!App.GuardWritable()) return;
+        if (SelectedFilter is null) return;
+        var source = SelectedFilter.Filter;
+        var copy = new PeriodicFilter
+        {
+            Category = source.Category,
+            Location = source.Location,
+            Dimension = source.Dimension,
+            MediaType = source.MediaType,
+            QuantityInPlace = source.QuantityInPlace,
+            Periodicity = source.Periodicity,
+            K7Reference = source.K7Reference,
+            HourCounter = source.HourCounter,
+            Notes = source.Notes,
+            Commentaire = source.Commentaire,
+            ChangedEvery15Days = source.ChangedEvery15Days,
+            RowColorId = source.RowColorId
+        };
+        App.Db.PeriodicFilters.Add(copy);
+        App.Db.SaveChanges();
+        Load();
+    }
+
     private bool EditEntity(PeriodicFilter entity, bool isNew)
     {
         var months = entity.GetPeriodicityMonths();
         var fields = new List<EditField>
         {
-            // "Nom de la centrale d'air" (uniquement ce libellé - pas "Emplacement de l'appareil" des
-            // autres écrans G4 plan/G3/Charbon) : édition multiligne, retour à la ligne possible.
-            _locationColumnLabel == "Nom de la centrale d'air"
-                ? EditField.Multiline(_locationColumnLabel, () => entity.Location, v => entity.Location = v, required: true)
-                : EditField.Text(_locationColumnLabel, () => entity.Location, v => entity.Location = v, required: true),
+            // Édition multiligne (retour à la ligne possible), comme sur toutes les autres vues.
+            EditField.Multiline(_locationColumnLabel, () => entity.Location, v => entity.Location = v, required: true),
             EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
             EditField.Text("Type", () => entity.MediaType, v => entity.MediaType = v),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),

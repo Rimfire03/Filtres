@@ -160,6 +160,31 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
         Load();
     }
 
+    /// <summary>Copie la ligne sélectionnée (sans son historique de remplacements ni son rattachement à
+    /// Commande / Inventaire).</summary>
+    [RelayCommand]
+    private void DuplicateFilter()
+    {
+        if (!App.GuardWritable()) return;
+        if (SelectedFilter is null) return;
+        var source = SelectedFilter.Filter;
+        var copy = new DynamicFilter
+        {
+            VarietyId = source.VarietyId,
+            Location = source.Location,
+            Dimension = source.Dimension,
+            FilterType = source.FilterType,
+            QuantityInPlace = source.QuantityInPlace,
+            Notes = source.Notes,
+            Commentaire = source.Commentaire,
+            DynamicFilterFamilyId = source.DynamicFilterFamilyId,
+            RowColorId = source.RowColorId
+        };
+        App.Db.DynamicFilters.Add(copy);
+        App.Db.SaveChanges();
+        Load();
+    }
+
     private bool EditEntity(DynamicFilter entity, bool isNew)
     {
         var families = Families;
