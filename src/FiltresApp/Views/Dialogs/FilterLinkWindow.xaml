@@ -6,10 +6,10 @@
         Height="660" Width="820"
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
-        <Style x:Key="LinkedElsewhereRowStyle" TargetType="DataGridRow">
+        <Style x:Key="LinkedElsewhereRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsLinkedElsewhere}" Value="True">
-                    <Setter Property="Background" Value="#FDE8E8"/>
+                    <Setter Property="Background" Value="#FEE2E2"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -28,10 +28,10 @@
         <TextBlock x:Name="TitleText" Style="{StaticResource HeaderText}" Grid.Row="0"
                    Text="Rattacher des filtres à cette ligne de commande"/>
 
-        <TextBlock Grid.Row="1" Margin="0,4,0,8" TextWrapping="Wrap" Foreground="Gray"
+        <TextBlock Grid.Row="1" Margin="0,4,0,8" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}"
                    Text="Choisissez les filtres (G4 plissé, G4 plan, G3, Charbon, F7 à H13) concernés par cette ligne. Pour les familles G4 plissés, G4 plan et G3, le besoin (mars / septembre) est recalculé automatiquement à partir de leur périodicité et de leur quantité en place ; pour les autres, il se saisit dans l'écran Commande. Un filtre déjà rattaché à une autre ligne (surligné en rouge ci-dessous) sera déplacé vers celle-ci si vous le cochez."/>
 
-        <TextBlock x:Name="DimensionInfoText" Grid.Row="2" Margin="0,0,0,8" TextWrapping="Wrap" FontStyle="Italic" Foreground="Gray"/>
+        <TextBlock x:Name="DimensionInfoText" Grid.Row="2" Margin="0,0,0,8" TextWrapping="Wrap" FontStyle="Italic" Foreground="{StaticResource BrushTextSecondary}"/>
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
             <TextBox x:Name="SearchBox" Width="400" HorizontalAlignment="Left"
@@ -71,7 +71,7 @@
         </DataGrid>
 
         <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <TextBlock x:Name="SelectionCountText" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="Gray"/>
+            <TextBlock x:Name="SelectionCountText" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="{StaticResource BrushTextSecondary}"/>
             <Button Content="Annuler" Style="{StaticResource SecondaryButton}" Click="Cancel_Click" Width="90"/>
             <Button Content="Enregistrer" Style="{StaticResource PrimaryButton}" Click="Ok_Click" Width="110"/>
         </StackPanel>

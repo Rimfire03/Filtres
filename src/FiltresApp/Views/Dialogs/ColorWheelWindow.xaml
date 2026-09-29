@@ -9,7 +9,7 @@
         <!-- Roue chromatique : teinte = angle, saturation = distance au centre (luminosité max) ; la
              luminosité finale est réglée séparément par le curseur ci-dessous, sans avoir à régénérer la
              roue (voir ColorWheelWindow.xaml.cs). -->
-        <Border BorderBrush="Gray" BorderThickness="1" Width="220" Height="220" HorizontalAlignment="Left" CornerRadius="110" ClipToBounds="True">
+        <Border BorderBrush="{StaticResource BrushBorderStrong}" BorderThickness="1" Width="220" Height="220" HorizontalAlignment="Left" CornerRadius="110" ClipToBounds="True">
             <Image x:Name="WheelImage" Width="220" Height="220" Stretch="None" Cursor="Cross"
                    MouseLeftButtonDown="WheelImage_MouseLeftButtonDown"
                    MouseMove="WheelImage_MouseMove"
@@ -20,12 +20,12 @@
         <Slider x:Name="ValueSlider" Minimum="0" Maximum="1" Value="1" ValueChanged="ValueSlider_ValueChanged"/>
 
         <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-            <Border Width="40" Height="40" BorderBrush="Gray" BorderThickness="1" Margin="0,0,10,0">
+            <Border Width="40" Height="40" CornerRadius="6" BorderBrush="{StaticResource BrushBorderStrong}" BorderThickness="1.5" Margin="0,0,12,0">
                 <Border.Background>
                     <SolidColorBrush x:Name="PreviewBrush"/>
                 </Border.Background>
             </Border>
-            <TextBlock x:Name="HexText" VerticalAlignment="Center" FontFamily="Consolas"/>
+            <TextBlock x:Name="HexText" VerticalAlignment="Center" FontFamily="Consolas" FontWeight="SemiBold" FontSize="13"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">

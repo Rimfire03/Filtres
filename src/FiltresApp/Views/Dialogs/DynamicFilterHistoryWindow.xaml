@@ -22,7 +22,7 @@
             <ComboBox x:Name="YearCombo" Width="120" SelectionChanged="YearCombo_SelectionChanged"/>
         </StackPanel>
 
-        <TextBlock x:Name="NoHistoryText" Grid.Row="3" TextWrapping="Wrap" Foreground="Gray" Visibility="Collapsed"
+        <TextBlock x:Name="NoHistoryText" Grid.Row="3" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
                    Text="Aucun historique disponible pour ce filtre : aucun remplacement enregistré en base pour l'instant."/>
 
         <!-- Pas de notion de mois fixe pour cette variété : liste chronologique des remplacements datés

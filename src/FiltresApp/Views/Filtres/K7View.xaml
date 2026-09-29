@@ -41,7 +41,7 @@
                       SelectedItem="{Binding SelectedLocation}" IsReadOnly="True"
                       AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
                 <DataGrid.Resources>
-                    <Style TargetType="DataGridRow">
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Setter Property="Background" Value="{Binding RowColorId, Converter={StaticResource RowColorIdToBrush}}"/>
                         <Setter Property="ContextMenu">
                             <Setter.Value>

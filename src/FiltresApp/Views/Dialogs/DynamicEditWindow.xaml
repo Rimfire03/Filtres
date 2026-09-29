@@ -14,13 +14,16 @@
 
         <TextBlock x:Name="TitleText" Style="{StaticResource HeaderText}" Grid.Row="0"/>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel x:Name="FieldsPanel"/>
-        </ScrollViewer>
+        <Border Grid.Row="1" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}"
+                BorderThickness="1" CornerRadius="8" Padding="16,12">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="FieldsPanel"/>
+            </ScrollViewer>
+        </Border>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Annuler" Style="{StaticResource SecondaryButton}" Click="Cancel_Click" Width="90"/>
-            <Button Content="Enregistrer" Style="{StaticResource PrimaryButton}" Click="Ok_Click" Width="110"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <Button Content="Annuler" Style="{StaticResource SecondaryButton}" Click="Cancel_Click" Width="100"/>
+            <Button Content="Enregistrer" Style="{StaticResource PrimaryButton}" Click="Ok_Click" Width="120" Margin="0"/>
         </StackPanel>
     </Grid>
 </Window>

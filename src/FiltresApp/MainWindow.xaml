@@ -3,76 +3,102 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:FiltresApp.ViewModels"
         xmlns:app="clr-namespace:FiltresApp"
-        Title="Suivi maintenance Filtres" Icon="/Assets/app.ico" Height="800" Width="1300"
+        Title="Suivi maintenance Filtres" Icon="/Assets/app.ico" Height="820" Width="1340"
         WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
     <DockPanel>
         <!-- Pied de page -->
-        <Border DockPanel.Dock="Bottom" Background="{StaticResource BrushSidebar}" Padding="12,3">
-            <TextBlock Text="© Thomas Guidez" FontSize="11" Foreground="#9CA3AF" HorizontalAlignment="Center"/>
+        <Border DockPanel.Dock="Bottom" Background="{StaticResource BrushSidebar}" Padding="16,8"
+                BorderThickness="0,1,0,0" BorderBrush="{StaticResource BrushSidebarBorder}">
+            <TextBlock Text="© Thomas Guidez  ·  Suivi de maintenance Filtres" FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"/>
         </Border>
+
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="255"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{StaticResource BrushSidebar}">
+            <!-- Barre latérale moderne -->
+            <Border Grid.Column="0" Background="{StaticResource BrushSidebar}" BorderThickness="0,0,1,0" BorderBrush="{StaticResource BrushSidebarBorder}">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Margin="16,20,16,16">
-                        <!-- Logo de l'entreprise (Paramètres), sur fond blanc pour rester lisible sur la barre sombre. -->
-                        <Border Background="White" CornerRadius="4" Padding="6" Margin="0,0,0,12" HorizontalAlignment="Left"
+                    <StackPanel DockPanel.Dock="Top" Margin="16,18,16,12">
+                        <!-- Logo de l'entreprise (Paramètres), sur fond blanc pour rester lisible sur la barre sombre -->
+                        <Border Background="White" CornerRadius="6" Padding="6" Margin="0,0,0,14" HorizontalAlignment="Left"
                                 Visibility="{Binding LogoImage, Converter={StaticResource NullToCollapsed}}">
-                            <Image Source="{Binding LogoImage}" MaxHeight="60" MaxWidth="200" Stretch="Uniform"/>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" Opacity="0.2" BlurRadius="8" Direction="270" ShadowDepth="2"/>
+                            </Border.Effect>
+                            <Image Source="{Binding LogoImage}" MaxHeight="55" MaxWidth="210" Stretch="Uniform"/>
                         </Border>
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="/Assets/app-logo-white.png" Width="26" Height="26" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Filtres" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}" VerticalAlignment="Center"/>
+
+                        <!-- En-tête de l'application -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="#1E293B" CornerRadius="6" Padding="5" Margin="0,0,10,0">
+                                <Image Source="/Assets/app-logo-white.png" Width="22" Height="22" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Filtres" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrushTextOnDark}"/>
+                                <TextBlock Text="Suivi de maintenance" FontSize="11" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                            </StackPanel>
                         </StackPanel>
-                        <TextBlock Text="Suivi de maintenance" FontSize="11" Foreground="#9CA3AF" Margin="0,2,0,0"/>
-                        <DockPanel Margin="0,14,0,0">
-                            <TextBlock DockPanel.Dock="Left" Text="Année :" Foreground="#D1D5DB" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding YearContext.Year}"/>
-                        </DockPanel>
+
+                        <!-- Sélecteur d'année stylé -->
+                        <Border Background="#152138" CornerRadius="6" Padding="10,6" Margin="0,16,0,6"
+                                BorderBrush="{StaticResource BrushSidebarBorder}" BorderThickness="1">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Left" Text="Année :" Foreground="#94A3B8" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding YearContext.AvailableYears}"
+                                          SelectedItem="{Binding YearContext.Year}"
+                                          Style="{StaticResource SidebarComboBoxStyle}"/>
+                            </DockPanel>
+                        </Border>
                     </StackPanel>
 
+                    <!-- Séparateur discret -->
+                    <Border DockPanel.Dock="Top" Height="1" Background="{StaticResource BrushSidebarBorder}" Margin="16,4,16,12"/>
+
+                    <!-- Menu de navigation -->
                     <TreeView x:Name="NavigationTree" ItemsSource="{Binding NavigationItems}"
-                              Background="Transparent" BorderThickness="0"
+                              Background="Transparent" BorderThickness="0" Margin="4,0"
                               SelectedItemChanged="NavigationTree_SelectedItemChanged">
                         <TreeView.Resources>
                             <Style TargetType="TreeViewItem">
                                 <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Foreground" Value="#D1D5DB"/>
+                                <Setter Property="Foreground" Value="#CBD5E1"/>
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                 <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                                <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="TreeViewItem">
-                                            <StackPanel>
-                                                <Border x:Name="Bd" Background="Transparent" Padding="0">
+                                            <StackPanel Margin="0,1">
+                                                <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Margin="6,1" Padding="8,7">
                                                     <DockPanel LastChildFill="True">
-                                                        <ToggleButton x:Name="Expander" DockPanel.Dock="Left" Width="24" Height="36"
+                                                        <ToggleButton x:Name="Expander" DockPanel.Dock="Left" Width="22" Height="22"
                                                                       Background="Transparent" BorderThickness="0"
                                                                       IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                                                      Visibility="Collapsed" ClickMode="Press" Focusable="False">
+                                                                      Visibility="Collapsed" ClickMode="Press" Focusable="False" Margin="0,0,4,0">
                                                             <ToggleButton.Template>
                                                                 <ControlTemplate TargetType="ToggleButton">
-                                                                    <TextBlock x:Name="Arrow" Text="&#9656;" Foreground="#9CA3AF" FontSize="11"
-                                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    <Path x:Name="Arrow" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                          Data="M 2 1 L 6 5 L 2 9" Stroke="#94A3B8" StrokeThickness="1.5"/>
                                                                     <ControlTemplate.Triggers>
                                                                         <Trigger Property="IsChecked" Value="True">
-                                                                            <Setter TargetName="Arrow" Property="Text" Value="&#9662;"/>
+                                                                            <Setter TargetName="Arrow" Property="Data" Value="M 1 2 L 5 6 L 9 2"/>
+                                                                            <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource BrushTextOnDark}"/>
                                                                         </Trigger>
                                                                     </ControlTemplate.Triggers>
                                                                 </ControlTemplate>
                                                             </ToggleButton.Template>
                                                         </ToggleButton>
-                                                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center" Margin="0,10"/>
+                                                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
                                                     </DockPanel>
                                                 </Border>
-                                                <ItemsPresenter x:Name="ItemsHost" Visibility="Collapsed"/>
+                                                <ItemsPresenter x:Name="ItemsHost" Visibility="Collapsed" Margin="14,1,0,2"/>
                                             </StackPanel>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="HasItems" Value="True">
@@ -81,11 +107,14 @@
                                                 <Trigger Property="IsExpanded" Value="True">
                                                     <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
                                                 </Trigger>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarSelected}"/>
-                                                </Trigger>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarHover}"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{StaticResource BrushSidebarSelected}"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -95,9 +124,9 @@
                         </TreeView.Resources>
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
-                                    <TextBlock Text="{Binding Icon}" Margin="0,0,10,0" FontSize="14"/>
-                                    <TextBlock Text="{Binding Title}" FontSize="13" Foreground="White" VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal" Margin="6,0,0,0">
+                                    <TextBlock Text="{Binding Icon}" Margin="0,0,10,0" FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
@@ -105,10 +134,15 @@
                 </DockPanel>
             </Border>
 
+            <!-- Zone de contenu principal -->
             <DockPanel Grid.Column="1">
-                <Border DockPanel.Dock="Top" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="0,0,0,1" Padding="16,10"
+                <!-- Bannière d'alerte en lecture seule -->
+                <Border DockPanel.Dock="Top" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="0,0,0,1" Padding="18,10"
                         Visibility="{Binding Source={x:Static app:App.IsReadOnly}, Converter={StaticResource BoolToVis}}">
-                    <TextBlock Text="{x:Static app:App.ReadOnlyMessage}" TextWrapping="Wrap" Foreground="#92400E" FontWeight="SemiBold"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⚠" FontSize="15" Foreground="#D97706" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{x:Static app:App.ReadOnlyMessage}" TextWrapping="Wrap" Foreground="#92400E" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Border>
                 <ContentControl Content="{Binding CurrentViewModel}" Background="{StaticResource BrushBackground}"/>
             </DockPanel>

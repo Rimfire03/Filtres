@@ -33,33 +33,7 @@
             <!-- Mode édition : rouge tant que désactivé (par défaut à chaque ouverture de l'écran), vert
                  une fois activé. Placé à l'extrême droite de la page. -->
             <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
-                    VerticalAlignment="Top" Padding="14,8" BorderThickness="0"
-                    Foreground="White" FontWeight="SemiBold" Cursor="Hand">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Opacity" Value="0.88"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsEditMode}" Value="True">
-                                <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+                    Style="{StaticResource EditModeButtonStyle}"/>
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
@@ -78,25 +52,27 @@
                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
-        <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
-            <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
-            <ComboBox ItemsSource="{Binding FamilyOptions}" SelectedItem="{Binding SelectedFamily}"
-                      DisplayMemberPath="Label" Width="220" VerticalContentAlignment="Center"/>
-            <Button Content="+ Nouvelle famille" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
-                    Command="{Binding AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Renommer la famille" Style="{StaticResource SecondaryButton}"
-                    Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
-                    Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="24,0,0,0"
-                    ToolTip="Vide les filtres nom et dimension placés sous les titres de colonnes"/>
-        </DockPanel>
+        <Border Grid.Row="2" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,14">
+            <DockPanel LastChildFill="False">
+                <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
+                <ComboBox ItemsSource="{Binding FamilyOptions}" SelectedItem="{Binding SelectedFamily}"
+                          DisplayMemberPath="Label" Width="220" VerticalContentAlignment="Center"/>
+                <Button Content="+ Nouvelle famille" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                        Command="{Binding AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Renommer la famille" Style="{StaticResource SecondaryButton}"
+                        Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
+                        Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="24,0,0,0"
+                        ToolTip="Vide les filtres nom et dimension placés sous les titres de colonnes"/>
+            </DockPanel>
+        </Border>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
                   AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
-                <Style TargetType="DataGridRow">
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                     <Setter Property="Background" Value="{Binding RowColorBrush}"/>
                     <Setter Property="ContextMenu">
                         <Setter.Value>

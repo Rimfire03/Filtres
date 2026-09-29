@@ -25,42 +25,20 @@
                  activé. Toujours visible (contrairement aux boutons ci-dessous) : c'est lui qui les fait
                  apparaître. Placé à l'extrême droite de la page. -->
             <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
-                    VerticalAlignment="Top" Padding="14,8" BorderThickness="0"
-                    Foreground="White" FontWeight="SemiBold" Cursor="Hand">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Opacity" Value="0.88"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding CanManageVarieties}" Value="True">
-                                <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+                    Style="{StaticResource EditModeButtonStyle}"/>
         </Grid>
 
-        <TextBlock Grid.Row="1" Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"
-                   Visibility="{Binding CanManageVarieties, Converter={StaticResource BoolToVis}}"
-                   Text="Créez ici librement de nouvelles variétés de filtres (par exemple « F7 à H13 », « G5 », etc.). Chaque variété devient un sous-menu déroulant sous « Filtres F7 à H14 », avec sa propre grille, ses familles, son historique de remplacements et son rattachement à Commande / Inventaire."/>
+        <Border Grid.Row="1" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14"
+                Visibility="{Binding CanManageVarieties, Converter={StaticResource BoolToVis}}">
+            <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap"
+                       Text="Créez ici librement de nouvelles variétés de filtres (par exemple « F7 à H13 », « G5 », etc.). Chaque variété devient un sous-menu déroulant sous « Filtres F7 à H14 », avec sa propre grille, ses familles, son historique de remplacements et son rattachement à Commande / Inventaire."/>
+        </Border>
 
-        <TextBlock Grid.Row="1" Style="{StaticResource SectionText}" Margin="0,0,0,12" TextWrapping="Wrap"
-                   Visibility="{Binding CannotManageVarieties, Converter={StaticResource BoolToVis}}"
-                   Text="Aucune variété de filtre n'a encore été créée. Cliquez sur « Mode édition » ci-dessus pour en créer une."/>
+        <Border Grid.Row="1" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14"
+                Visibility="{Binding CannotManageVarieties, Converter={StaticResource BoolToVis}}">
+            <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap"
+                       Text="Aucune variété de filtre n'a encore été créée. Cliquez sur « Mode édition » ci-dessus pour en créer une."/>
+        </Border>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12" Visibility="{Binding CanManageVarieties, Converter={StaticResource BoolToVis}}">
             <Button Content="+ Nouvelle variété" Style="{StaticResource PrimaryButton}" Command="{Binding AddVarietyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>

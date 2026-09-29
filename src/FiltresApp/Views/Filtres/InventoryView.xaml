@@ -35,19 +35,21 @@
             <Button Content="Exporter en PDF" Style="{StaticResource SecondaryButton}" Command="{Binding ExportPdfCommand}"/>
         </StackPanel>
 
-        <DockPanel Grid.Row="2" Margin="0,0,0,12" LastChildFill="False">
-            <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
-            <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
-                      Width="220" VerticalContentAlignment="Center"/>
-            <TextBlock Text="Famille déduite des filtres rattachés à la ligne, ou choisie manuellement dans « Modifier »."
-                       Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
-        </DockPanel>
+        <Border Grid.Row="2" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,14">
+            <DockPanel LastChildFill="False">
+                <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
+                <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
+                          Width="220" VerticalContentAlignment="Center"/>
+                <TextBlock Text="Famille déduite des filtres rattachés à la ligne, ou choisie manuellement dans « Modifier »."
+                           Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="16,0,0,0" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True"
                   ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
-                <Style TargetType="DataGridRow">
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                     <Setter Property="Background" Value="{Binding RowColorId, Converter={StaticResource RowColorIdToBrush}}"/>
                     <Setter Property="ContextMenu">
                         <Setter.Value>

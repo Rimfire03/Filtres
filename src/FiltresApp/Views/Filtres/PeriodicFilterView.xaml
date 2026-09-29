@@ -38,33 +38,7 @@
             <!-- Mode édition : rouge tant que désactivé (par défaut à chaque ouverture de l'écran), vert
                  une fois activé. Placé à l'extrême droite de la page. -->
             <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
-                    VerticalAlignment="Top" Padding="14,8" BorderThickness="0"
-                    Foreground="White" FontWeight="SemiBold" Cursor="Hand">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="{StaticResource BrushDanger}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Opacity" Value="0.88"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsEditMode}" Value="True">
-                                <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+                    Style="{StaticResource EditModeButtonStyle}"/>
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
@@ -75,14 +49,20 @@
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="Filtrer par mois :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
-            <ComboBox ItemsSource="{Binding MonthFilterOptions}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding MonthFilter}" Width="150"/>
-            <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFilterCommand}" Margin="12,0,0,0"/>
+        <Border Grid.Row="2" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,14">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Filtrer par mois :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
+                    <ComboBox ItemsSource="{Binding MonthFilterOptions}" DisplayMemberPath="Value" SelectedValuePath="Key" SelectedValue="{Binding MonthFilter}" Width="160"/>
+                    <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFilterCommand}" Margin="12,0,0,0"/>
+                </StackPanel>
 
-            <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="24,0,8,0" FontWeight="SemiBold"/>
-            <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="150"/>
-        </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
+                    <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="160"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                   svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" AutoGenerateColumns="False"
@@ -92,7 +72,7 @@
                      "Filtres G4 plissés" (voir PeriodicFilterRowViewModel.ShowChangedEvery15DaysOption).
                      Le DataContext du ContextMenu est hérité du PlacementTarget (la ligne), donc des
                      mêmes propriétés que celles de la ligne (comportement WPF depuis .NET 4.5). -->
-                <Style TargetType="DataGridRow">
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                     <Setter Property="Background" Value="{Binding RowColorBrush}"/>
                     <Setter Property="ContextMenu">
                         <Setter.Value>
