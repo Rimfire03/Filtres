@@ -12,7 +12,14 @@
         <!-- Pied de page -->
         <Border DockPanel.Dock="Bottom" Background="{StaticResource BrushSidebar}" Padding="16,8"
                 BorderThickness="0,1,0,0" BorderBrush="{StaticResource BrushSidebarBorder}">
-            <TextBlock Text="© Thomas Guidez  ·  Suivi de maintenance Filtres" FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"/>
+            <Grid>
+                <!-- Version de l'application et de la base, tout à droite. -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Source={x:Static app:App.CurrentVersion}, StringFormat='Core v{0}'}" FontSize="11" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding Source={x:Static app:App.DatabaseVersion}, StringFormat='DB: V{0}'}" FontSize="11" Foreground="#64748B" Margin="12,0,0,0"/>
+                </StackPanel>
+                <TextBlock Text="© Thomas Guidez  ·  Suivi de maintenance Filtres" FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"/>
+            </Grid>
         </Border>
 
         <Grid>

@@ -1,4 +1,7 @@
+using System.Diagnostics;
+using System.IO.Compression;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 
 namespace FiltresApp.Core.Services;
@@ -6,12 +9,13 @@ namespace FiltresApp.Core.Services;
 /// <summary>Informations sur une nouvelle version disponible, extraites de la release GitHub.</summary>
 public record UpdateInfo(string Version, string ReleaseUrl, string ReleaseNotes, string AssetUrl, string AssetName);
 
-/// <summary>Vérifie les mises à jour disponibles en s'appuyant sur les releases GitHub du dépôt
-/// (exécutable portable publié en asset .zip sur chaque release) et propose de télécharger l'archive.
-/// L'installation elle-même (extraire l'archive, remplacer les fichiers) reste manuelle : un
-/// remplacement automatique de l'exécutable en place s'est avéré peu fiable (voir historique des
-/// versions 1.2.5/1.2.6 - le processus qui remplaçait l'exe pouvait échouer silencieusement,
-/// laissant l'ancienne version tourner après un "redémarrage" apparent).</summary>
+/// <summary>Vérifie et applique les mises à jour en s'appuyant sur les releases GitHub du dépôt
+/// (exécutable portable publié en asset .zip sur chaque release) : télécharge l'archive, la décompresse,
+/// puis remplace le contenu du dossier d'installation par celui de l'archive avant de relancer
+/// l'application. Le remplacement se fait via un processus PowerShell entièrement détaché (voir
+/// <see cref="DownloadAndApplyAsync"/>), pas un script .bat sur disque (une première version basée sur un
+/// script batch s'était révélée peu fiable : le script pouvait supprimer son propre dossier pendant qu'il
+/// s'exécutait encore, s'interrompant avant de relancer l'application).</summary>
 public class UpdateService
 {
     private const string RepoOwner = "Rimfire03";
@@ -77,32 +81,108 @@ public class UpdateService
         return new UpdateInfo(versionText, htmlUrl, notes, assetUrl, assetName);
     }
 
-    /// <summary>Télécharge l'archive .zip de la nouvelle version dans le dossier Téléchargements de
-    /// l'utilisateur (créé si besoin) et retourne son chemin complet. Ne touche à rien d'autre :
-    /// l'installation (extraire l'archive, remplacer le contenu du dossier de l'application) reste à
-    /// faire manuellement par l'utilisateur, l'application fermée.</summary>
-    public async Task<string> DownloadUpdateAsync(UpdateInfo info, IProgress<double>? progress = null)
+    /// <summary>Télécharge l'archive .zip de la nouvelle version, la décompresse intégralement, puis lance
+    /// un processus PowerShell détaché qui attend la fermeture du processus courant, copie tout le
+    /// contenu décompressé (l'exécutable, mais aussi tout autre fichier requis à côté - ex. FiltreData\
+    /// LatoFont) par-dessus le dossier d'installation, relance l'application, puis nettoie le dossier
+    /// temporaire. Seuls les fichiers présents dans l'archive sont écrasés/ajoutés : les données propres
+    /// à l'utilisateur qui n'y figurent jamais (FiltreData\filtres.db, settings.json, exports...) ne sont
+    /// jamais touchées - l'appelant est malgré tout invité à sauvegarder la base avant d'appeler cette
+    /// méthode (voir DbContextFactory.CreateBackup), par précaution.
+    /// <para>La commande PowerShell est transmise encodée en base64 (-EncodedCommand), jamais comme
+    /// ligne de commande classique : les chemins concernés (dossier d'installation, profil utilisateur...)
+    /// peuvent contenir des accents ou espaces, et cet encodage évite tout problème de parsing/échappement
+    /// côté interpréteur de commandes - PowerShell décode directement les caractères Unicode.</para>
+    /// <para>L'appelant doit fermer l'application juste après (le remplacement de l'exécutable ne peut se
+    /// faire tant qu'il est verrouillé).</para></summary>
+    public async Task DownloadAndApplyAsync(UpdateInfo info, IProgress<double>? progress = null)
     {
-        var downloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-        Directory.CreateDirectory(downloadsDir);
-        var zipPath = Path.Combine(downloadsDir, info.AssetName);
+        var tempDir = Path.Combine(Path.GetTempPath(), "FiltresApp-Update-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var zipPath = Path.Combine(tempDir, info.AssetName);
 
-        using var response = await Http.GetAsync(info.AssetUrl, HttpCompletionOption.ResponseHeadersRead);
-        response.EnsureSuccessStatusCode();
-        var total = response.Content.Headers.ContentLength ?? -1L;
-        await using var source = await response.Content.ReadAsStreamAsync();
-        await using var destination = File.Create(zipPath);
-        var buffer = new byte[81920];
-        long readTotal = 0;
-        int read;
-        while ((read = await source.ReadAsync(buffer)) > 0)
+        using (var response = await Http.GetAsync(info.AssetUrl, HttpCompletionOption.ResponseHeadersRead))
         {
-            await destination.WriteAsync(buffer.AsMemory(0, read));
-            readTotal += read;
-            if (total > 0) progress?.Report(readTotal * 100.0 / total);
+            response.EnsureSuccessStatusCode();
+            var total = response.Content.Headers.ContentLength ?? -1L;
+            await using var source = await response.Content.ReadAsStreamAsync();
+            await using var destination = File.Create(zipPath);
+            var buffer = new byte[81920];
+            long readTotal = 0;
+            int read;
+            while ((read = await source.ReadAsync(buffer)) > 0)
+            {
+                await destination.WriteAsync(buffer.AsMemory(0, read));
+                readTotal += read;
+                if (total > 0) progress?.Report(readTotal * 100.0 / total);
+            }
         }
 
-        return zipPath;
+        var extractDir = Path.Combine(tempDir, "extracted");
+        ZipFile.ExtractToDirectory(zipPath, extractDir);
+
+        // L'archive publiée place toujours FiltresApp.exe directement à sa racine (voir "Publier
+        // l'exécutable portable" dans le README) : vérifie que la structure est bien celle attendue
+        // avant de lancer le remplacement, plutôt que d'échouer silencieusement plus tard.
+        if (!File.Exists(Path.Combine(extractDir, "FiltresApp.exe")))
+            throw new InvalidOperationException("FiltresApp.exe introuvable à la racine de l'archive téléchargée.");
+
+        var currentExePath = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Impossible de déterminer l'exécutable en cours d'exécution.");
+        var installDir = Path.GetDirectoryName(currentExePath)
+            ?? throw new InvalidOperationException("Impossible de déterminer le dossier d'installation.");
+        var currentPid = Environment.ProcessId;
+
+        RunDetachedReplace(currentPid, extractDir, installDir, currentExePath, tempDir);
+    }
+
+    /// <summary>Échappe une chaîne pour une chaîne PowerShell entre apostrophes (seul caractère spécial à
+    /// doubler dans ce contexte).</summary>
+    private static string EscapeSingleQuoted(string value) => value.Replace("'", "''");
+
+    private static void RunDetachedReplace(int pid, string extractDir, string installDir, string targetExePath, string tempDir)
+    {
+        var extractDirEsc = EscapeSingleQuoted(extractDir);
+        var installDirEsc = EscapeSingleQuoted(installDir);
+        var targetExePathEsc = EscapeSingleQuoted(targetExePath);
+        var tempDirEsc = EscapeSingleQuoted(tempDir);
+
+        // Aucun fichier de script n'est écrit sur disque (contrairement à une première version basée sur
+        // un .bat) : la commande vit entièrement dans l'argument -EncodedCommand du processus PowerShell
+        // détaché, donc rien ne peut être "supprimé sous ses propres pieds" pendant son exécution.
+        var script = $$"""
+            $ErrorActionPreference = 'SilentlyContinue'
+            while (Get-Process -Id {{pid}} -ErrorAction SilentlyContinue) { Start-Sleep -Milliseconds 500 }
+
+            $ErrorActionPreference = 'Stop'
+            $attempts = 0
+            while ($true) {
+                try {
+                    Copy-Item -Path (Join-Path '{{extractDirEsc}}' '*') -Destination '{{installDirEsc}}' -Recurse -Force
+                    break
+                } catch {
+                    $attempts++
+                    if ($attempts -ge 15) { throw }
+                    Start-Sleep -Seconds 1
+                }
+            }
+
+            Start-Process -FilePath '{{targetExePathEsc}}'
+
+            $ErrorActionPreference = 'SilentlyContinue'
+            Start-Sleep -Seconds 2
+            Remove-Item -Path '{{tempDirEsc}}' -Recurse -Force
+            """;
+
+        var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand {encoded}",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
     }
 
     private static bool IsNewer(string candidate, string current)

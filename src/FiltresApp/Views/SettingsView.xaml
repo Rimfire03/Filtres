@@ -67,7 +67,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Vérifier maintenant" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding CheckForUpdatesCommand}" IsEnabled="{Binding IsCheckingForUpdate, Converter={StaticResource InverseBool}}"/>
-                        <Button Content="Télécharger la mise à jour" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
+                        <Button Content="Télécharger et installer" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"
                                 Command="{Binding InstallUpdateCommand}" Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}"
                                 IsEnabled="{Binding IsInstallingUpdate, Converter={StaticResource InverseBool}}"/>
                     </StackPanel>
