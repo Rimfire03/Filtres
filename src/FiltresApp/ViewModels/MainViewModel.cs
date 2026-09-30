@@ -74,6 +74,10 @@ public partial class MainViewModel : ObservableObject
     /// tant que le mode est désactivé (redirection automatique vers la première variété).</summary>
     public void NavigateToVarietyManagement()
     {
+        // Sans cela, OnSelectedItemChanged redirigerait aussitôt vers la première variété (le réglage
+        // AllowFilterVarietyCreation est indépendant du mode édition de la page d'une variété) et le
+        // bouton n'aurait aucun effet.
+        App.Settings.AllowFilterVarietyCreation = true;
         _dynamicFiltersMenu.IsExpanded = true;
         SelectedItem = _dynamicFiltersMenu;
     }
