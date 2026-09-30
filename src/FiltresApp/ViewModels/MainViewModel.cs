@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
 using FiltresApp.Services;
 using FiltresApp.ViewModels.Filtres;
@@ -17,6 +18,11 @@ public partial class MainViewModel : ObservableObject
     /// enfant affiche l'écran de cette variété (<see cref="DynamicFilterListViewModel"/>), avec la même
     /// disposition que l'ancien écran unique "Filtres F7 à H13".</summary>
     private readonly NavigationItem _dynamicFiltersMenu;
+
+    /// <summary>Menu "Aide" : à part de <see cref="NavigationItems"/> (pas dans l'arbre défilant), affiché
+    /// séparément tout en bas de la barre latérale (voir MainWindow.xaml) - toujours accessible sans avoir
+    /// à faire défiler le reste du menu.</summary>
+    public NavigationItem HelpItem { get; } = new("Aide", "❓", () => new HelpViewModel());
 
     /// <summary>Année consultée, partagée par tous les écrans de suivi de filtres (remplace l'ancienne
     /// remise à zéro annuelle : changer l'année ne supprime rien, l'historique reste consultable).</summary>
@@ -178,6 +184,7 @@ public partial class MainViewModel : ObservableObject
         _lastDisplayedItem = value;
         foreach (var item in NavigationItems) item.IsSelected = item == value;
         foreach (var child in _dynamicFiltersMenu.Children) child.IsSelected = child == value;
+        HelpItem.IsSelected = value == HelpItem;
 
         var vm = value?.GetOrCreateViewModel();
         // Recharge les données à chaque fois qu'on (re)sélectionne l'écran : nécessaire notamment pour
@@ -186,4 +193,8 @@ public partial class MainViewModel : ObservableObject
         if (vm is IReloadable reloadable) reloadable.Reload();
         CurrentViewModel = vm;
     }
+
+    /// <summary>Sélectionne "Aide" (bouton à part, en bas de la barre latérale - voir MainWindow.xaml).</summary>
+    [RelayCommand]
+    private void ShowHelp() => SelectedItem = HelpItem;
 }

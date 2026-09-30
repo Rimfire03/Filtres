@@ -1,0 +1,95 @@
+<UserControl x:Class="FiltresApp.Views.HelpView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             d:DataContext="{d:DesignInstance vm:HelpViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <ScrollViewer Margin="24">
+        <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="Aide" Style="{StaticResource HeaderText}"/>
+            <TextBlock Text="Rappel du fonctionnement des points les moins évidents de l'application." Style="{StaticResource SectionText}" Margin="0,4,0,16"/>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Mode édition" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Sur les écrans de filtres (G4, G3, Charbon, F7 à H14), le bouton rouge/vert en haut à
+                        droite masque par défaut les boutons Ajouter/Modifier/Dupliquer/Supprimer, pour éviter
+                        une modification accidentelle sur le terrain. Rouge = désactivé, vert = activé. Le
+                        pointage courant (case "Réalisé", date de changement) reste toujours accessible, avec
+                        ou sans le mode édition.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Dupliquer" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Copie la ligne sélectionnée (sans son historique ni son rattachement à Commande /
+                        Inventaire) et ouvre directement son édition pour ajuster les quelques champs qui
+                        diffèrent. Annuler l'édition n'enregistre rien : pratique pour saisir plusieurs
+                        filtres très proches sans tout ressaisir.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Couleur de ligne" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Clic droit sur une ligne (filtres, K7, Commande, Inventaire) → "Couleur" : liste les
+                        couleurs réglées dans Paramètres (section "Couleurs de ligne"). Reportée à
+                        l'impression. "Aucune couleur" retire la couleur de la ligne.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Puce « Lié »" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Verte si le filtre est rattaché à une ligne de Commande / Inventaire, rouge sinon.
+                        Absente pour les filtres lavables ("à laver"), qui ne peuvent jamais être rattachés.
+                        Le rattachement se fait depuis l'écran Commande, bouton "Rattacher des filtres...".
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Impression" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Une impression ne dépasse jamais une feuille de large, quel que soit le nombre de
+                        colonnes conservées. Les colonnes incluses se règlent dans Paramètres → "Colonnes
+                        imprimées" (un seul réglage partagé par tous les écrans de filtres). L'en-tête des
+                        colonnes se répète en haut de chaque page.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Lecture seule" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Un seul poste peut modifier la base à la fois (le premier à l'ouvrir). Les autres
+                        postes s'ouvrent en lecture seule, avec un bandeau jaune de rappel : fermez puis
+                        relancez l'application une fois le premier poste sorti pour reprendre la main.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Mise à jour" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Vérifiée automatiquement au démarrage (désactivable dans Paramètres), ou manuellement
+                        via "Vérifier maintenant". Une copie de sauvegarde de la base de données est faite
+                        avant toute installation.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -200,7 +200,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             Periodicity = source.Periodicity,
             K7Reference = source.K7Reference,
             HourCounter = source.HourCounter,
-            Notes = source.Notes,
             Commentaire = source.Commentaire,
             ChangedEvery15Days = source.ChangedEvery15Days,
             RowColorId = source.RowColorId
@@ -230,7 +229,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         if (ShowHourCounter)
             fields.Add(EditField.NullableInt("Compteur d'heures", () => entity.HourCounter, v => entity.HourCounter = v));
 
-        fields.Add(EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v));
         fields.Add(EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v));
 
         var ok = App.Dialogs.EditFields(isNew ? "Ajouter un filtre" : "Modifier le filtre", fields);

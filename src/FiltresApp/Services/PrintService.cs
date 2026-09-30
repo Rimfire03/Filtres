@@ -47,8 +47,9 @@ public class PrintService
         return formatted.Height;
     }
 
-    /// <param name="includeCheckboxColumn">Ajoute une dernière colonne "Fait" avec une grande case à cocher
-    /// vierge par ligne, à cocher à la main sur le terrain.</param>
+    /// <param name="includeCheckboxColumn">Ajoute une colonne "Fait" avec une grande case à cocher vierge
+    /// par ligne, à cocher à la main sur le terrain - toujours en toute première position (demandé
+    /// explicitement), quelles que soient les autres colonnes conservées.</param>
     /// <param name="printColumnsKey">Clé du réglage "Colonnes imprimées" (Paramètres) : colonnes de
     /// <paramref name="headers"/> exclues par l'utilisateur pour cet écran (voir
     /// <see cref="PrintableColumnsRegistry"/>). <paramref name="headers"/> sert alors aussi de clé de
@@ -354,11 +355,6 @@ public class PrintService
         }
         if (current.Count > 0 || pageChunks.Count == 0) pageChunks.Add(current);
 
-        // "Commentaire" passe après la case à cocher "Fait" (demandé explicitement), alors qu'elle est par
-        // ailleurs toujours la dernière colonne "texte" (voir MoveColumnLast) - seul cas où l'ordre visuel
-        // des colonnes diffère de l'ordre de "headers"/"finalWidths".
-        var commentAfterCheckbox = commentIndex >= 0 && commentIndex < textColumnCount && includeCheckboxColumn;
-
         var isFirstTable = true;
         foreach (var chunk in pageChunks)
         {
@@ -371,35 +367,27 @@ public class PrintService
             var isBreakBefore = !isFirstTable;
             isFirstTable = false;
 
-            for (var i = 0; i < textColumnCount; i++)
-            {
-                if (commentAfterCheckbox && i == commentIndex) continue;
-                table.Columns.Add(new TableColumn { Width = new GridLength(finalWidths[i], GridUnitType.Pixel) });
-            }
+            // "Fait" toujours en toute première colonne (demandé explicitement), quelle que soit la
+            // position des autres colonnes (ex. "Commentaire", toujours en dernière position - voir
+            // MoveColumnLast - ne dépend donc jamais de la case à cocher).
             if (includeCheckboxColumn) table.Columns.Add(new TableColumn { Width = new GridLength(checkboxColumnWidth) });
-            if (commentAfterCheckbox) table.Columns.Add(new TableColumn { Width = new GridLength(finalWidths[commentIndex], GridUnitType.Pixel) });
+            for (var i = 0; i < textColumnCount; i++)
+                table.Columns.Add(new TableColumn { Width = new GridLength(finalWidths[i], GridUnitType.Pixel) });
 
             table.RowGroups.Add(new TableRowGroup());
             var headerRow = new TableRow { Background = Brushes.LightGray, FontWeight = FontWeights.Bold };
-            for (var i = 0; i < headers.Length; i++)
-            {
-                if (commentAfterCheckbox && i == commentIndex) continue;
+            if (includeCheckboxColumn) headerRow.Cells.Add(NewCell(headers[textColumnCount], TextAlignment.Center));
+            for (var i = 0; i < textColumnCount; i++)
                 headerRow.Cells.Add(NewCell(headers[i], AlignmentFor(i)));
-            }
-            if (commentAfterCheckbox) headerRow.Cells.Add(NewCell(headers[commentIndex], AlignmentFor(commentIndex)));
             table.RowGroups[0].Rows.Add(headerRow);
 
             foreach (var (row, color) in chunk)
             {
                 var tr = new TableRow();
                 if (color.HasValue) tr.Background = new SolidColorBrush(color.Value);
-                for (var i = 0; i < row.Length; i++)
-                {
-                    if (commentAfterCheckbox && i == commentIndex) continue;
-                    tr.Cells.Add(NewCell(row[i], AlignmentFor(i)));
-                }
                 if (includeCheckboxColumn) tr.Cells.Add(NewCheckboxCell());
-                if (commentAfterCheckbox) tr.Cells.Add(NewCell(row[commentIndex], AlignmentFor(commentIndex)));
+                for (var i = 0; i < row.Length; i++)
+                    tr.Cells.Add(NewCell(row[i], AlignmentFor(i)));
                 table.RowGroups[0].Rows.Add(tr);
             }
 

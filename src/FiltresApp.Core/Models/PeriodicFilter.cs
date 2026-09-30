@@ -31,8 +31,6 @@ public class PeriodicFilter
     /// <summary>Référence libre vers la Liste K7 (pour G3 de type K7).</summary>
     public string? K7Reference { get; set; }
 
-    public string? Notes { get; set; }
-
     /// <summary>Commentaire libre, affiché en dernière colonne de la grille (voir README).</summary>
     public string? Commentaire { get; set; }
 

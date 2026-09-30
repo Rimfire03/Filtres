@@ -176,7 +176,6 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
             Dimension = source.Dimension,
             FilterType = source.FilterType,
             QuantityInPlace = source.QuantityInPlace,
-            Notes = source.Notes,
             Commentaire = source.Commentaire,
             DynamicFilterFamilyId = source.DynamicFilterFamilyId,
             RowColorId = source.RowColorId
@@ -202,7 +201,6 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
             EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
             EditField.NullableText("Type", () => entity.FilterType, v => entity.FilterType = v),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
-            EditField.Multiline("Notes", () => entity.Notes, v => entity.Notes = v),
             EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v)
         };
         var ok = App.Dialogs.EditFields(isNew ? $"Ajouter un filtre « {Variety.Nom} »" : "Modifier le filtre", fields);

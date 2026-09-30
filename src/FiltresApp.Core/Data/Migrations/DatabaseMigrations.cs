@@ -43,7 +43,20 @@ internal static class DatabaseMigrations
         (18, "Menu dépliant « Filtres F7 à H14 » : variétés de filtres créées librement", AddDynamicFilterSchema),
         (19, "Colonne Commentaire (écrans de filtres)", AddFilterCommentaireColumns),
         (20, "Colorisation des lignes (filtres, K7, Commande, Inventaire)", AddRowColorSchema),
+        (21, "Suppression du champ Notes (écrans de filtres, inutilisé hors édition)", RemoveFilterNotesColumns),
     };
+
+    /// <summary>Le champ "Notes" des filtres (PeriodicFilter/DynamicFilter) n'était accessible que depuis
+    /// la fenêtre Ajouter/Modifier - jamais affiché en grille ni à l'impression - retiré à la demande de
+    /// l'utilisateur. Sans rapport avec OrderLine.Notes ("Référence fournisseur", Commande/Inventaire),
+    /// activement affiché, qui n'est pas touché.</summary>
+    private static void RemoveFilterNotesColumns(FiltresDbContext ctx)
+    {
+        if (SchemaInspector.GetColumns(ctx, "PeriodicFilters").Contains("Notes"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicFilters" DROP COLUMN "Notes";""");
+        if (SchemaInspector.GetColumns(ctx, "DynamicFilters").Contains("Notes"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "DynamicFilters" DROP COLUMN "Notes";""");
+    }
 
     /// <summary>Colorisation de ligne (clic droit) : palette de couleurs nommées réglée dans Paramètres
     /// (table "RowColors", partagée en base comme les familles K7), et colonne "RowColorId" sur chaque

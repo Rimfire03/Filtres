@@ -17,7 +17,6 @@ public class DynamicFilter
     public string Dimension { get; set; } = string.Empty;
     public string? FilterType { get; set; }
     public int QuantityInPlace { get; set; }
-    public string? Notes { get; set; }
 
     /// <summary>Commentaire libre, affiché en dernière colonne de la grille (voir README).</summary>
     public string? Commentaire { get; set; }
