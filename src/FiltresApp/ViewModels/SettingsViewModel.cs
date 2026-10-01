@@ -26,6 +26,13 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _showBearingsModule;
     [ObservableProperty] private bool _showFiltresModule;
 
+    /// <summary>Les cases "Activer le module..." ne sont modifiables que si la licence couvre la
+    /// fonctionnalité correspondante - sinon l'utilisateur ne peut même pas activer un module auquel il
+    /// n'a pas droit (voir aussi NavigationItem.IsLicensed, qui grise l'entrée de menu dans le même cas).</summary>
+    public bool CanToggleFiltresModule => LicenseManager.HasFeature("filtres");
+    public bool CanToggleBeltsModule => LicenseManager.HasFeature("courroies");
+    public bool CanToggleBearingsModule => LicenseManager.HasFeature("roulements");
+
     public string CurrentVersion => App.CurrentVersion;
     public int DatabaseVersion => App.DatabaseVersion;
 

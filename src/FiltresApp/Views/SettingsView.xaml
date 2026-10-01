@@ -17,15 +17,18 @@
                 <StackPanel>
                     <TextBlock Text="Modules" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <DockPanel Margin="0,0,0,4" LastChildFill="False">
-                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Filtre » (G4, G3, Charbon, F7 à H14, Liste K7, Inventaire, Commande)" IsChecked="{Binding ShowFiltresModule}" VerticalAlignment="Center"/>
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Filtre » (G4, G3, Charbon, F7 à H14, Liste K7, Inventaire, Commande)" IsChecked="{Binding ShowFiltresModule}" IsEnabled="{Binding CanToggleFiltresModule}" VerticalAlignment="Center"
+                                  ToolTip="Nécessite une licence couvrant ce module"/>
                         <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenFiltreModuleSettingsCommand}" ToolTip="Paramètres du module « Filtre »"/>
                     </DockPanel>
                     <DockPanel Margin="0,0,0,4" LastChildFill="False">
-                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Courroies »" IsChecked="{Binding ShowBeltsModule}" VerticalAlignment="Center"/>
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Courroies »" IsChecked="{Binding ShowBeltsModule}" IsEnabled="{Binding CanToggleBeltsModule}" VerticalAlignment="Center"
+                                  ToolTip="Nécessite une licence couvrant ce module"/>
                         <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenBeltsModuleSettingsCommand}" ToolTip="Paramètres du module « Courroies »"/>
                     </DockPanel>
                     <DockPanel LastChildFill="False">
-                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Roulements »" IsChecked="{Binding ShowBearingsModule}" VerticalAlignment="Center"/>
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Roulements »" IsChecked="{Binding ShowBearingsModule}" IsEnabled="{Binding CanToggleBearingsModule}" VerticalAlignment="Center"
+                                  ToolTip="Nécessite une licence couvrant ce module"/>
                         <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenBearingsModuleSettingsCommand}" ToolTip="Paramètres du module « Roulements »"/>
                     </DockPanel>
                 </StackPanel>

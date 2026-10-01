@@ -35,7 +35,7 @@ public class AppSettings
     public bool ShowFiltresModule { get; set; } = true;
 
     /// <summary>Dossier contenant tout ce qui n'est pas l'exécutable lui-même (base de données, exports,
-    /// réglages) : seul FiltresApp.exe doit rester à la racine du dossier publié.</summary>
+    /// réglages) : seul l'exécutable doit rester à la racine du dossier publié.</summary>
     private static string DataDirectory => Path.Combine(AppContext.BaseDirectory, "FiltreData");
 
     private static string SettingsFilePath => Path.Combine(DataDirectory, "settings.json");

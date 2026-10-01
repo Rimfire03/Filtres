@@ -121,17 +121,20 @@ public class UpdateService
         var extractDir = Path.Combine(tempDir, "extracted");
         ZipFile.ExtractToDirectory(zipPath, extractDir);
 
-        // L'archive publiée place toujours FiltresApp.exe directement à sa racine (voir "Publier
-        // l'exécutable portable" dans le README) : vérifie que la structure est bien celle attendue
-        // avant de lancer le remplacement, plutôt que d'échouer silencieusement plus tard.
-        if (!File.Exists(Path.Combine(extractDir, "FiltresApp.exe")))
-            throw new InvalidOperationException("FiltresApp.exe introuvable à la racine de l'archive téléchargée.");
-
         var currentExePath = Environment.ProcessPath
             ?? throw new InvalidOperationException("Impossible de déterminer l'exécutable en cours d'exécution.");
+        var exeName = Path.GetFileName(currentExePath);
         var installDir = Path.GetDirectoryName(currentExePath)
             ?? throw new InvalidOperationException("Impossible de déterminer le dossier d'installation.");
         var currentPid = Environment.ProcessId;
+
+        // L'archive publiée place toujours l'exécutable directement à sa racine (voir "Publier
+        // l'exécutable portable" dans le README) : vérifie que la structure est bien celle attendue
+        // avant de lancer le remplacement, plutôt que d'échouer silencieusement plus tard. Le nom
+        // attendu est déduit de l'exécutable actuellement lancé plutôt que codé en dur, pour ne pas
+        // se désynchroniser si l'exécutable est renommé un jour.
+        if (!File.Exists(Path.Combine(extractDir, exeName)))
+            throw new InvalidOperationException($"{exeName} introuvable à la racine de l'archive téléchargée.");
 
         RunDetachedReplace(currentPid, extractDir, installDir, currentExePath, tempDir);
     }

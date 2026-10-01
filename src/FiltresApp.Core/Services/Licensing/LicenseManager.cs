@@ -3,7 +3,6 @@ namespace FiltresApp.Core.Services.Licensing;
 public static class LicenseManager
 {
     private const string Pz = "filtre";
-    private const int Gd = 30;
 
     private static readonly Rc3 Rq = new();
 
@@ -77,6 +76,11 @@ public static class LicenseManager
         Mode = LicenseMode.Blocked;
     }
 
+    // Une fois activée avec succès au moins une fois, la licence n'est plus jamais redemandée à
+    // l'utilisateur : la validation ci-dessous reste tentée à chaque lancement (pour rafraîchir les
+    // fonctionnalités/la date d'expiration affichées), mais un échec - serveur injoignable, ou refus
+    // explicite (révoquée/expirée/limite atteinte) - ne bloque plus jamais l'application ni ne ramène
+    // à l'écran de saisie : elle continue avec les dernières informations connues localement.
     private static async Task<LicenseCheckOutcome> Vs(Tu5 s)
     {
         try
@@ -91,29 +95,12 @@ public static class LicenseManager
                 Mode = LicenseMode.Active;
                 return new LicenseCheckOutcome(LicenseMode.Active, FooterText);
             }
-
-            Cs = s;
-            Mode = LicenseMode.Blocked;
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(r.R));
         }
-        catch
-        {
-            var gl = s.V.AddDays(Gd);
-            var hl = s.L?.Ex is { } ex && ex < gl ? ex : gl;
+        catch { }
 
-            if (DateTime.UtcNow <= hl)
-            {
-                Cs = s;
-                Mode = LicenseMode.Grace;
-                return new LicenseCheckOutcome(LicenseMode.Grace, FooterText, IsOfflineGrace: true);
-            }
-
-            Cs = s;
-            Mode = LicenseMode.Blocked;
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText,
-                "Le serveur de licences est injoignable depuis trop longtemps (ou la licence a expiré). " +
-                "Reconnectez-vous à internet, ou saisissez une nouvelle clé.");
-        }
+        Cs = s;
+        Mode = LicenseMode.Grace;
+        return new LicenseCheckOutcome(LicenseMode.Grace, FooterText, IsOfflineGrace: true);
     }
 
     private static string Bt(Vw2? l)
