@@ -36,6 +36,12 @@ public partial class App : Application
             ex.Handled = true;
         };
 
+        // Par défaut (OnLastWindowClose), fermer la fenêtre de saisie de la licence - avant que
+        // MainWindow existe - déclenche la fermeture de toute l'application, puisque c'est alors
+        // la seule fenêtre ouverte. Repassé à OnLastWindowClose juste après l'ouverture de
+        // MainWindow, pour que fermer celle-ci quitte bien l'application normalement.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
         if (!Qw9())
         {
             Shutdown(-1);
@@ -78,6 +84,7 @@ public partial class App : Application
         var mainWindow = new MainWindow();
         MainWindow = mainWindow;
         mainWindow.Show();
+        ShutdownMode = ShutdownMode.OnLastWindowClose;
 
         if (IsReadOnly)
             MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);
