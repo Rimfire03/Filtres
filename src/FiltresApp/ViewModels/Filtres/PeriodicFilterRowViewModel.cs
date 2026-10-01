@@ -55,7 +55,6 @@ public partial class PeriodicFilterRowViewModel : LinkedFilterRowViewModel
     public string MediaType => Filter.MediaType;
     public int QuantityInPlace => Filter.QuantityInPlace;
     public string PeriodicityDisplay => Filter.PeriodicityDisplay;
-    public string? K7Reference => Filter.K7Reference;
     public int? HourCounter => Filter.HourCounter;
     public DateOnly? NextDueDate => Filter.NextDueDate;
     public DateOnly? LastDoneDate => Filter.LastDoneDate;

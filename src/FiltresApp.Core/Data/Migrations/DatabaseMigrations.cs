@@ -44,7 +44,16 @@ internal static class DatabaseMigrations
         (19, "Colonne Commentaire (écrans de filtres)", AddFilterCommentaireColumns),
         (20, "Colorisation des lignes (filtres, K7, Commande, Inventaire)", AddRowColorSchema),
         (21, "Suppression du champ Notes (écrans de filtres, inutilisé hors édition)", RemoveFilterNotesColumns),
+        (22, "Suppression du champ Référence Liste K7 (écran Filtres G3)", RemoveK7ReferenceColumn),
     };
+
+    /// <summary>Le champ "Référence Liste K7" (écran Filtres G3) est retiré à la demande de l'utilisateur :
+    /// édition, export Excel et modèle.</summary>
+    private static void RemoveK7ReferenceColumn(FiltresDbContext ctx)
+    {
+        if (SchemaInspector.GetColumns(ctx, "PeriodicFilters").Contains("K7Reference"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicFilters" DROP COLUMN "K7Reference";""");
+    }
 
     /// <summary>Le champ "Notes" des filtres (PeriodicFilter/DynamicFilter) n'était accessible que depuis
     /// la fenêtre Ajouter/Modifier - jamais affiché en grille ni à l'impression - retiré à la demande de

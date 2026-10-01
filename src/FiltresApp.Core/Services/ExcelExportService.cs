@@ -53,7 +53,6 @@ public class ExcelExportService
             .ToLookup(r => r.PeriodicFilterId);
 
         var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place", "Périodicité" };
-        if (category == FilterCategory.G3) headers.Add("Réf. K7");
         if (category == FilterCategory.Charbon) headers.Add("Compteur d'heures");
         var firstMonthCol = headers.Count + 1;
         for (var m = 1; m <= 12; m++)
@@ -82,7 +81,6 @@ public class ExcelExportService
                 ws.Cell(row, col++).Value = f.MediaType;
                 ws.Cell(row, col++).Value = f.QuantityInPlace;
                 ws.Cell(row, col++).Value = f.PeriodicityDisplay;
-                if (category == FilterCategory.G3) ws.Cell(row, col++).Value = f.K7Reference ?? "";
                 if (category == FilterCategory.Charbon) ws.Cell(row, col++).Value = f.HourCounter;
 
                 var repsForFilter = replacements[f.Id];

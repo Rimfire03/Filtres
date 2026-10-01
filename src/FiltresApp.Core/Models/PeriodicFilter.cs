@@ -28,9 +28,6 @@ public class PeriodicFilter
     /// <summary>Uniquement pour Charbon : compteur d'heures.</summary>
     public int? HourCounter { get; set; }
 
-    /// <summary>Référence libre vers la Liste K7 (pour G3 de type K7).</summary>
-    public string? K7Reference { get; set; }
-
     /// <summary>Commentaire libre, affiché en dernière colonne de la grille (voir README).</summary>
     public string? Commentaire { get; set; }
 

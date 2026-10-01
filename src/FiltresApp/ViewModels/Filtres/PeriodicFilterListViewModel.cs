@@ -16,7 +16,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     public string Title { get; }
     public bool ShowHourCounter => _category == FilterCategory.Charbon;
-    public bool ShowK7Reference => _category == FilterCategory.G3;
 
     /// <summary>Regroupement automatique par famille déduite de la Dimension, demandé uniquement pour
     /// l'écran "Filtres G3" (voir <see cref="PeriodicFilterRowViewModel.DimensionFamilyLabel"/>) :
@@ -198,7 +197,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             MediaType = source.MediaType,
             QuantityInPlace = source.QuantityInPlace,
             Periodicity = source.Periodicity,
-            K7Reference = source.K7Reference,
             HourCounter = source.HourCounter,
             Commentaire = source.Commentaire,
             ChangedEvery15Days = source.ChangedEvery15Days,
@@ -222,9 +220,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.MonthsField("Périodicité de remplacement (mois)", () => months, v => months = v)
         };
-
-        if (ShowK7Reference)
-            fields.Add(EditField.NullableText("Référence Liste K7", () => entity.K7Reference, v => entity.K7Reference = v));
 
         if (ShowHourCounter)
             fields.Add(EditField.NullableInt("Compteur d'heures", () => entity.HourCounter, v => entity.HourCounter = v));
