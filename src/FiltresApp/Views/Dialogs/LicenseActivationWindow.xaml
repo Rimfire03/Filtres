@@ -16,19 +16,19 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Activation de la licence" Style="{StaticResource HeaderText}"/>
-        <TextBlock x:Name="BlockedMessageText" Grid.Row="1" Margin="0,8,0,16" TextWrapping="Wrap"
+        <TextBlock x:Name="Qa" Grid.Row="1" Margin="0,8,0,16" TextWrapping="Wrap"
                    Foreground="{StaticResource BrushTextSecondary}"/>
 
         <TextBlock Grid.Row="2" Text="Clé de licence :" Margin="0,0,0,6" FontWeight="SemiBold"/>
-        <TextBox x:Name="LicenseKeyBox" Grid.Row="3" FontSize="14" Padding="8,6"
-                 KeyDown="LicenseKeyBox_KeyDown"/>
+        <TextBox x:Name="Qb" Grid.Row="3" FontSize="14" Padding="8,6"
+                 KeyDown="Qd"/>
 
-        <TextBlock Grid.Row="4" x:Name="StatusText" Margin="0,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top"
+        <TextBlock Grid.Row="4" x:Name="Qf" Margin="0,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top"
                    Foreground="{StaticResource BrushDanger}"/>
 
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Quitter" Style="{StaticResource SecondaryButton}" Width="90" Click="Quit_Click"/>
-            <Button x:Name="ActivateButton" Content="Activer" Style="{StaticResource PrimaryButton}" Width="110" Click="Activate_Click"/>
+            <Button Content="Quitter" Style="{StaticResource SecondaryButton}" Width="90" Click="Qg"/>
+            <Button x:Name="Qe" Content="Activer" Style="{StaticResource PrimaryButton}" Width="110" Click="Qc"/>
         </StackPanel>
     </Grid>
 </Window>

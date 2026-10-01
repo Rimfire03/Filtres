@@ -4,82 +4,72 @@ using System.Text.Json;
 
 namespace FiltresApp.Core.Services.Licensing;
 
-/// <summary>Appels au serveur de licences multi-produits (https://licences.tlpc.fr), sans authentification
-/// (la clé de licence fait office de secret). Le produit de cette application est "filtre".</summary>
-internal class LicenseClient
+internal class Rc3
 {
-    private const string BaseUrl = "https://licences.tlpc.fr";
+    private static readonly string U0 = Yx4.Z("Mi4uKilgdXU2Mzk/NDk/KXQuNio5dDwo");
+    private static readonly string U1 = Yx4.Z("dSxrdTs5LjMsOy4/");
+    private static readonly string U2 = Yx4.Z("dSxrdSw7NjM+Oy4/");
+    private static readonly string U3 = Yx4.Z("dSxrdT4/OzkuMyw7Lj8=");
 
-    private static readonly HttpClient Http = CreateHttpClient();
+    private static readonly HttpClient H = N();
 
-    private static HttpClient CreateHttpClient()
+    private static HttpClient N()
     {
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-        client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
-        return client;
+        var c = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        c.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        return c;
     }
 
-    public Task<LicenseApiResult> ActivateAsync(string licenseKey, string productSlug, string deviceId, string? deviceName) =>
-        PostAsync("/v1/activate", new { licenseKey, productSlug, deviceId, deviceName });
+    public Task<Qp6> M1(string k, string p, string d, string? n) => M4(U1, new { licenseKey = k, productSlug = p, deviceId = d, deviceName = n });
 
-    public Task<LicenseApiResult> ValidateAsync(string licenseKey, string productSlug, string deviceId) =>
-        PostAsync("/v1/validate", new { licenseKey, productSlug, deviceId });
+    public Task<Qp6> M2(string k, string p, string d) => M4(U2, new { licenseKey = k, productSlug = p, deviceId = d });
 
-    /// <summary>Libère l'activation de ce poste. Best-effort : un échec réseau ne doit jamais empêcher la
-    /// déconnexion locale (voir LicenseManager.DeactivateAsync, qui efface le fichier local dans tous les cas).</summary>
-    public async Task DeactivateAsync(string licenseKey, string productSlug, string deviceId)
+    public async Task M3(string k, string p, string d)
     {
         try
         {
-            using var content = JsonContent(new { licenseKey, productSlug, deviceId });
-            using var response = await Http.PostAsync(BaseUrl + "/v1/deactivate", content);
+            using var c = J(new { licenseKey = k, productSlug = p, deviceId = d });
+            using var r = await H.PostAsync(U0 + U3, c);
         }
-        catch
-        {
-            // best-effort, voir ci-dessus.
-        }
+        catch { }
     }
 
-    private static StringContent JsonContent(object body) =>
-        new(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+    private static StringContent J(object b) => new(JsonSerializer.Serialize(b), Encoding.UTF8, "application/json");
 
-    private static async Task<LicenseApiResult> PostAsync(string path, object body)
+    private static async Task<Qp6> M4(string path, object body)
     {
-        using var content = JsonContent(body);
-        using var response = await Http.PostAsync(BaseUrl + path, content);
-        var text = await response.Content.ReadAsStringAsync();
+        using var c = J(body);
+        using var r = await H.PostAsync(U0 + path, c);
+        var t = await r.Content.ReadAsStringAsync();
 
-        using var doc = JsonDocument.Parse(text);
+        using var doc = JsonDocument.Parse(t);
         var root = doc.RootElement;
 
-        var valid = root.TryGetProperty("valid", out var validEl) && validEl.ValueKind == JsonValueKind.True;
-        var reason = root.TryGetProperty("reason", out var reasonEl) ? reasonEl.GetString() : null;
+        var ok = root.TryGetProperty("valid", out var ve) && ve.ValueKind == JsonValueKind.True;
+        var reason = root.TryGetProperty("reason", out var re) ? re.GetString() : null;
 
-        LicenseInfo? license = null;
-        if (valid && root.TryGetProperty("license", out var licEl))
+        Vw2? lic = null;
+        if (ok && root.TryGetProperty("license", out var le))
         {
-            license = new LicenseInfo
+            lic = new Vw2
             {
-                Key = GetString(licEl, "key"),
-                Product = GetString(licEl, "product") ?? "",
-                Type = GetString(licEl, "type"),
-                ExpiresAt = GetDate(licEl, "expiresAt"),
-                MaxActivations = licEl.TryGetProperty("maxActivations", out var maxEl) && maxEl.ValueKind == JsonValueKind.Number ? maxEl.GetInt32() : 0,
-                Features = licEl.TryGetProperty("features", out var featEl) && featEl.ValueKind == JsonValueKind.Array
-                    ? featEl.EnumerateArray().Select(f => f.GetString() ?? "").Where(f => f.Length > 0).ToList()
+                K = G1(le, "key"),
+                P = G1(le, "product") ?? "",
+                T = G1(le, "type"),
+                Ex = G2(le, "expiresAt"),
+                Mx = le.TryGetProperty("maxActivations", out var me) && me.ValueKind == JsonValueKind.Number ? me.GetInt32() : 0,
+                Ft = le.TryGetProperty("features", out var fe) && fe.ValueKind == JsonValueKind.Array
+                    ? fe.EnumerateArray().Select(f => f.GetString() ?? "").Where(f => f.Length > 0).ToList()
                     : new List<string>()
             };
         }
 
-        return new LicenseApiResult(valid, license, reason);
+        return new Qp6(ok, lic, reason);
     }
 
-    private static string? GetString(JsonElement element, string property) =>
-        element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+    private static string? G1(JsonElement e, string p) => e.TryGetProperty(p, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
 
-    private static DateTime? GetDate(JsonElement element, string property) =>
-        element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String
-            && DateTime.TryParse(value.GetString(), null, System.Globalization.DateTimeStyles.RoundtripKind, out var parsed)
-            ? parsed
-            : null;
+    private static DateTime? G2(JsonElement e, string p) =>
+        e.TryGetProperty(p, out var v) && v.ValueKind == JsonValueKind.String
+        && DateTime.TryParse(v.GetString(), null, System.Globalization.DateTimeStyles.RoundtripKind, out var d) ? d : null;
 }

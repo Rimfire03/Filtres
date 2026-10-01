@@ -36,9 +36,7 @@ public partial class App : Application
             ex.Handled = true;
         };
 
-        // Contrôle de licence : tant qu'aucune licence utilisable n'est disponible, seul l'écran de
-        // saisie de clé est accessible (voir App.Licensing.cs). Avant tout accès à la base.
-        if (!EnsureLicensedAtStartup())
+        if (!Qw9())
         {
             Shutdown(-1);
             return;

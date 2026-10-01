@@ -8,7 +8,7 @@ roulements. Stockage SQLite portable, exécutable unique autonome (aucune instal
 ```
 FiltresApp.sln
 src/
-  FiltresApp.Core/   Modèles, DbContext EF Core, services métier, licence (sans WPF)
+  FiltresApp.Core/   Modèles, DbContext EF Core, services métier (sans WPF)
   FiltresApp/         Application WPF (MVVM, CommunityToolkit.Mvvm)
 ```
 
@@ -57,13 +57,12 @@ Pour distribuer : copier tout le contenu du dossier `publish\` (l'exe a besoin d
 ## Emplacement des données
 
 Seul l'exécutable reste à la racine du dossier publié : tout le reste (base de données, exports,
-réglages, police PDF, licence) est dans le sous-dossier **`FiltreData\`**, à côté de l'exe.
+réglages, police PDF) est dans le sous-dossier **`FiltreData\`**, à côté de l'exe.
 
 - `FiltreData\settings.json` : chemins (base de données, dossier d'export PDF) et options,
   modifiables dans l'écran **Paramètres**. Changer le chemin de la base redémarre
   automatiquement l'application pour l'ouvrir à son nouvel emplacement.
 - `FiltreData\filtres.db` : base SQLite.
-- `FiltreData\license.dat` : licence (chiffré), voir « Système de licence » plus bas.
 - Le choix des colonnes affichées et leurs largeurs (par écran) sont propres à chaque poste,
   stockés dans `%LocalAppData%\FiltresApp\grilles.json` (pas dans `FiltreData\`, donc pas
   partagés entre postes même si l'exécutable et la base sont sur un disque réseau).
@@ -83,30 +82,6 @@ synchronisé type OneDrive/Dropbox, qui corromprait le fichier SQLite). Accès e
   l'accès en écriture une fois le rédacteur sorti.
 - Les utilisateurs doivent avoir les droits d'écriture sur le dossier de la base. Ne jamais
   activer le mode WAL de SQLite (ne fonctionne pas sur un disque réseau).
-
-## Système de licence
-
-Contrôle de licence auprès d'un serveur externe (produit `"filtre"`, fonctionnalités
-`"filtres"` / `"courroies"` / `"roulements"` — une par module).
-
-- **Bypass "licence gratuite"**, deux moyens équivalents (aucun appel réseau, tout accessible,
-  pied de page "Licence gratuite") :
-  - `LicenseConfig.DisableLicensing = true` (`src\FiltresApp.Core\Services\Licensing\LicenseConfig.cs`)
-    — interrupteur de build, à activer avant de publier une release sans licence.
-  - Fichier vide `FiltreData\licence.ini` — pour un poste donné, sans toucher au build.
-- **Sans licence utilisable** (ni bypass, ni fichier de licence stocké, ni grâce hors-ligne) :
-  l'application entière est bloquée sur l'écran de saisie de clé, seul point d'entrée possible.
-- **Licence stockée** chiffrée dans `FiltreData\license.dat`, avec un `deviceId` généré une
-  seule fois (GUID, pas un identifiant matériel) : comme `FiltreData` est partagé entre postes,
-  tous utilisent le même `deviceId` et la même activation.
-- **Grâce hors-ligne** : si le serveur est injoignable, l'application reste utilisable jusqu'à
-  30 jours après la dernière validation réussie, sans jamais dépasser la date d'expiration
-  propre de la licence si elle est plus proche.
-- **Module activé dans Paramètres mais non couvert par la licence** : reste visible dans le
-  menu, grisé et non cliquable (jamais masqué silencieusement) — l'utilisateur comprend ainsi
-  qu'une licence est nécessaire.
-- **Paramètres → carte "Licence"** : état courant, bouton "Se déconnecter / changer de
-  licence" (libère l'activation côté serveur, efface `license.dat`, referme l'application).
 
 ## Modules et écrans
 
@@ -143,7 +118,6 @@ ligne reste à gauche).
 ## Paramètres
 
 - **Modules** : activer/désactiver chaque module, roue dentée vers ses réglages spécifiques.
-- **Licence** : voir plus haut (masquée en licence gratuite).
 - **Général** : chemins (base de données, export PDF), logo de l'entreprise (stocké en base,
   commun à tous les postes), mises à jour automatiques (vérifie les releases GitHub, sauvegarde
   la base avant d'installer), sauvegarde manuelle (export/import d'un fichier `.db`).
@@ -183,13 +157,12 @@ pour rendre chaque migration idempotente.
 **`FiltresApp.Core`** (sans WPF) :
 - `Models/` : entités EF Core. `Data/FiltresDbContext.cs` : le contexte.
 - `Data/Migrations/DatabaseMigrations.cs` + `Data/SchemaInspector.cs` : schéma et son évolution.
-- `Services/Licensing/` : client HTTP, stockage chiffré, orchestration de la licence.
 - `Services/` : règles métier (suivi des remplacements, rattachement filtres/commande, calcul du
   besoin, formats de dimension...) et exports Excel/PDF.
 
 **`FiltresApp`** (WPF, MVVM) :
-- `App.xaml.cs` + fichiers partiels (`App.Database.cs`, `App.Licensing.cs`, `App.CompanyLogo.cs`,
-  `App.Modules.cs`, `App.Updates.cs`) : démarrage, licence, lecture seule, contrôle de version.
+- `App.xaml.cs` + fichiers partiels (`App.Database.cs`, `App.CompanyLogo.cs`, `App.Modules.cs`,
+  `App.Updates.cs`) : démarrage, lecture seule, contrôle de version.
 - `ViewModels/` : un ViewModel par écran, découpés en fichiers partiels par sujet pour les gros
   écrans (ex. `*.Families.cs`, `SettingsViewModel.Logo.cs`/`.History.cs`/`.Updates.cs`).
 - `Services/` : dialogues, impression, préférences de colonnes, chargement d'image.

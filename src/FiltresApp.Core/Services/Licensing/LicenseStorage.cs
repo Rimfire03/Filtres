@@ -3,51 +3,42 @@ using System.Text.Json;
 
 namespace FiltresApp.Core.Services.Licensing;
 
-/// <summary>Lecture/écriture du fichier de licence local (chiffré, voir <see cref="LicenseCrypto"/>) et
-/// détection du bypass "licence gratuite" par fichier - tous deux dans FiltreData, le même dossier de
-/// données partagé que le reste de l'application (base de données, exports, réglages). Le fichier de
-/// licence est donc lui aussi partagé entre tous les postes utilisant ce FiltreData : ils lisent le même
-/// deviceId (généré une seule fois) et bénéficient ainsi de la même licence activée, sans consommer
-/// plusieurs activations.</summary>
-internal static class LicenseStorage
+internal static class Nf8
 {
-    private static string DataDirectory => Path.Combine(AppContext.BaseDirectory, "FiltreData");
-    private static string LicenseFilePath => Path.Combine(DataDirectory, "license.dat");
-    private static string FreeLicenseFlagPath => Path.Combine(DataDirectory, "licence.ini");
+    private static readonly string D0 = Yx4.Z("HDM2Lig/HjsuOw==");
+    private static readonly string D1 = Yx4.Z("NjM5PzQpP3Q+Oy4=");
+    private static readonly string D2 = Yx4.Z("NjM5PzQ5P3QzNDM=");
 
-    /// <summary>Fichier vide "licence.ini" dans FiltreData : bypass "licence gratuite" pour un cas d'usage
-    /// terrain (voir LicenseConfig pour l'interrupteur de build équivalent).</summary>
-    public static bool HasFreeLicenseFlag() => File.Exists(FreeLicenseFlagPath);
+    private static string P0 => Path.Combine(AppContext.BaseDirectory, D0);
+    private static string P1 => Path.Combine(P0, D1);
+    private static string P2 => Path.Combine(P0, D2);
 
-    public static LicenseState? Load()
+    public static bool F1() => File.Exists(P2);
+
+    public static Tu5? L()
     {
         try
         {
-            if (!File.Exists(LicenseFilePath)) return null;
-            var cipher = File.ReadAllBytes(LicenseFilePath);
-            var plain = LicenseCrypto.Decrypt(cipher);
-            var json = Encoding.UTF8.GetString(plain);
-            return JsonSerializer.Deserialize<LicenseState>(json);
+            if (!File.Exists(P1)) return null;
+            var c = File.ReadAllBytes(P1);
+            var p = Yx4.F(c);
+            var j = Encoding.UTF8.GetString(p);
+            return JsonSerializer.Deserialize<Tu5>(j);
         }
-        catch
-        {
-            // Fichier corrompu, modifié à la main ou chiffré avec une autre clé : traité comme absent,
-            // l'utilisateur devra réactiver sa licence.
-            return null;
-        }
+        catch { return null; }
     }
 
-    public static void Save(LicenseState state)
+    public static void S(Tu5 s)
     {
-        Directory.CreateDirectory(DataDirectory);
-        var json = JsonSerializer.Serialize(state);
-        var cipher = LicenseCrypto.Encrypt(Encoding.UTF8.GetBytes(json));
-        File.WriteAllBytes(LicenseFilePath, cipher);
+        Directory.CreateDirectory(P0);
+        var j = JsonSerializer.Serialize(s);
+        var c = Yx4.E(Encoding.UTF8.GetBytes(j));
+        File.WriteAllBytes(P1, c);
     }
 
-    public static void Delete()
+    public static void X()
     {
-        try { if (File.Exists(LicenseFilePath)) File.Delete(LicenseFilePath); }
-        catch { /* best-effort */ }
+        try { if (File.Exists(P1)) File.Delete(P1); }
+        catch { }
     }
 }
