@@ -31,6 +31,16 @@
                 </StackPanel>
             </Border>
 
+            <!-- Licence : masquée en licence gratuite (flag de build ou licence.ini), rien à déconnecter. -->
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16" Visibility="{Binding ShowLicenseCard, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="Licence" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding LicenseStatusText}" Style="{StaticResource SectionText}" Margin="0,0,0,10"/>
+                    <Button Content="Se déconnecter / changer de licence" Style="{StaticResource DangerButton}"
+                            Command="{Binding DisconnectLicenseCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+
             <!-- ==================== Général (commun à tous les modules) ==================== -->
             <TextBlock Text="Général" FontSize="16" FontWeight="Bold" Foreground="{StaticResource BrushPrimary}" Margin="0,4,0,12"/>
 

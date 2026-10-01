@@ -25,6 +25,12 @@ public partial class NavigationItem : ObservableObject
     /// activables "Courroies" / "Roulements"), pas un écran : jamais sélectionnable, voir MainWindow.xaml.</summary>
     public bool IsSeparator { get; }
 
+    /// <summary>Faux si la fonctionnalité du module correspondant n'est pas présente dans la licence active
+    /// (voir LicenseManager.HasFeature, réévalué par MainViewModel.RefreshModuleVisibility) : l'entrée reste
+    /// visible (l'utilisateur l'a activée dans Paramètres) mais grisée et non cliquable, voir
+    /// MainWindow.xaml - jamais juste masquée, pour que l'utilisateur comprenne qu'une licence est requise.</summary>
+    [ObservableProperty] private bool _isLicensed = true;
+
     public NavigationItem(string title, string icon, Func<object>? factory, int? varietyId = null, bool isSeparator = false)
     {
         _title = title;

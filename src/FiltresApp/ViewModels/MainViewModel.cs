@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services.Licensing;
 using FiltresApp.Services;
 using FiltresApp.ViewModels.Filtres;
 using Microsoft.EntityFrameworkCore;
@@ -178,6 +179,24 @@ public partial class MainViewModel : ObservableObject
         {
             NavigationItems.Remove(_modulesSeparatorBetween);
         }
+
+        RefreshLicenseGating();
+    }
+
+    /// <summary>Un module activé dans Paramètres mais dont la fonctionnalité n'est pas couverte par la
+    /// licence active reste visible (l'utilisateur comprend ainsi qu'il existe) mais grisé et non cliquable
+    /// (voir NavigationItem.IsLicensed et MainWindow.xaml) - jamais juste masqué silencieusement.</summary>
+    private void RefreshLicenseGating()
+    {
+        var filtresLicensed = LicenseManager.HasFeature("filtres");
+        foreach (var item in _filtreItems)
+        {
+            item.IsLicensed = filtresLicensed;
+            foreach (var child in item.Children) child.IsLicensed = filtresLicensed;
+        }
+
+        _beltsItem.IsLicensed = LicenseManager.HasFeature("courroies");
+        _bearingsItem.IsLicensed = LicenseManager.HasFeature("roulements");
     }
 
     /// <summary>Appelé par <see cref="FilterVarietyListViewModel.ToggleEditMode"/> (bouton rouge/vert

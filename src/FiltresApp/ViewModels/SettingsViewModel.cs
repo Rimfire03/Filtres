@@ -1,7 +1,9 @@
 using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Services;
+using FiltresApp.Core.Services.Licensing;
 using FiltresApp.Services;
 using Microsoft.Win32;
 
@@ -107,6 +109,25 @@ public partial class SettingsViewModel : ObservableObject
 
     [RelayCommand]
     private void OpenBearingsModuleSettings() => _main.SelectedItem = _main.BearingsSettingsItem;
+
+    /// <summary>Carte "Licence" masquée en licence gratuite (flag de build ou licence.ini) : rien à
+    /// afficher ni à déconnecter dans ce cas.</summary>
+    public bool ShowLicenseCard => !LicenseManager.IsFreeLicense;
+    public string LicenseStatusText => LicenseManager.FooterText;
+
+    /// <summary>"Se déconnecter / changer de licence" : libère l'activation côté serveur puis efface la
+    /// licence stockée localement (jamais licence.ini) et referme l'application - l'écran de saisie de
+    /// clé s'affichera au prochain lancement.</summary>
+    [RelayCommand]
+    private async Task DisconnectLicense()
+    {
+        if (!App.Dialogs.ShowConfirm("Changer de licence",
+                "Déconnecter cette licence ? L'application va se fermer ; relancez-la pour saisir une nouvelle clé."))
+            return;
+
+        await LicenseManager.DeactivateAsync();
+        Application.Current.Shutdown();
+    }
 
     /// <summary>Année à exporter en Excel : sélecteur propre à cette carte (indépendant de l'année consultée
     /// dans la barre latérale), placé par défaut sur l'année en cours.</summary>

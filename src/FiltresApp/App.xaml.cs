@@ -2,7 +2,9 @@ using System.IO;
 using System.Windows;
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Services;
+using FiltresApp.Core.Services.Licensing;
 using FiltresApp.Services;
+using FiltresApp.Views.Dialogs;
 
 namespace FiltresApp;
 
@@ -33,6 +35,14 @@ public partial class App : Application
             MessageBox.Show(ex.Exception.ToString(), "Erreur non gérée", MessageBoxButton.OK, MessageBoxImage.Error);
             ex.Handled = true;
         };
+
+        // Contrôle de licence : tant qu'aucune licence utilisable n'est disponible, seul l'écran de
+        // saisie de clé est accessible (voir App.Licensing.cs). Avant tout accès à la base.
+        if (!EnsureLicensedAtStartup())
+        {
+            Shutdown(-1);
+            return;
+        }
 
         try
         {
