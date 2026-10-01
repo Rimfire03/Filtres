@@ -287,9 +287,10 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     }
 
     /// <summary>"Consulter l'historique..." (menu contextuel de la grille, visible sur toutes les
-    /// catégories) : ouvre une fenêtre de lecture seule listant, pour l'année choisie parmi celles où ce
-    /// filtre précis a effectivement de l'historique, les 12 mois avec statut réalisé/date. Ne modifie
-    /// jamais rien (l'édition reste via la case à cocher de la grille principale).</summary>
+    /// catégories) : ouvre une fenêtre listant tous les mois où ce filtre précis a effectivement un
+    /// changement enregistré, avec possibilité d'en supprimer (clic droit). La grille principale est
+    /// rechargée à la fermeture pour refléter une éventuelle suppression (case "Réalisé" / date du mois
+    /// consulté).</summary>
     public void ShowHistory(PeriodicFilter filter)
     {
         var replacements = App.Db.FilterReplacements
@@ -297,6 +298,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             .Where(r => r.PeriodicFilterId == filter.Id)
             .ToList();
         App.Dialogs.ShowFilterHistory(_locationColumnLabel, filter.Location, filter.Dimension, replacements);
+        Reload();
     }
 
     /// <summary>Seule impression de l'écran : feuille de terrain reprenant uniquement ce qui est visible

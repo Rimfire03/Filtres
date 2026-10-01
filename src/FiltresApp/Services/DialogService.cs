@@ -14,6 +14,8 @@ public interface IDialogService
     List<FilterRef>? PickFilterLinks(List<FilterPickItem> items);
     void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements);
     void ShowDynamicFilterHistory(string location, string dimension, List<DynamicFilterReplacement> replacements);
+    void ShowBeltHistory(string location, List<BeltReplacement> replacements);
+    void ShowBearingHistory(string location, List<BearingReplacement> replacements);
 }
 
 public class DialogService : IDialogService
@@ -49,6 +51,18 @@ public class DialogService : IDialogService
     public void ShowDynamicFilterHistory(string location, string dimension, List<DynamicFilterReplacement> replacements)
     {
         var window = new DynamicFilterHistoryWindow(location, dimension, replacements) { Owner = Application.Current.MainWindow };
+        window.ShowDialog();
+    }
+
+    public void ShowBeltHistory(string location, List<BeltReplacement> replacements)
+    {
+        var window = new BeltHistoryWindow(location, replacements) { Owner = Application.Current.MainWindow };
+        window.ShowDialog();
+    }
+
+    public void ShowBearingHistory(string location, List<BearingReplacement> replacements)
+    {
+        var window = new BearingHistoryWindow(location, replacements) { Owner = Application.Current.MainWindow };
         window.ShowDialog();
     }
 }

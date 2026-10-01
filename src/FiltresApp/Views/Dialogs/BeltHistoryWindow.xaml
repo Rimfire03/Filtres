@@ -1,4 +1,4 @@
-<Window x:Class="FiltresApp.Views.Dialogs.DynamicFilterHistoryWindow"
+<Window x:Class="FiltresApp.Views.Dialogs.BeltHistoryWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Consulter l'historique"
@@ -23,13 +23,10 @@
         </StackPanel>
 
         <TextBlock x:Name="NoHistoryText" Grid.Row="3" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
-                   Text="Aucun historique disponible pour ce filtre : aucun remplacement enregistré en base pour l'instant."/>
+                   Text="Aucun historique disponible pour cette courroie : aucun remplacement enregistré en base pour l'instant."/>
 
-        <!-- Pas de notion de mois fixe pour cette variété : liste chronologique des remplacements datés
-             de l'année consultée, plutôt qu'une grille à 12 mois. -->
         <!-- Clic droit sur une ligne : menu "Supprimer cet enregistrement" construit dans le code-behind
-             (voir ReplacementsGrid_PreviewMouseRightButtonUp) - un MenuItem avec Click défini directement en
-             XAML à l'intérieur d'un Setter.Value de Style n'est pas résolu par le compilateur XAML. -->
+             (voir ReplacementsGrid_PreviewMouseRightButtonUp). -->
         <DataGrid x:Name="ReplacementsGrid" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}"
                   PreviewMouseRightButtonUp="ReplacementsGrid_PreviewMouseRightButtonUp">

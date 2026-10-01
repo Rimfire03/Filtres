@@ -109,7 +109,7 @@
                                         CellTemplate="{StaticResource LinkDotCellTemplate}"/>
                 <!-- Filtres d'affichage placés dans le bas du bandeau des titres : "contient" sur le nom, liste
                      des dimensions présentes (PeriodicFilterListViewModel.HeaderFilter). -->
-                <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Filtres" Binding="{Binding Location}" SortMemberPath="Location" Width="2.2*" IsReadOnly="True" ElementStyle="{StaticResource BoldWrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
                 <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="1.02*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding MediaType}" Width="0.92*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.65*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>

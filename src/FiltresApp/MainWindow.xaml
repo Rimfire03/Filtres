@@ -94,6 +94,34 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- "Paramètres" : juste au-dessus de "Aide" ci-dessus, même traitement (à part du menu
+                         défilant, toujours accessible). -->
+                    <Border DockPanel.Dock="Bottom" Margin="6,0,6,8" CornerRadius="6" Cursor="Hand">
+                        <Border.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding ShowSettingsCommand}"/>
+                        </Border.InputBindings>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SettingsItem.IsSelected}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource BrushSidebarSelected}"/>
+                                    </DataTrigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource BrushSidebarHover}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel Orientation="Horizontal" Margin="14,7">
+                            <TextBlock Text="{Binding SettingsItem.Icon}" Margin="0,0,10,0" FontSize="14" VerticalAlignment="Center" Foreground="#CBD5E1"/>
+                            <TextBlock Text="{Binding SettingsItem.Title}" FontSize="13" VerticalAlignment="Center" Foreground="#CBD5E1"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Séparateur entre le menu défilant (modules) et la section épinglée Paramètres/Aide ci-dessus. -->
+                    <Border DockPanel.Dock="Bottom" Height="1" Background="{StaticResource BrushSidebarBorder}" Margin="16,4,16,8"/>
+
                     <!-- Menu de navigation -->
                     <TreeView x:Name="NavigationTree" ItemsSource="{Binding NavigationItems}"
                               Background="Transparent" BorderThickness="0" Margin="4,0"
@@ -109,6 +137,9 @@
                                     <Setter.Value>
                                         <ControlTemplate TargetType="TreeViewItem">
                                             <StackPanel Margin="0,1">
+                                                <!-- Simple ligne de séparation (NavigationItem.IsSeparator) : ni sélectionnable ni
+                                                     survolable, voir le DataTrigger tout en bas qui bascule l'affichage. -->
+                                                <Border x:Name="SeparatorLine" Height="1" Background="{StaticResource BrushSidebarBorder}" Margin="16,8" Visibility="Collapsed"/>
                                                 <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Margin="6,1" Padding="8,7">
                                                     <DockPanel LastChildFill="True">
                                                         <ToggleButton x:Name="Expander" DockPanel.Dock="Left" Width="22" Height="22"
@@ -149,6 +180,12 @@
                                                     <Setter Property="Foreground" Value="White"/>
                                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                                 </Trigger>
+                                                <DataTrigger Binding="{Binding IsSeparator}" Value="True">
+                                                    <Setter TargetName="SeparatorLine" Property="Visibility" Value="Visible"/>
+                                                    <Setter TargetName="Bd" Property="Visibility" Value="Collapsed"/>
+                                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                                    <Setter Property="Focusable" Value="False"/>
+                                                </DataTrigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Setter.Value>

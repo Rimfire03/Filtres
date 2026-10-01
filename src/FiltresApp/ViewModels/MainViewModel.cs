@@ -24,6 +24,20 @@ public partial class MainViewModel : ObservableObject
     /// à faire défiler le reste du menu.</summary>
     public NavigationItem HelpItem { get; } = new("Aide", "❓", () => new HelpViewModel());
 
+    /// <summary>Menu "Paramètres" : à part de <see cref="NavigationItems"/> (pas dans l'arbre défilant),
+    /// épinglé juste au-dessus de "Aide" tout en bas de la barre latérale (voir MainWindow.xaml), séparé du
+    /// reste du menu par un séparateur.</summary>
+    public NavigationItem SettingsItem { get; private set; } = null!;
+
+    /// <summary>Paramètres spécifiques à chaque module (roue dentée à côté de chaque case "Activer le
+    /// module..." dans Paramètres, voir SettingsViewModel.OpenFiltreModuleSettingsCommand et consorts) : ni
+    /// dans <see cref="NavigationItems"/> ni épinglés, atteints uniquement depuis ce bouton - réutilisent le
+    /// même <see cref="SettingsViewModel"/> partagé que "Paramètres" (pas une copie séparée), voir
+    /// <see cref="ModuleSettingsViewModel"/>.</summary>
+    public NavigationItem FiltreSettingsItem { get; private set; } = null!;
+    public NavigationItem BeltsSettingsItem { get; private set; } = null!;
+    public NavigationItem BearingsSettingsItem { get; private set; } = null!;
+
     /// <summary>Année consultée, partagée par tous les écrans de suivi de filtres (remplace l'ancienne
     /// remise à zéro annuelle : changer l'année ne supprime rien, l'historique reste consultable).</summary>
     public YearContext YearContext => App.YearContext;
@@ -34,13 +48,27 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Logo de l'entreprise en haut de la barre latérale (null si aucun).</summary>
     public System.Windows.Media.ImageSource? LogoImage => App.CompanyLogoImage;
 
+    /// <summary>Modules activables depuis Paramètres (voir AppSettings.ShowBeltsModule / ShowBearingsModule) :
+    /// ajoutés/retirés de <see cref="NavigationItems"/> sans redémarrer l'application, voir
+    /// <see cref="RefreshModuleVisibility"/>.</summary>
+    private readonly NavigationItem _beltsItem = new("Courroies", "➰", () => new BeltListViewModel());
+    private readonly NavigationItem _bearingsItem = new("Roulements", "⚙", () => new BearingListViewModel());
+    private readonly NavigationItem _modulesSeparatorBefore = NavigationItem.Separator();
+    private readonly NavigationItem _modulesSeparatorBetween = NavigationItem.Separator();
+    private readonly NavigationItem _modulesSeparatorAfter = NavigationItem.Separator();
+
+    /// <summary>Module "Filtre" (activable comme Courroies / Roulements, voir AppSettings.ShowFiltresModule) :
+    /// G4 plissés, G4 plan, G3, Charbon, F7 à H14, Liste K7, Inventaire, Commande forment un seul et même
+    /// module (pas de séparateur entre eux), toujours inséré en tête de liste.</summary>
+    private readonly List<NavigationItem> _filtreItems;
+
     public MainViewModel()
     {
         _dynamicFiltersMenu = new NavigationItem("Filtres F7 à H14", "🟪", () => new FilterVarietyListViewModel(this));
         foreach (var variety in App.Db.FilterVarieties.OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
             _dynamicFiltersMenu.Children.Add(CreateVarietyItem(variety));
 
-        NavigationItems = new ObservableCollection<NavigationItem>
+        _filtreItems = new List<NavigationItem>
         {
             new("Filtres G4 plissés", "🟦", () => new PeriodicFilterListViewModel(FilterCategory.G4Plisse, "Filtres G4 plissés", "Nom de la centrale d'air")),
             new("Filtres G4 plan", "🟦", () => new PeriodicFilterListViewModel(FilterCategory.G4Plan, "Filtres G4 plan", "Emplacement de l'appareil")),
@@ -49,15 +77,107 @@ public partial class MainViewModel : ObservableObject
             _dynamicFiltersMenu,
             new("Liste K7", "🗂", () => new K7ListViewModel()),
             new("Inventaire", "📦", () => new InventoryListViewModel()),
-            new("Commande", "🧾", () => new OrderListViewModel(OrderDocumentType.CommandeChmy, "Commande")),
-            new("Paramètres", "⚙", () => new SettingsViewModel())
+            new("Commande", "🧾", () => new OrderListViewModel(OrderDocumentType.CommandeChmy, "Commande"))
             // "Pour devis" et "Filtres à refacturer" ont été supprimés définitivement le 25/09/2026,
             // données et code compris (voir README, section "Suppression définitive de « pour devis » et
             // « filtres à refacturer »") : il ne s'agit plus seulement d'un retrait de la navigation.
+            // "Paramètres" n'est plus ici : épinglé à part, juste au-dessus de "Aide" (voir SettingsItem).
         };
 
+        SettingsItem = new NavigationItem("Paramètres", "⚙", () => new SettingsViewModel(this));
+        FiltreSettingsItem = new NavigationItem("Paramètres du module Filtre", "⚙",
+            () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Filtre));
+        BeltsSettingsItem = new NavigationItem("Paramètres du module Courroies", "⚙",
+            () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Belts));
+        BearingsSettingsItem = new NavigationItem("Paramètres du module Roulements", "⚙",
+            () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Bearings));
+
+        NavigationItems = new ObservableCollection<NavigationItem>();
+        RefreshModuleVisibility();
+        App.ModuleVisibilityChanged += RefreshModuleVisibility;
         App.CompanyLogoChanged += () => OnPropertyChanged(nameof(LogoImage));
-        SelectedItem = NavigationItems[0];
+    }
+
+    /// <summary>Premier élément sélectionnable du menu défilant (ignore les séparateurs) - sert de repli
+    /// quand l'écran actuellement affiché est masqué (module désactivé), ou null si le menu est vide (tous
+    /// les modules désactivés : Paramètres/Aide restent accessibles via la barre latérale).</summary>
+    private NavigationItem? FirstSelectableItem() => NavigationItems.FirstOrDefault(i => !i.IsSeparator);
+
+    /// <summary>Insère ou retire "Courroies" / "Roulements" en fin de menu défilant, entourés d'un seul
+    /// séparateur avant et après le groupe (pas un par module : voir le commentaire du constructeur) -
+    /// appelé à la construction puis à chaque bascule dans Paramètres.</summary>
+    private void RefreshModuleVisibility()
+    {
+        void Sync(NavigationItem item, bool shouldShow)
+        {
+            var present = NavigationItems.Contains(item);
+            if (shouldShow && !present)
+            {
+                // Si le séparateur de fin existe déjà (un autre module du groupe est déjà affiché),
+                // insérer avant lui plutôt qu'en toute fin de liste (après le séparateur).
+                if (NavigationItems.Contains(_modulesSeparatorAfter))
+                    NavigationItems.Insert(NavigationItems.IndexOf(_modulesSeparatorAfter), item);
+                else
+                    NavigationItems.Add(item);
+            }
+            else if (!shouldShow && present)
+            {
+                if (SelectedItem == item) SelectedItem = FirstSelectableItem();
+                NavigationItems.Remove(item);
+            }
+        }
+
+        // Module "Filtre" : toujours en tête, inséré/retiré en bloc (pas de séparateur interne, voir
+        // le commentaire sur _filtreItems).
+        var filtreVisible = NavigationItems.Contains(_filtreItems[0]);
+        if (App.Settings.ShowFiltresModule && !filtreVisible)
+        {
+            for (var i = 0; i < _filtreItems.Count; i++) NavigationItems.Insert(i, _filtreItems[i]);
+        }
+        else if (!App.Settings.ShowFiltresModule && filtreVisible)
+        {
+            foreach (var item in _filtreItems)
+            {
+                if (SelectedItem == item || _dynamicFiltersMenu.Children.Contains(SelectedItem!)) SelectedItem = null;
+                NavigationItems.Remove(item);
+            }
+        }
+
+        Sync(_beltsItem, App.Settings.ShowBeltsModule);
+        Sync(_bearingsItem, App.Settings.ShowBearingsModule);
+
+        // Repli final si le module Filtre vient d'être masqué pendant qu'un de ses écrans était affiché :
+        // fait après Sync (Courroies / Roulements peuvent maintenant être la meilleure option disponible).
+        if (SelectedItem is null) SelectedItem = FirstSelectableItem();
+
+        var anyModuleVisible = NavigationItems.Contains(_beltsItem) || NavigationItems.Contains(_bearingsItem);
+        var beforePresent = NavigationItems.Contains(_modulesSeparatorBefore);
+        if (anyModuleVisible && !beforePresent)
+        {
+            var firstModuleIndex = NavigationItems.IndexOf(NavigationItems.First(i => i == _beltsItem || i == _bearingsItem));
+            NavigationItems.Insert(firstModuleIndex, _modulesSeparatorBefore);
+            NavigationItems.Add(_modulesSeparatorAfter);
+        }
+        else if (!anyModuleVisible && beforePresent)
+        {
+            NavigationItems.Remove(_modulesSeparatorBefore);
+            NavigationItems.Remove(_modulesSeparatorAfter);
+        }
+
+        // Séparateur entre "Courroies" et "Roulements" eux-mêmes, uniquement quand les deux sont affichés
+        // (quel que soit leur ordre, qui dépend de l'ordre d'activation).
+        var beltsPresent = NavigationItems.Contains(_beltsItem);
+        var bearingsPresent = NavigationItems.Contains(_bearingsItem);
+        var betweenPresent = NavigationItems.Contains(_modulesSeparatorBetween);
+        if (beltsPresent && bearingsPresent && !betweenPresent)
+        {
+            var firstIndex = Math.Min(NavigationItems.IndexOf(_beltsItem), NavigationItems.IndexOf(_bearingsItem));
+            NavigationItems.Insert(firstIndex + 1, _modulesSeparatorBetween);
+        }
+        else if (!(beltsPresent && bearingsPresent) && betweenPresent)
+        {
+            NavigationItems.Remove(_modulesSeparatorBetween);
+        }
     }
 
     /// <summary>Appelé par <see cref="FilterVarietyListViewModel.ToggleEditMode"/> (bouton rouge/vert
@@ -185,6 +305,7 @@ public partial class MainViewModel : ObservableObject
         foreach (var item in NavigationItems) item.IsSelected = item == value;
         foreach (var child in _dynamicFiltersMenu.Children) child.IsSelected = child == value;
         HelpItem.IsSelected = value == HelpItem;
+        SettingsItem.IsSelected = value == SettingsItem;
 
         var vm = value?.GetOrCreateViewModel();
         // Recharge les données à chaque fois qu'on (re)sélectionne l'écran : nécessaire notamment pour
@@ -197,4 +318,8 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Sélectionne "Aide" (bouton à part, en bas de la barre latérale - voir MainWindow.xaml).</summary>
     [RelayCommand]
     private void ShowHelp() => SelectedItem = HelpItem;
+
+    /// <summary>Sélectionne "Paramètres" (bouton à part, juste au-dessus de "Aide" - voir MainWindow.xaml).</summary>
+    [RelayCommand]
+    private void ShowSettings() => SelectedItem = SettingsItem;
 }

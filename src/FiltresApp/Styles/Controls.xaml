@@ -580,6 +580,19 @@
         <Setter Property="Margin" Value="4,4"/>
     </Style>
 
+    <!-- Colonne "Réf. roulement volute" (module Roulements) : case noire pleine quand le type de centrale
+         est "Entraînement direct" (pas de roulement volute dans ce cas, voir BearingRowViewModel.IsDirectDrive). -->
+    <Style x:Key="VoluteCellStyle" TargetType="TextBlock" BasedOn="{StaticResource CenteredCellStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsDirectDrive}" Value="True">
+                <Setter Property="Background" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                <Setter Property="Margin" Value="0"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Saisie directe dans une cellule -->
     <Style x:Key="InlineEditTextBox" TargetType="TextBox">
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -612,6 +625,12 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="Margin" Value="8,4"/>
+    </Style>
+
+    <!-- Colonne "Filtres" (écrans G4 plissé / G4 plan / G3 / Charbon, PeriodicFilterView) : même style que
+         WrappingCellStyle, en gras (voir aussi PrintService.NewCell pour l'impression). -->
+    <Style x:Key="BoldWrappingCellStyle" TargetType="TextBlock" BasedOn="{StaticResource WrappingCellStyle}">
+        <Setter Property="FontWeight" Value="Bold"/>
     </Style>
 
     <!-- Case à cocher centrée dans DataGrid -->

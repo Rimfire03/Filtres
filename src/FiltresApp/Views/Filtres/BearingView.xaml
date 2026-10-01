@@ -1,15 +1,15 @@
-<UserControl x:Class="FiltresApp.Views.Filtres.DynamicFilterView"
+<UserControl x:Class="FiltresApp.Views.Filtres.BearingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels.Filtres"
              xmlns:app="clr-namespace:FiltresApp"
-             d:DataContext="{d:DesignInstance vm:DynamicFilterListViewModel}"
+             d:DataContext="{d:DesignInstance vm:BearingListViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
     <UserControl.Resources>
-        <!-- Filtres regroupés par famille : un bandeau titre par famille (même style que la Liste K7). -->
-        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+        <!-- Jeux de roulements regroupés par famille : un bandeau titre par famille (même style que les
+             autres écrans). -->
+        <CollectionViewSource x:Key="GroupedBearings" Source="{Binding Bearings}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
             </CollectionViewSource.GroupDescriptions>
@@ -29,27 +29,17 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
-
-            <!-- Mode édition : rouge tant que désactivé (par défaut à chaque ouverture de l'écran), vert
-                 une fois activé. Placé à l'extrême droite de la page. -->
             <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
                     Style="{StaticResource EditModeButtonStyle}"/>
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
-            <!-- Distinct du bouton "Mode édition" ci-dessus (qui ne concerne que les filtres de cette
-                 variété) : celui-ci ouvre la page de gestion des variétés elles-mêmes (créer/modifier/
-                 supprimer des variétés), sinon inatteignable une fois le mode désactivé. Conditionné au
-                 mode édition de cette page, comme Ajouter/Modifier/Supprimer ci-dessus. -->
-            <Button Content="{Binding VarietyManagementButtonLabel}" Style="{StaticResource SecondaryButton}"
-                    Command="{Binding ToggleVarietyManagementCommand}" Margin="24,0,0,0"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
         <Border Grid.Row="2" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,14">
@@ -63,13 +53,11 @@
                         Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
                 <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
                         Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-                <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetFiltersCommand}" Margin="24,0,0,0"
-                        ToolTip="Vide les filtres nom et dimension placés sous les titres de colonnes"/>
             </DockPanel>
         </Border>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
-                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedBearings}}"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" SelectedItem="{Binding SelectedBearing}" IsReadOnly="True"
                   AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
@@ -78,16 +66,13 @@
                         <Setter.Value>
                             <ContextMenu>
                                 <MenuItem Header="Consulter l'historique..." Command="{Binding ShowHistoryCommand}"/>
-                                <!-- Sous-menu construit dynamiquement (DynamicFilterView.xaml.cs) à partir des
-                                     couleurs réglées dans Paramètres, "Couleurs de ligne" (voir RowColorMenu). -->
                                 <MenuItem Header="Couleur" IsEnabled="{x:Static app:App.IsWritable}"/>
                             </ContextMenu>
                         </Setter.Value>
                     </Setter>
                     <Style.Triggers>
                         <!-- Flash vert bref pour confirmer l'enregistrement d'un changement (voir
-                             DynamicFilterRowViewModel.TriggerSavedFlash), revient ensuite à la couleur de
-                             ligne habituelle (Setter ci-dessus) une fois IsFlashing repassé à false. -->
+                             BearingRowViewModel.TriggerSavedFlash). -->
                         <DataTrigger Binding="{Binding IsFlashing}" Value="True">
                             <Setter Property="Background" Value="#FF66BB6A"/>
                         </DataTrigger>
@@ -95,21 +80,15 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <!-- Puce verte / rouge : filtre rattaché ou non à une ligne de Commande / Inventaire. -->
-                <DataGridTemplateColumn Header="Lié" Width="40" CanUserResize="False" SortMemberPath="IsLinkedToOrder"
-                                        CellTemplate="{StaticResource LinkDotCellTemplate}"/>
-                <!-- Filtres d'affichage dans le bas du bandeau des titres : "contient" sur le nom, liste des
-                     dimensions présentes (DynamicFilterListViewModel.HeaderFilter). -->
-                <DataGridTextColumn Header="Nom de la centrale d'air" Binding="{Binding Location}" SortMemberPath="Location" Width="2.48*" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource NameFilterHeaderTemplate}"/>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" SortMemberPath="Dimension" Width="1.01*" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
-                <!-- Clic droit : menu rapide listant les types déjà utilisés (DynamicFilterView.xaml.cs). -->
-                <DataGridTextColumn x:Name="TypeColumn" Header="Type" Binding="{Binding FilterType}" Width="0.99*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Qté en place" Binding="{Binding QuantityInPlace}" Width="0.79*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="1.9*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Type de centrale" Binding="{Binding CentraleType}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Réf. roulement avant" Binding="{Binding RefAvant}" Width="1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Réf. roulement arrière" Binding="{Binding RefArriere}" Width="1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Réf. roulement volute" Binding="{Binding RefVolute}" Width="1*" ElementStyle="{StaticResource VoluteCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="97" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="1.05*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <!-- Pas de mois à cocher pour cette feuille : choisir une date ici enregistre directement un
-                     nouveau remplacement daté de ce jour (le champ se vide ensuite), sans jamais modifier
-                     l'historique déjà enregistré (voir "Consulter l'historique..."). -->
+                <!-- Choisir une date ouvre une petite fenêtre demandant lesquels des trois roulements ont
+                     été changés, puis enregistre le remplacement (le champ se vide ensuite). -->
                 <DataGridTemplateColumn Header="Date du changement" Width="109">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -118,8 +97,6 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- Toujours en dernière position (voir README) : pas éditable directement dans la grille,
-                     via "Modifier" comme "Notes". -->
                 <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="1.3*" ElementStyle="{StaticResource WrappingCellStyle}"/>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>

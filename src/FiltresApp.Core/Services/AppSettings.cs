@@ -23,6 +23,17 @@ public class AppSettings
     [JsonIgnore]
     public bool AllowFilterVarietyCreation { get; set; } = false;
 
+    /// <summary>Modules activables depuis Paramètres (menu dédié dans la barre latérale si activé) :
+    /// "Courroies" et "Roulements". Persistés (contrairement à <see cref="AllowFilterVarietyCreation"/>
+    /// ci-dessus) : une fois activé, un module le reste d'une session à l'autre.</summary>
+    public bool ShowBeltsModule { get; set; } = false;
+    public bool ShowBearingsModule { get; set; } = false;
+
+    /// <summary>Module "Filtre" (G4 plissés, G4 plan, G3, Charbon, F7 à H14, Liste K7, Inventaire,
+    /// Commande - considérés comme un seul module) : activé par défaut (fonctionnalité d'origine de
+    /// l'application, contrairement aux modules Courroies / Roulements ci-dessus).</summary>
+    public bool ShowFiltresModule { get; set; } = true;
+
     /// <summary>Dossier contenant tout ce qui n'est pas l'exécutable lui-même (base de données, exports,
     /// réglages) : seul FiltresApp.exe doit rester à la racine du dossier publié.</summary>
     private static string DataDirectory => Path.Combine(AppContext.BaseDirectory, "FiltreData");

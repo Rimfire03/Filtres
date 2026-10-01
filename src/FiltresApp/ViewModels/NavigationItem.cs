@@ -21,13 +21,20 @@ public partial class NavigationItem : ObservableObject
     [ObservableProperty] private bool _isExpanded;
     [ObservableProperty] private bool _isSelected;
 
-    public NavigationItem(string title, string icon, Func<object>? factory, int? varietyId = null)
+    /// <summary>Simple ligne de séparation dans le menu défilant (ex. entre les écrans fixes et les modules
+    /// activables "Courroies" / "Roulements"), pas un écran : jamais sélectionnable, voir MainWindow.xaml.</summary>
+    public bool IsSeparator { get; }
+
+    public NavigationItem(string title, string icon, Func<object>? factory, int? varietyId = null, bool isSeparator = false)
     {
         _title = title;
         Icon = icon;
         _factory = factory;
         VarietyId = varietyId;
+        IsSeparator = isSeparator;
     }
+
+    public static NavigationItem Separator() => new(string.Empty, string.Empty, null, isSeparator: true);
 
     public object? GetOrCreateViewModel() => _viewModel ??= _factory?.Invoke();
 

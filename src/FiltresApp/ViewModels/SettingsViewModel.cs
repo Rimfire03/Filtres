@@ -20,6 +20,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty] private bool _autoUpdateEnabled;
     [ObservableProperty] private bool _linkDimensionFilterEnabled;
+    [ObservableProperty] private bool _showBeltsModule;
+    [ObservableProperty] private bool _showBearingsModule;
+    [ObservableProperty] private bool _showFiltresModule;
 
     public string CurrentVersion => App.CurrentVersion;
     public int DatabaseVersion => App.DatabaseVersion;
@@ -39,12 +42,18 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>Liste des années proposées (barre latérale et export Excel).</summary>
     public YearContext YearContext => App.YearContext;
 
-    public SettingsViewModel()
+    private readonly MainViewModel _main;
+
+    public SettingsViewModel(MainViewModel main)
     {
+        _main = main;
         _databasePath = App.Settings.DatabasePath;
         _pdfExportPath = App.Settings.PdfExportPath;
         _autoUpdateEnabled = App.Settings.AutoUpdateEnabled;
         _linkDimensionFilterEnabled = App.Settings.LinkDimensionFilterEnabled;
+        _showBeltsModule = App.Settings.ShowBeltsModule;
+        _showBearingsModule = App.Settings.ShowBearingsModule;
+        _showFiltresModule = App.Settings.ShowFiltresModule;
         LoadHistoryYears();
         InitializePrintColumns();
         InitializeRowColors();
@@ -63,6 +72,41 @@ public partial class SettingsViewModel : ObservableObject
         App.Settings.LinkDimensionFilterEnabled = value;
         App.Settings.Save();
     }
+
+    /// <summary>Modules "Courroies" / "Roulements" (barre latérale) : sauvegardés immédiatement, comme les
+    /// autres cases à cocher ci-dessus, et répercutés tout de suite dans le menu (voir
+    /// MainViewModel.RefreshModuleVisibility).</summary>
+    partial void OnShowBeltsModuleChanged(bool value)
+    {
+        App.Settings.ShowBeltsModule = value;
+        App.Settings.Save();
+        App.RaiseModuleVisibilityChanged();
+    }
+
+    partial void OnShowBearingsModuleChanged(bool value)
+    {
+        App.Settings.ShowBearingsModule = value;
+        App.Settings.Save();
+        App.RaiseModuleVisibilityChanged();
+    }
+
+    partial void OnShowFiltresModuleChanged(bool value)
+    {
+        App.Settings.ShowFiltresModule = value;
+        App.Settings.Save();
+        App.RaiseModuleVisibilityChanged();
+    }
+
+    /// <summary>Roue dentée à côté de chaque case "Activer le module..." : ouvre l'écran de réglages propre
+    /// à ce module (voir ModuleSettingsViewModel), réutilisant ce même SettingsViewModel partagé.</summary>
+    [RelayCommand]
+    private void OpenFiltreModuleSettings() => _main.SelectedItem = _main.FiltreSettingsItem;
+
+    [RelayCommand]
+    private void OpenBeltsModuleSettings() => _main.SelectedItem = _main.BeltsSettingsItem;
+
+    [RelayCommand]
+    private void OpenBearingsModuleSettings() => _main.SelectedItem = _main.BearingsSettingsItem;
 
     /// <summary>Année à exporter en Excel : sélecteur propre à cette carte (indépendant de l'année consultée
     /// dans la barre latérale), placé par défaut sur l'année en cours.</summary>

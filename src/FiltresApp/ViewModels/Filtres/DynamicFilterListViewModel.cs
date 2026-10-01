@@ -69,11 +69,12 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
     /// place) daté de cette date, sans jamais modifier l'historique déjà enregistré. Le champ de saisie se
     /// vide ensuite (colonne d'ajout, pas d'affichage d'une valeur existante) : voir <see cref="ShowHistory"/>
     /// pour consulter l'historique complet d'un filtre.</summary>
-    public void AddReplacement(DynamicFilter filter, DateOnly date)
+    public bool AddReplacement(DynamicFilter filter, DateOnly date)
     {
-        if (!App.GuardWritable()) return;
+        if (!App.GuardWritable()) return false;
         filter.Replacements = ReplacementTrackingService.AddDynamicReplacement(App.Db, filter.Id, date);
         App.YearContext.EnsureYear(date.Year);
+        return true;
     }
 
     /// <summary>Rechargé à chaque ouverture de l'écran : familles et rattachements à Commande / Inventaire
@@ -265,9 +266,11 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
         row.ApplyFilterType(newType);
     }
 
-    /// <summary>"Consulter l'historique..." (menu contextuel de la grille) : ouvre une fenêtre de lecture
-    /// seule listant, pour l'année choisie parmi celles où ce filtre précis a de l'historique, la liste
-    /// chronologique des remplacements (qté changée + date). Cette feuille n'a pas de mois fixe.</summary>
+    /// <summary>"Consulter l'historique..." (menu contextuel de la grille) : ouvre une fenêtre listant, pour
+    /// l'année choisie parmi celles où ce filtre précis a de l'historique, la liste chronologique des
+    /// remplacements (qté changée + date), avec possibilité d'en supprimer (clic droit). Cette feuille n'a
+    /// pas de mois fixe. La grille principale est rechargée à la fermeture pour refléter une éventuelle
+    /// suppression ("Dernier changement" / "Nb remplacements" de l'année).</summary>
     public void ShowHistory(DynamicFilter filter)
     {
         var replacements = App.Db.DynamicFilterReplacements
@@ -275,6 +278,7 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
             .Where(r => r.DynamicFilterId == filter.Id)
             .ToList();
         App.Dialogs.ShowDynamicFilterHistory(filter.Location, filter.Dimension, replacements);
+        Reload();
     }
 
     /// <summary>Couleur de ligne (menu contextuel de la grille) : sauvegarde immédiate en base.</summary>

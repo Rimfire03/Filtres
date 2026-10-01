@@ -29,6 +29,12 @@ public class FiltresDbContext : DbContext
     public DbSet<DynamicFilterFamily> DynamicFilterFamilies => Set<DynamicFilterFamily>();
     public DbSet<OrderLineDynamicFilter> OrderLineDynamicFilters => Set<OrderLineDynamicFilter>();
     public DbSet<RowColor> RowColors => Set<RowColor>();
+    public DbSet<Belt> Belts => Set<Belt>();
+    public DbSet<BeltReplacement> BeltReplacements => Set<BeltReplacement>();
+    public DbSet<BeltFamily> BeltFamilies => Set<BeltFamily>();
+    public DbSet<BearingUnit> BearingUnits => Set<BearingUnit>();
+    public DbSet<BearingReplacement> BearingReplacements => Set<BearingReplacement>();
+    public DbSet<BearingFamily> BearingFamilies => Set<BearingFamily>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -113,5 +119,29 @@ public class FiltresDbContext : DbContext
             .WithMany(f => f.Locations)
             .HasForeignKey(l => l.K7FamilyId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Belt>()
+            .HasOne(b => b.Family)
+            .WithMany()
+            .HasForeignKey(b => b.BeltFamilyId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Belt>()
+            .HasMany(b => b.Replacements)
+            .WithOne(r => r.Belt)
+            .HasForeignKey(r => r.BeltId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<BearingUnit>()
+            .HasOne(b => b.Family)
+            .WithMany()
+            .HasForeignKey(b => b.BearingFamilyId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<BearingUnit>()
+            .HasMany(b => b.Replacements)
+            .WithOne(r => r.BearingUnit)
+            .HasForeignKey(r => r.BearingUnitId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

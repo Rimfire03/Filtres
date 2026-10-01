@@ -8,6 +8,11 @@ public partial class DynamicEditWindow : Window
 {
     private readonly List<EditField> _fields;
     private readonly List<Func<bool>> _readers = new();
+    /// <summary>Valeur "en direct" (index de combo, texte tapé...) de chaque champ, lue sans attendre la
+    /// validation - utilisée pour réévaluer <see cref="EditField.EnabledWhenFieldEquals"/> des autres
+    /// champs à chaque changement (voir <see cref="RefreshConditionalFields"/>).</summary>
+    private readonly Dictionary<EditField, Func<object?>> _liveGetters = new();
+    private readonly Dictionary<EditField, Control> _controls = new();
     public string WindowTitle { get; }
 
     public DynamicEditWindow(string title, List<EditField> fields)
@@ -18,6 +23,7 @@ public partial class DynamicEditWindow : Window
         TitleText.Text = title;
         _fields = fields;
         BuildFields();
+        RefreshConditionalFields();
     }
 
     private void BuildFields()
@@ -33,6 +39,9 @@ public partial class DynamicEditWindow : Window
                 {
                     var tb = new TextBox { Text = field.GetValue()?.ToString() ?? string.Empty };
                     container.Children.Add(tb);
+                    _controls[field] = tb;
+                    _liveGetters[field] = () => tb.Text;
+                    tb.TextChanged += (_, _) => RefreshConditionalFields();
                     _readers.Add(() => { field.SetValue(tb.Text); return true; });
                     break;
                 }
@@ -46,6 +55,9 @@ public partial class DynamicEditWindow : Window
                         TextWrapping = TextWrapping.Wrap
                     };
                     container.Children.Add(tb);
+                    _controls[field] = tb;
+                    _liveGetters[field] = () => tb.Text;
+                    tb.TextChanged += (_, _) => RefreshConditionalFields();
                     _readers.Add(() => { field.SetValue(tb.Text); return true; });
                     break;
                 }
@@ -103,6 +115,34 @@ public partial class DynamicEditWindow : Window
                     });
                     break;
                 }
+                case EditFieldType.Checklist:
+                {
+                    var wrap = new WrapPanel();
+                    var current = (field.GetValue() as List<int>) ?? new List<int>();
+                    var checkboxes = new List<CheckBox>();
+                    var items = field.ComboItems ?? new List<string>();
+                    for (var i = 0; i < items.Count; i++)
+                    {
+                        var cb = new CheckBox
+                        {
+                            Content = items[i],
+                            Tag = i,
+                            IsChecked = current.Contains(i),
+                            Margin = new Thickness(0, 0, 16, 4)
+                        };
+                        checkboxes.Add(cb);
+                        wrap.Children.Add(cb);
+                    }
+                    container.Children.Add(wrap);
+                    _readers.Add(() =>
+                    {
+                        var selected = checkboxes.Where(c => c.IsChecked == true).Select(c => (int)c.Tag!).ToList();
+                        if (field.Required && selected.Count == 0) return false;
+                        field.SetValue(selected);
+                        return true;
+                    });
+                    break;
+                }
                 case EditFieldType.Combo:
                 {
                     var combo = new ComboBox();
@@ -110,6 +150,9 @@ public partial class DynamicEditWindow : Window
                     var currentIndex = field.GetValue() is int ci ? ci : 0;
                     combo.SelectedIndex = combo.Items.Count == 0 ? -1 : Math.Clamp(currentIndex, 0, combo.Items.Count - 1);
                     container.Children.Add(combo);
+                    _controls[field] = combo;
+                    _liveGetters[field] = () => combo.SelectedIndex;
+                    combo.SelectionChanged += (_, _) => RefreshConditionalFields();
                     _readers.Add(() =>
                     {
                         if (field.Required && combo.SelectedIndex < 0) return false;
@@ -121,6 +164,23 @@ public partial class DynamicEditWindow : Window
             }
 
             FieldsPanel.Children.Add(container);
+        }
+    }
+
+    /// <summary>Réévalue, pour chaque champ déclarant <see cref="EditField.EnabledWhenFieldEquals"/>,
+    /// s'il doit rester accessible selon la valeur en direct du champ dont il dépend - un champ désactivé
+    /// est vidé (donc enregistré vide/null à la validation).</summary>
+    private void RefreshConditionalFields()
+    {
+        foreach (var field in _fields)
+        {
+            if (field.EnabledWhenFieldEquals is not { } controller || field.EnabledPredicate is not { } predicate) continue;
+            if (!_controls.TryGetValue(field, out var control)) continue;
+
+            var controllingValue = _liveGetters.TryGetValue(controller, out var getter) ? getter() : null;
+            var enabled = predicate(controllingValue);
+            control.IsEnabled = enabled;
+            if (!enabled && control is TextBox tb) tb.Text = string.Empty;
         }
     }
 

@@ -14,11 +14,12 @@
                 <StackPanel>
                     <TextBlock Text="Mode édition" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
-                        Sur les écrans de filtres (G4, G3, Charbon, F7 à H14), le bouton rouge/vert en haut à
-                        droite masque par défaut les boutons Ajouter/Modifier/Dupliquer/Supprimer, pour éviter
-                        une modification accidentelle sur le terrain. Rouge = désactivé, vert = activé. Le
-                        pointage courant (case "Réalisé", date de changement) reste toujours accessible, avec
-                        ou sans le mode édition.
+                        Sur les écrans de filtres (G4, G3, Charbon, F7 à H14) et les modules Courroies /
+                        Roulements, le bouton rouge/vert en haut à droite masque par défaut les boutons
+                        Ajouter/Modifier/Dupliquer/Supprimer, pour éviter une modification accidentelle sur le
+                        terrain. Rouge = désactivé, vert = activé. Le pointage courant (case "Réalisé", date de
+                        changement) reste toujours accessible, avec ou sans le mode édition - une ligne flashe
+                        brièvement en vert pour confirmer chaque enregistrement.
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -65,6 +66,31 @@
                         colonnes conservées. Les colonnes incluses se règlent dans Paramètres → "Colonnes
                         imprimées" (un seul réglage partagé par tous les écrans de filtres). L'en-tête des
                         colonnes se répète en haut de chaque page.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Modules activables (Courroies, Roulements)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Masqués par défaut : à activer dans Paramètres → "Modules". Une fois activés, ils
+                        apparaissent dans le menu défilant avec exactement la même disposition que "Filtres F7
+                        à H14" (familles, historique, clic droit...). Pour un jeu de roulements en
+                        "Entraînement direct", il n'y a pas de roulement volute : le champ correspondant est
+                        grisé à l'édition et affiché en case noire dans le tableau.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Consulter l'historique..." FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Clic droit sur une ligne (filtres G4/G3/Charbon, F7 à H14, Courroies, Roulements) →
+                        "Consulter l'historique..." : liste tous les enregistrements de ce filtre. Clic droit
+                        sur une ligne de l'historique → "Supprimer cet enregistrement" pour corriger une
+                        saisie.
                     </TextBlock>
                 </StackPanel>
             </Border>

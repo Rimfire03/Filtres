@@ -1,0 +1,125 @@
+<UserControl x:Class="FiltresApp.Views.ModuleSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:app="clr-namespace:FiltresApp"
+             d:DataContext="{d:DesignInstance vm:ModuleSettingsViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <ScrollViewer Margin="24">
+        <StackPanel MaxWidth="700" HorizontalAlignment="Left">
+            <Button Content="← Retour aux Paramètres" Style="{StaticResource SecondaryButton}" Command="{Binding BackCommand}"
+                    HorizontalAlignment="Left" Margin="0,0,0,12"/>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+
+            <!-- Courroies / Roulements : pas encore de réglage propre, seul "Filtre" en a (voir ci-dessous). -->
+            <TextBlock Text="Aucun réglage spécifique pour ce module pour l'instant." Style="{StaticResource SectionText}" Margin="0,12,0,0"
+                       Visibility="{Binding IsOther, Converter={StaticResource BoolToVis}}"/>
+
+            <StackPanel Visibility="{Binding IsFiltre, Converter={StaticResource BoolToVis}}">
+                <!-- Réglages de comportement propres au module Filtres (G4/G3/Charbon, F7 à H14, K7, Commande, Inventaire). -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,16,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Comportement" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="Le mode édition (variétés « Filtres F7 à H14 ») se trouve désormais sur l'écran « Filtres F7 à H14 » lui-même : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                        <CheckBox Content="Rattacher des filtres... : n'afficher par défaut que les dimensions correspondantes (±5 mm)"
+                                  IsChecked="{Binding Settings.LinkDimensionFilterEnabled}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Export Excel de l'année. -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Un classeur .xlsx dans le dossier d'export PDF : une feuille par onglet de filtres (G4 plissés, G4 plan, G3, Charbon, et chaque variété « F7 à H14 »). Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                        <DockPanel Margin="0,0,0,8">
+                            <TextBlock DockPanel.Dock="Left" Text="Année à exporter :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding Settings.YearContext.AvailableYears}" SelectedItem="{Binding Settings.SelectedExportYear}" HorizontalAlignment="Left" Width="120"/>
+                        </DockPanel>
+                        <Button Content="Exporter l'année en Excel" Style="{StaticResource PrimaryButton}" Command="{Binding Settings.ExportExcelYearCommand}" HorizontalAlignment="Left"/>
+                        <TextBlock Text="{Binding Settings.ExportStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Colonnes imprimées : choix par écran, indépendant de l'affichage à l'écran. -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Colonnes imprimées" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Choisissez les colonnes incluses à l'impression de chaque écran. Les colonnes gardées se partagent toujours la largeur de la page : une impression ne dépasse jamais une feuille." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                        <ComboBox ItemsSource="{Binding Settings.PrintableScreens}" SelectedItem="{Binding Settings.SelectedPrintScreen}"
+                                  DisplayMemberPath="DisplayName" Width="380" HorizontalAlignment="Left" Margin="0,0,0,10"/>
+                        <ItemsControl ItemsSource="{Binding Settings.PrintColumnOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Column}" IsChecked="{Binding IsIncluded}" Margin="0,0,16,8"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Couleurs de ligne : palette nommée, partagée, proposée au clic droit sur chaque grille de
+                     filtres, K7, Commande et Inventaire (voir RowColorMenu). -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Couleurs de ligne" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Couleurs proposées au clic droit sur une ligne (filtres, K7, Commande, Inventaire). Chaque couleur a un nom personnalisé, seul affiché dans le menu contextuel." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                        <ItemsControl ItemsSource="{Binding Settings.RowColors}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <!-- Cliquer ouvre la roue chromatique (ModuleSettingsView.xaml.cs), plus
+                                             simple qu'un code hexadécimal à saisir à la main. -->
+                                        <Border Width="28" Height="28" CornerRadius="6" BorderBrush="{StaticResource BrushBorderStrong}" BorderThickness="1.5" Margin="0,0,10,0"
+                                                Background="{Binding Preview}" Cursor="Hand" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"
+                                                ToolTip="Choisir une couleur">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#0F172A" Opacity="0.08" BlurRadius="4" Direction="270" ShadowDepth="1"/>
+                                            </Border.Effect>
+                                        </Border>
+                                        <TextBox Text="{Binding Nom, UpdateSourceTrigger=PropertyChanged}" Width="220" Margin="0,0,10,0"/>
+                                        <Button Content="Supprimer" Style="{StaticResource SecondaryButton}"
+                                                Command="{Binding DataContext.Settings.DeleteRowColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="+ Ajouter une couleur" Style="{StaticResource SecondaryButton}" Command="{Binding Settings.AddRowColorCommand}" HorizontalAlignment="Left" Margin="0,4,0,0" IsEnabled="{x:Static app:App.IsWritable}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Suppression définitive de l'historique d'une année, par groupe de filtres. -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Supprimer l'historique d'une année" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Supprime définitivement les remplacements de l'année choisie (les filtres sont conservés). Une sauvegarde est faite avant." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="G4 plissés, G4 plan, G3, Charbon" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding Settings.PeriodicHistoryYears}" SelectedItem="{Binding Settings.SelectedPeriodicHistoryYear}" Width="120"/>
+                            <Button Content="Supprimer" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
+                                    Command="{Binding Settings.DeletePeriodicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Filtres F7 à H14 (toutes variétés)" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding Settings.DynamicHistoryYears}" SelectedItem="{Binding Settings.SelectedDynamicHistoryYear}" Width="120"/>
+                            <Button Content="Supprimer" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
+                                    Command="{Binding Settings.DeleteDynamicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding Settings.HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

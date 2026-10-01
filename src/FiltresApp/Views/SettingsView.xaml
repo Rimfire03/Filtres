@@ -10,6 +10,27 @@
         <StackPanel MaxWidth="700" HorizontalAlignment="Left">
             <TextBlock Text="Paramètres" Style="{StaticResource HeaderText}"/>
 
+            <!-- Modules activables (barre latérale) : la roue dentée à côté de chaque case ouvre les
+                 réglages propres à ce module (voir ModuleSettingsView.xaml). En premier dans la page :
+                 c'est le réglage le plus consulté. -->
+            <Border Style="{StaticResource CardBorder}" Margin="0,4,0,16">
+                <StackPanel>
+                    <TextBlock Text="Modules" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <DockPanel Margin="0,0,0,4" LastChildFill="False">
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Filtre » (G4, G3, Charbon, F7 à H14, Liste K7, Inventaire, Commande)" IsChecked="{Binding ShowFiltresModule}" VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenFiltreModuleSettingsCommand}" ToolTip="Paramètres du module « Filtre »"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,4" LastChildFill="False">
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Courroies »" IsChecked="{Binding ShowBeltsModule}" VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenBeltsModuleSettingsCommand}" ToolTip="Paramètres du module « Courroies »"/>
+                    </DockPanel>
+                    <DockPanel LastChildFill="False">
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Roulements »" IsChecked="{Binding ShowBearingsModule}" VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenBearingsModuleSettingsCommand}" ToolTip="Paramètres du module « Roulements »"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
             <!-- ==================== Général (commun à tous les modules) ==================== -->
             <TextBlock Text="Général" FontSize="16" FontWeight="Bold" Foreground="{StaticResource BrushPrimary}" Margin="0,4,0,12"/>
 
@@ -83,114 +104,6 @@
                     <Button Content="Exporter la base de données" Style="{StaticResource PrimaryButton}" Command="{Binding ExportDatabaseCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
                     <Button Content="Importer une sauvegarde..." Style="{StaticResource DangerButton}" Command="{Binding ImportDatabaseCommand}" HorizontalAlignment="Left" IsEnabled="{x:Static app:App.IsWritable}"/>
                     <TextBlock Text="{Binding BackupStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ==================== Module Filtres ==================== -->
-            <TextBlock Text="Module Filtres" FontSize="16" FontWeight="Bold" Foreground="{StaticResource BrushPrimary}" Margin="0,8,0,12"/>
-
-            <!-- Réglages de comportement propres au module Filtres (G4/G3/Charbon, F7 à H14, K7, Commande, Inventaire). -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Comportement" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <TextBlock Text="Le mode édition (variétés « Filtres F7 à H14 ») se trouve désormais sur l'écran « Filtres F7 à H14 » lui-même : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
-                    <CheckBox Content="Rattacher des filtres... : n'afficher par défaut que les dimensions correspondantes (±5 mm)"
-                              IsChecked="{Binding LinkDimensionFilterEnabled}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Export Excel de l'année. -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Un classeur .xlsx dans le dossier d'export PDF : une feuille par onglet de filtres (G4 plissés, G4 plan, G3, Charbon, et chaque variété « F7 à H14 »). Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
-                    <DockPanel Margin="0,0,0,8">
-                        <TextBlock DockPanel.Dock="Left" Text="Année à exporter :" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding YearContext.AvailableYears}" SelectedItem="{Binding SelectedExportYear}" HorizontalAlignment="Left" Width="120"/>
-                    </DockPanel>
-                    <Button Content="Exporter l'année en Excel" Style="{StaticResource PrimaryButton}" Command="{Binding ExportExcelYearCommand}" HorizontalAlignment="Left"/>
-                    <TextBlock Text="{Binding ExportStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Colonnes imprimées : choix par écran, indépendant de l'affichage à l'écran. Les colonnes
-                 conservées se répartissent toujours la largeur de la page (PrintService, colonnes Star) :
-                 une impression ne dépasse donc jamais une feuille de large, quel que soit le choix. -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Colonnes imprimées" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Choisissez les colonnes incluses à l'impression de chaque écran. Les colonnes gardées se partagent toujours la largeur de la page : une impression ne dépasse jamais une feuille." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
-                    <ComboBox ItemsSource="{Binding PrintableScreens}" SelectedItem="{Binding SelectedPrintScreen}"
-                              DisplayMemberPath="DisplayName" Width="380" HorizontalAlignment="Left" Margin="0,0,0,10"/>
-                    <ItemsControl ItemsSource="{Binding PrintColumnOptions}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding Column}" IsChecked="{Binding IsIncluded}" Margin="0,0,16,8"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-
-            <!-- Couleurs de ligne : palette nommée, partagée, proposée au clic droit sur chaque grille de
-                 filtres, K7, Commande et Inventaire (voir RowColorMenu). -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Couleurs de ligne" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Couleurs proposées au clic droit sur une ligne (filtres, K7, Commande, Inventaire). Chaque couleur a un nom personnalisé, seul affiché dans le menu contextuel." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
-                    <ItemsControl ItemsSource="{Binding RowColors}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <!-- Cliquer ouvre la roue chromatique (SettingsView.xaml.cs), plus simple
-                                         qu'un code hexadécimal à saisir à la main. -->
-                                    <Border Width="28" Height="28" CornerRadius="6" BorderBrush="{StaticResource BrushBorderStrong}" BorderThickness="1.5" Margin="0,0,10,0"
-                                            Background="{Binding Preview}" Cursor="Hand" MouseLeftButtonDown="ColorSwatch_MouseLeftButtonDown"
-                                            ToolTip="Choisir une couleur">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#0F172A" Opacity="0.08" BlurRadius="4" Direction="270" ShadowDepth="1"/>
-                                        </Border.Effect>
-                                    </Border>
-                                    <TextBox Text="{Binding Nom, UpdateSourceTrigger=PropertyChanged}" Width="220" Margin="0,0,10,0"/>
-                                    <Button Content="Supprimer" Style="{StaticResource SecondaryButton}"
-                                            Command="{Binding DataContext.DeleteRowColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding}" IsEnabled="{x:Static app:App.IsWritable}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Button Content="+ Ajouter une couleur" Style="{StaticResource SecondaryButton}" Command="{Binding AddRowColorCommand}" HorizontalAlignment="Left" Margin="0,4,0,0" IsEnabled="{x:Static app:App.IsWritable}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Suppression définitive de l'historique d'une année, par groupe de filtres. -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Supprimer l'historique d'une année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Supprime définitivement les remplacements de l'année choisie (les filtres sont conservés). Une sauvegarde est faite avant." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
-
-                    <TextBlock Text="G4 plissés, G4 plan, G3, Charbon" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding PeriodicHistoryYears}" SelectedItem="{Binding SelectedPeriodicHistoryYear}" Width="120"/>
-                        <Button Content="Supprimer" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
-                                Command="{Binding DeletePeriodicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-                    </StackPanel>
-
-                    <TextBlock Text="Filtres F7 à H14 (toutes variétés)" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <ComboBox ItemsSource="{Binding DynamicHistoryYears}" SelectedItem="{Binding SelectedDynamicHistoryYear}" Width="120"/>
-                        <Button Content="Supprimer" Style="{StaticResource DangerButton}" Margin="12,0,0,0"
-                                Command="{Binding DeleteDynamicHistoryCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
-                    </StackPanel>
-
-                    <TextBlock Text="{Binding HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 

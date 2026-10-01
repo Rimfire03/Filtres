@@ -34,6 +34,9 @@
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                 <views:SettingsView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ModuleSettingsViewModel}">
+                <views:ModuleSettingsView/>
+            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:HelpViewModel}">
                 <views:HelpView/>
             </DataTemplate>
@@ -42,6 +45,12 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vmf:DynamicFilterListViewModel}">
                 <viewsf:DynamicFilterView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmf:BeltListViewModel}">
+                <viewsf:BeltView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmf:BearingListViewModel}">
+                <viewsf:BearingView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

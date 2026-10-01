@@ -247,6 +247,10 @@ public class PrintService
         var centeredIndices = new HashSet<int> { dimensionIndex, qtyIndex, periodicityIndex };
         TextAlignment AlignmentFor(int i) => centeredIndices.Contains(i) ? TextAlignment.Center : TextAlignment.Left;
 
+        // Colonne "Filtres" (écrans G4 plissé / G4 plan / G3 / Charbon) : même mise en gras qu'à l'écran
+        // (voir BoldWrappingCellStyle dans PeriodicFilterView.xaml).
+        var locationIndex = Array.IndexOf(headers, "Filtres");
+
         var isFixed = new bool[textColumnCount];
         var fixedWidths = new double[textColumnCount];
         if (qtyIndex >= 0 && qtyIndex < textColumnCount) { isFixed[qtyIndex] = true; fixedWidths[qtyIndex] = naturalWidths[qtyIndex]; }
@@ -397,7 +401,7 @@ public class PrintService
                 if (color.HasValue) tr.Background = new SolidColorBrush(color.Value);
                 if (includeCheckboxColumn) tr.Cells.Add(NewCheckboxCell());
                 for (var i = 0; i < row.Length; i++)
-                    tr.Cells.Add(NewCell(row[i], AlignmentFor(i)));
+                    tr.Cells.Add(NewCell(row[i], AlignmentFor(i), bold: i == locationIndex));
                 table.RowGroups[0].Rows.Add(tr);
             }
 
@@ -413,10 +417,11 @@ public class PrintService
     }
 
     /// <summary>Cellule d'une ligne de filtre imprimée.</summary>
-    private static TableCell NewCell(string text, TextAlignment alignment = TextAlignment.Left) => new(new Paragraph(new Run(text ?? string.Empty))
+    private static TableCell NewCell(string text, TextAlignment alignment = TextAlignment.Left, bool bold = false) => new(new Paragraph(new Run(text ?? string.Empty))
     {
         Margin = new Thickness(0),
-        TextAlignment = alignment
+        TextAlignment = alignment,
+        FontWeight = bold ? FontWeights.Bold : FontWeights.Normal
     })
     {
         Padding = new Thickness(4, 1, 4, 1),

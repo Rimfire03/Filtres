@@ -8,7 +8,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -17,24 +16,24 @@
 
         <TextBlock x:Name="HeaderText" Grid.Row="1" Margin="0,8,0,12" TextWrapping="Wrap" FontWeight="SemiBold"/>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
-            <ComboBox x:Name="YearCombo" Width="120" SelectionChanged="YearCombo_SelectionChanged"/>
-        </StackPanel>
-
-        <TextBlock x:Name="NoHistoryText" Grid.Row="3" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
+        <TextBlock x:Name="NoHistoryText" Grid.Row="2" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
                    Text="Aucun historique disponible pour ce filtre : aucun remplacement enregistré en base pour l'instant."/>
 
-        <DataGrid x:Name="MonthsGrid" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
-                  ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}">
+        <!-- Liste chronologique complète (plus récent en premier), toutes années confondues : il suffit de
+             dérouler pour remonter jusqu'au plus ancien enregistrement, sans sélecteur d'année à changer. -->
+        <!-- Clic droit sur une ligne : menu "Supprimer cet enregistrement" construit dans le code-behind
+             (voir MonthsGrid_PreviewMouseRightButtonUp) - un MenuItem avec Click défini directement en XAML
+             à l'intérieur d'un Setter.Value de Style n'est pas résolu par le compilateur XAML. -->
+        <DataGrid x:Name="MonthsGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"
+                  ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}"
+                  PreviewMouseRightButtonUp="MonthsGrid_PreviewMouseRightButtonUp">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Mois" Binding="{Binding MonthLabel}" Width="2*" ElementStyle="{StaticResource WrappingCellStyle}"/>
-                <DataGridCheckBoxColumn Header="Réalisé" Binding="{Binding IsDone}" Width="*" ElementStyle="{StaticResource CenteredCheckBoxCellStyle}"/>
                 <DataGridTextColumn Header="Date du changement" Binding="{Binding DateLabel}" Width="1.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
             <Button Content="Fermer" Style="{StaticResource SecondaryButton}" Click="Close_Click" Width="90"/>
         </StackPanel>
     </Grid>

@@ -8,7 +8,8 @@ public enum EditFieldType
     Decimal,
     Date,
     Months,
-    Combo
+    Combo,
+    Checklist
 }
 
 public class EditField
@@ -22,6 +23,14 @@ public class EditField
     /// <summary>Libellés affichés pour <see cref="EditFieldType.Combo"/> uniquement. GetValue/SetValue
     /// portent l'index sélectionné dans cette liste.</summary>
     public List<string>? ComboItems { get; init; }
+
+    /// <summary>Rend ce champ accessible uniquement selon la valeur courante (en direct, avant validation)
+    /// d'un autre champ du même formulaire (ex. masquer "Référence roulement volute" tant que "Type de
+    /// centrale" vaut "Entraînement direct") : voir <see cref="DynamicEditWindow"/>, qui réévalue ce champ
+    /// à chaque changement de <see cref="EnabledWhenFieldEquals"/>. Désactivé : le champ est vidé (donc
+    /// enregistré comme vide/null) et son contrôle grisé.</summary>
+    public EditField? EnabledWhenFieldEquals { get; set; }
+    public Func<object?, bool>? EnabledPredicate { get; set; }
 
     public static EditField Text(string label, Func<string> get, Action<string> set, bool required = false) => new()
     {
@@ -109,5 +118,16 @@ public class EditField
         ComboItems = items,
         GetValue = () => get(),
         SetValue = v => set(v is int i ? i : 0)
+    };
+
+    /// <summary>Cases à cocher génériques (ex. "quels roulements ont été changés") : <paramref name="items"/>
+    /// est la liste des libellés affichés (dans <see cref="ComboItems"/>), get/set portent les index cochés.</summary>
+    public static EditField ChecklistField(string label, List<string> items, Func<List<int>> get, Action<List<int>> set) => new()
+    {
+        Label = label,
+        Type = EditFieldType.Checklist,
+        ComboItems = items,
+        GetValue = () => get(),
+        SetValue = v => set((List<int>)v!)
     };
 }

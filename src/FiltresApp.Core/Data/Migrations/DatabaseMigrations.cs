@@ -45,7 +45,95 @@ internal static class DatabaseMigrations
         (20, "Colorisation des lignes (filtres, K7, Commande, Inventaire)", AddRowColorSchema),
         (21, "Suppression du champ Notes (écrans de filtres, inutilisé hors édition)", RemoveFilterNotesColumns),
         (22, "Suppression du champ Référence Liste K7 (écran Filtres G3)", RemoveK7ReferenceColumn),
+        (23, "Modules activables « Courroies » et « Roulements » (menu Paramètres)", AddBeltAndBearingSchema),
     };
+
+    /// <summary>Modules "Courroies" et "Roulements" (menu Paramètres, activables indépendamment) : même
+    /// principe que <see cref="DynamicFilter"/> (menu "Filtres F7 à H14" - familles créées à la main,
+    /// historique de remplacements ponctuels sans périodicité mensuelle fixe), mais chacun est un module
+    /// unique (pas de variétés multiples créées par l'utilisateur), donc sans la table "FilterVarieties"
+    /// intermédiaire. "Roulements" a trois positions (avant/arrière/volute) : chaque enregistrement de
+    /// remplacement précise lesquelles ont été changées ce jour-là (voir <see cref="BearingReplacement"/>).</summary>
+    private static void AddBeltAndBearingSchema(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "BeltFamilies" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_BeltFamilies" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL
+            );
+            """);
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "Belts" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_Belts" PRIMARY KEY AUTOINCREMENT,
+                "Location" TEXT NOT NULL DEFAULT '',
+                "BeltType" TEXT NULL,
+                "QuantityInPlace" INTEGER NOT NULL DEFAULT 0,
+                "Commentaire" TEXT NULL,
+                "RowColorId" INTEGER NULL,
+                "BeltFamilyId" INTEGER NULL,
+                CONSTRAINT "FK_Belts_BeltFamilies_BeltFamilyId" FOREIGN KEY ("BeltFamilyId") REFERENCES "BeltFamilies" ("Id") ON DELETE SET NULL
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_Belts_BeltFamilyId" ON "Belts" ("BeltFamilyId");""");
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "BeltReplacements" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_BeltReplacements" PRIMARY KEY AUTOINCREMENT,
+                "BeltId" INTEGER NOT NULL,
+                "QuantityChanged" INTEGER NOT NULL DEFAULT 0,
+                "DateChanged" TEXT NULL,
+                CONSTRAINT "FK_BeltReplacements_Belts_BeltId" FOREIGN KEY ("BeltId") REFERENCES "Belts" ("Id") ON DELETE CASCADE
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_BeltReplacements_BeltId" ON "BeltReplacements" ("BeltId");""");
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "BearingFamilies" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_BearingFamilies" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL
+            );
+            """);
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "BearingUnits" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_BearingUnits" PRIMARY KEY AUTOINCREMENT,
+                "Location" TEXT NOT NULL DEFAULT '',
+                "CentraleType" TEXT NOT NULL DEFAULT 'Courroies',
+                "RefAvant" TEXT NULL,
+                "RefArriere" TEXT NULL,
+                "RefVolute" TEXT NULL,
+                "Commentaire" TEXT NULL,
+                "RowColorId" INTEGER NULL,
+                "BearingFamilyId" INTEGER NULL,
+                CONSTRAINT "FK_BearingUnits_BearingFamilies_BearingFamilyId" FOREIGN KEY ("BearingFamilyId") REFERENCES "BearingFamilies" ("Id") ON DELETE SET NULL
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_BearingUnits_BearingFamilyId" ON "BearingUnits" ("BearingFamilyId");""");
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "BearingReplacements" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_BearingReplacements" PRIMARY KEY AUTOINCREMENT,
+                "BearingUnitId" INTEGER NOT NULL,
+                "DateChanged" TEXT NULL,
+                "ChangedAvant" INTEGER NOT NULL DEFAULT 0,
+                "ChangedArriere" INTEGER NOT NULL DEFAULT 0,
+                "ChangedVolute" INTEGER NOT NULL DEFAULT 0,
+                CONSTRAINT "FK_BearingReplacements_BearingUnits_BearingUnitId" FOREIGN KEY ("BearingUnitId") REFERENCES "BearingUnits" ("Id") ON DELETE CASCADE
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """CREATE INDEX IF NOT EXISTS "IX_BearingReplacements_BearingUnitId" ON "BearingReplacements" ("BearingUnitId");""");
+    }
 
     /// <summary>Le champ "Référence Liste K7" (écran Filtres G3) est retiré à la demande de l'utilisateur :
     /// édition, export Excel et modèle.</summary>

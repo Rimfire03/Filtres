@@ -1,4 +1,6 @@
+using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
@@ -60,11 +62,21 @@ public partial class DynamicFilterRowViewModel : LinkedFilterRowViewModel
         {
             if (value is { } picked)
             {
-                _owner.AddReplacement(Filter, DateOnly.FromDateTime(picked));
+                var saved = _owner.AddReplacement(Filter, DateOnly.FromDateTime(picked));
                 RefreshHistoryColumns();
+                if (saved) TriggerSavedFlash();
+                _newChangeDate = null;
+                // Réinitialisation différée après ce tour de message : la remettre à null tout de suite,
+                // dans le même appel que celui déclenché par le DatePicker lui-même suite à la sélection
+                // d'une date, perturbe son état interne (popup/TextBox) et empêchait parfois toute saisie
+                // suivante de s'enregistrer.
+                Application.Current.Dispatcher.BeginInvoke(() => OnPropertyChanged(), DispatcherPriority.Background);
             }
-            _newChangeDate = null;
-            OnPropertyChanged();
+            else
+            {
+                _newChangeDate = null;
+                OnPropertyChanged();
+            }
         }
     }
 
@@ -84,6 +96,17 @@ public partial class DynamicFilterRowViewModel : LinkedFilterRowViewModel
         .FirstOrDefault();
 
     public int ReplacementCountInYear => ReplacementsForYear.Count();
+
+    /// <summary>Bref flash vert de la ligne (voir DynamicFilterView.xaml, DataTrigger sur IsFlashing) pour
+    /// confirmer visuellement l'enregistrement d'un changement, sans attendre un rechargement de la grille.</summary>
+    [ObservableProperty] private bool _isFlashing;
+
+    private async void TriggerSavedFlash()
+    {
+        IsFlashing = true;
+        await System.Threading.Tasks.Task.Delay(500);
+        IsFlashing = false;
+    }
 
     /// <summary>Couleur de ligne (menu contextuel, voir RowColorMenu) : sauvegarde immédiate en base via
     /// <see cref="DynamicFilterListViewModel.SetRowColor"/>.</summary>
