@@ -92,9 +92,19 @@ public class PrintService
         if (keep.Count == 0 || keep.Count == columnKeys.Length) return (headers, rows as List<string[]> ?? rows.ToList());
 
         var filteredHeaders = keep.Select(i => headers[i]).ToArray();
-        var filteredRows = rows.Select(r => keep.Select(i => i < r.Length ? r[i] : "").ToArray()).ToList();
+        var filteredRows = rows.Select(r =>
+        {
+            var filtered = keep.Select(i => i < r.Length ? r[i] : "").ToArray();
+            // Ligne titre de groupe (voir BuildGroupedRows) : son texte est en colonne 0 ; si celle-ci est
+            // décochée, le titre serait perdu - on le replace dans la première colonne conservée.
+            if (!keep.Contains(0) && IsGroupTitleRow(r)) filtered[0] = r[0];
+            return filtered;
+        }).ToList();
         return (filteredHeaders, filteredRows);
     }
+
+    private static bool IsGroupTitleRow(string[] row) =>
+        row.Length > 0 && row[0].StartsWith("— ") && row[0].EndsWith(" —") && row.Skip(1).All(string.IsNullOrEmpty);
 
     /// <summary>Déplace la colonne <paramref name="columnName"/> (si présente) en toute dernière position,
     /// sans effet si elle est déjà là ou absente.</summary>
