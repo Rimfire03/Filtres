@@ -67,6 +67,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// pas, ex. 31 en février). Par défaut le jour du mois d'aujourd'hui. Ne modifie jamais les dates déjà
     /// enregistrées : il ne sert qu'aux prochaines cases cochées.</summary>
     private int _selectedDay = DateTime.Today.Day;
+    private bool _dayIsDefault = true;
 
     /// <summary>Champ de saisie "Jour" : un nombre de 1 à 31 (valeur hors limites ramenée à 1 ou 31, texte non
     /// numérique ignoré : le champ reprend alors la dernière valeur valide).</summary>
@@ -75,7 +76,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         get => _selectedDay.ToString();
         set
         {
-            if (int.TryParse(value?.Trim(), out var day)) _selectedDay = Math.Clamp(day, 1, 31);
+            if (int.TryParse(value?.Trim(), out var day)) { _selectedDay = Math.Clamp(day, 1, 31); _dayIsDefault = false; }
             OnPropertyChanged();
         }
     }
@@ -148,7 +149,17 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     /// <summary>Rechargé à chaque ouverture de l'écran : le rattachement aux lignes de Commande /
     /// Inventaire (puce verte / rouge) se modifie depuis l'écran Commande.</summary>
-    public void Reload() => Load();
+    public void Reload()
+    {
+        // Tant que l'utilisateur n'a pas saisi de jour, la valeur par défaut suit la date du jour (l'application
+        // peut rester ouverte plusieurs jours).
+        if (_dayIsDefault && _selectedDay != DateTime.Today.Day)
+        {
+            _selectedDay = DateTime.Today.Day;
+            OnPropertyChanged(nameof(DayInput));
+        }
+        Load();
+    }
 
     private void Load()
     {

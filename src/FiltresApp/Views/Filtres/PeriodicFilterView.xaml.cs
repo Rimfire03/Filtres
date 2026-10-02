@@ -13,6 +13,18 @@ public partial class PeriodicFilterView : UserControl
         InitializeComponent();
     }
 
+    /// <summary>Champ "Jour" : tout le texte est sélectionné à la prise de focus (clavier ou clic), pour que la
+    /// première frappe remplace la valeur au lieu de s'ajouter à elle (le champ est limité à 2 caractères).</summary>
+    private void DayBox_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e) => ((TextBox)sender).SelectAll();
+
+    private void DayBox_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var box = (TextBox)sender;
+        if (box.IsKeyboardFocusWithin) return;
+        e.Handled = true;
+        box.Focus();
+    }
+
     /// <summary>Menu contextuel de la grille sur le point d'ouvrir : reconstruit le sous-menu "Couleur" à
     /// partir de la palette réglée dans Paramètres (voir RowColorMenu). Un MenuItem déclaré en XAML à
     /// l'intérieur d'un Setter.Value (Style DataGridRow) ne peut pas se voir attacher un gestionnaire
