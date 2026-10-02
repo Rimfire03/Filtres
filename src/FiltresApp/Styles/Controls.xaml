@@ -628,7 +628,8 @@
         <Setter Property="Margin" Value="8,4"/>
     </Style>
 
-    <!-- Colonne "Filtres" (écrans G4 plissé / G4 plan / G3 / Charbon, PeriodicFilterView) : même style que
+    <!-- Colonne "Filtres" (écrans G4 plissé / G4 plan / G3 / Charbon, PeriodicFilterView) et "Nom de la
+         centrale" (BeltView, BearingView) : même style que
          WrappingCellStyle, en gras (voir aussi PrintService.NewCell pour l'impression). -->
     <Style x:Key="BoldWrappingCellStyle" TargetType="TextBlock" BasedOn="{StaticResource WrappingCellStyle}">
         <Setter Property="FontWeight" Value="Bold"/>

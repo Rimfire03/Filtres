@@ -80,7 +80,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="1.9*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="1.9*" ElementStyle="{StaticResource BoldWrappingCellStyle}"/>
                 <DataGridTextColumn Header="Type de centrale" Binding="{Binding CentraleType}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Réf. roulement avant" Binding="{Binding RefAvant}" Width="1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Réf. roulement arrière" Binding="{Binding RefArriere}" Width="1*" ElementStyle="{StaticResource CenteredCellStyle}"/>

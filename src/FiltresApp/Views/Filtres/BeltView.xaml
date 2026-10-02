@@ -79,7 +79,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="2.3*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="2.3*" ElementStyle="{StaticResource BoldWrappingCellStyle}"/>
                 <DataGridTextColumn Header="Type de courroies" Binding="{Binding BeltType}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nombre" Binding="{Binding QuantityInPlace}" Width="0.75*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="97" ElementStyle="{StaticResource CenteredCellStyle}"/>

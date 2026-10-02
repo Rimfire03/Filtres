@@ -247,9 +247,10 @@ public class PrintService
         var centeredIndices = new HashSet<int> { dimensionIndex, qtyIndex, periodicityIndex };
         TextAlignment AlignmentFor(int i) => centeredIndices.Contains(i) ? TextAlignment.Center : TextAlignment.Left;
 
-        // Colonne "Filtres" (écrans G4 plissé / G4 plan / G3 / Charbon) : même mise en gras qu'à l'écran
-        // (voir BoldWrappingCellStyle dans PeriodicFilterView.xaml).
+        // Colonne "Filtres" (écrans G4 plissé / G4 plan / G3 / Charbon) et "Nom de la centrale" (Courroies,
+        // Roulements) : même mise en gras qu'à l'écran (voir BoldWrappingCellStyle dans Controls.xaml).
         var locationIndex = Array.IndexOf(headers, "Filtres");
+        if (locationIndex < 0) locationIndex = Array.IndexOf(headers, "Nom de la centrale");
 
         var isFixed = new bool[textColumnCount];
         var fixedWidths = new double[textColumnCount];
