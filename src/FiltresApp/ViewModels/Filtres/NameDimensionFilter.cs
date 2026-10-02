@@ -19,7 +19,15 @@ public partial class NameDimensionFilter : ObservableObject
     [ObservableProperty] private List<string> _dimensionOptions = new() { AllDimensions };
     [ObservableProperty] private string _selectedDimension = AllDimensions;
 
-    public NameDimensionFilter(Action onFilterChanged) => _onFilterChanged = onFilterChanged;
+    /// <summary>Libellé de la colonne texte, repris dans le titre des impressions (« Nom » par défaut ;
+    /// « Destination » pour Commande / Inventaire).</summary>
+    private readonly string _nameLabel;
+
+    public NameDimensionFilter(Action onFilterChanged, string nameLabel = "Nom")
+    {
+        _onFilterChanged = onFilterChanged;
+        _nameLabel = nameLabel;
+    }
 
     partial void OnNameFilterChanged(string value) => _onFilterChanged();
 
@@ -69,7 +77,7 @@ public partial class NameDimensionFilter : ObservableObject
         get
         {
             var suffix = SelectedDimension != AllDimensions ? $" - Dimension {SelectedDimension}" : "";
-            if (NameFilter.Trim().Length > 0) suffix += $" - Nom contenant « {NameFilter.Trim()} »";
+            if (NameFilter.Trim().Length > 0) suffix += $" - {_nameLabel} contenant « {NameFilter.Trim()} »";
             return suffix;
         }
     }

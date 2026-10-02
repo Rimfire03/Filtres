@@ -22,17 +22,36 @@ public abstract partial class OrderLineListViewModelBase : ObservableObject, IRe
 
     public OrderFamilyFilter FamilyFilter { get; }
 
+    /// <summary>Filtres sous les en-têtes de colonnes : texte « contient » sur Destination, liste des
+    /// dimensions présentes pour la colonne Dimension (modèles <c>DestinationFilterHeaderTemplate</c> /
+    /// <c>DimensionFilterHeaderTemplate</c> de Styles/Controls.xaml).</summary>
+    public NameDimensionFilter HeaderFilter { get; }
+
+    private List<OrderLine> _loadedLines = new();
+
     /// <summary>Le constructeur dérivé appelle <see cref="Load"/> une fois ses propres champs prêts.</summary>
     protected OrderLineListViewModelBase(OrderDocumentType documentType)
     {
         DocumentType = documentType;
         FamilyFilter = new OrderFamilyFilter(Load);
+        HeaderFilter = new NameDimensionFilter(ApplyHeaderFilters, "Destination");
     }
 
     public void Reload() => Load();
 
-    protected virtual void Load() =>
-        Lines = new ObservableCollection<OrderLine>(FamilyFilter.Apply(OrderLineQueries.LoadWithLinks(App.Db, DocumentType)));
+    protected virtual void Load()
+    {
+        _loadedLines = FamilyFilter.Apply(OrderLineQueries.LoadWithLinks(App.Db, DocumentType)).ToList();
+        HeaderFilter.RefreshDimensions(_loadedLines.Select(l => l.Designation));
+        ApplyHeaderFilters();
+    }
+
+    /// <summary>Applique les filtres Destination / Dimension sans relire la base.</summary>
+    private void ApplyHeaderFilters() =>
+        Lines = new ObservableCollection<OrderLine>(_loadedLines.Where(l => HeaderFilter.Matches(l.Destination ?? "", l.Designation ?? "")));
+
+    [RelayCommand]
+    private void ResetHeaderFilters() => HeaderFilter.Reset();
 
     // ---- Ajout / modification / suppression ----
 
@@ -178,12 +197,12 @@ public abstract partial class OrderLineListViewModelBase : ObservableObject, IRe
 
     [RelayCommand]
     private void Print() =>
-        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix, PrintHeaders, BuildPrintRows(), printColumnsKey: Title, rowColors: BuildPrintRowColors());
+        App.Printer.PrintTable(Title + FamilyFilter.TitleSuffix + HeaderFilter.TitleSuffix, PrintHeaders, BuildPrintRows(), printColumnsKey: Title, rowColors: BuildPrintRowColors());
 
     [RelayCommand]
     private void ExportPdf()
     {
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, PdfTitle + FamilyFilter.TitleSuffix, PrintHeaders, BuildPrintRows(), App.CompanyLogo, coverPage: App.Settings.CoverPage);
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, PdfTitle + FamilyFilter.TitleSuffix + HeaderFilter.TitleSuffix, PrintHeaders, BuildPrintRows(), App.CompanyLogo, coverPage: App.Settings.CoverPage);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }

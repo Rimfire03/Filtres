@@ -40,6 +40,8 @@
                 <TextBlock Text="Famille :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
                 <ComboBox ItemsSource="{Binding FamilyFilter.Options}" SelectedItem="{Binding FamilyFilter.Selected}"
                           Width="220" VerticalContentAlignment="Center"/>
+                <Button Content="Réinitialiser les filtres" Style="{StaticResource SecondaryButton}" Command="{Binding ResetHeaderFiltersCommand}" Margin="16,0,0,0"
+                        ToolTip="Vide les filtres Destination et Dimension placés sous les titres de colonnes"/>
                 <TextBlock Text="Famille déduite des filtres rattachés à la ligne, ou choisie manuellement dans « Modifier »."
                            Style="{StaticResource SectionText}" VerticalAlignment="Center" Margin="16,0,0,0" TextWrapping="Wrap"/>
             </DockPanel>
@@ -63,8 +65,8 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Dimension" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}"/>
-                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Dimension" Binding="{Binding Designation}" Width="2.5*" ElementStyle="{StaticResource WrappingCellStyle}" HeaderTemplate="{StaticResource DimensionFilterHeaderTemplate}"/>
+                <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DestinationFilterHeaderTemplate}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <!-- Besoin : calculé (grisé, non modifiable) pour les familles G4 plissés, G4 plan et G3 ;
