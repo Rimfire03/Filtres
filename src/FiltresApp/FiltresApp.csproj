@@ -9,7 +9,7 @@
     <AssemblyName>FiltresApp</AssemblyName>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <Version>1.6.4</Version>
+    <Version>1.6.5</Version>
   </PropertyGroup>
 
   <ItemGroup>
