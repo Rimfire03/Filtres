@@ -93,6 +93,17 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
+                <!-- Même flash sur les cellules : la ligne venant d'être cliquée est sélectionnée, et le fond de
+                     sélection des cellules masquerait sinon celui de la ligne. -->
+                <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsFlashing}" Value="True">
+                            <Setter Property="Background" Value="#FF66BB6A"/>
+                            <Setter Property="BorderBrush" Value="#FF66BB6A"/>
+                            <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
                 <!-- Puce verte / rouge : filtre rattaché ou non à une ligne de Commande / Inventaire. -->

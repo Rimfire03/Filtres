@@ -104,7 +104,7 @@ public partial class DynamicFilterRowViewModel : LinkedFilterRowViewModel
     private async void TriggerSavedFlash()
     {
         IsFlashing = true;
-        await System.Threading.Tasks.Task.Delay(500);
+        await System.Threading.Tasks.Task.Delay(1500);
         IsFlashing = false;
     }
 
