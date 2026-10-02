@@ -172,8 +172,12 @@ internal static class DatabaseMigrations
 
         foreach (var table in new[] { "PeriodicFilters", "DynamicFilters", "K7Locations", "OrderLines" })
         {
+            // Un nom de table ne peut pas être passé en paramètre SQL ; "table" vient uniquement de la
+            // liste en dur ci-dessus (jamais d'une saisie), donc aucun risque d'injection.
+#pragma warning disable EF1002
             if (!SchemaInspector.GetColumns(ctx, table).Contains("RowColorId"))
                 ctx.Database.ExecuteSqlRaw($"""ALTER TABLE "{table}" ADD COLUMN "RowColorId" INTEGER NULL;""");
+#pragma warning restore EF1002
         }
     }
 
