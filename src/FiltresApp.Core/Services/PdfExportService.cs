@@ -15,8 +15,10 @@ public class PdfExportService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    /// <param name="logo">Logo de l'entreprise (image), affiché à gauche du titre ; null = pas de logo.</param>
-    public string ExportTable(string exportFolder, string documentTitle, string[] headers, IReadOnlyList<string[]> rows, byte[]? logo = null)
+    /// <param name="logo">Logo de l'entreprise (image), affiché à gauche du titre et sur la page de garde ; null = pas de logo.</param>
+    /// <param name="coverPage">Ajoute avant le tableau la page de garde du bon de commande (en-tête du pôle,
+    /// titre, mention de livraison, marché), comme le modèle de bon de commande attendu.</param>
+    public string ExportTable(string exportFolder, string documentTitle, string[] headers, IReadOnlyList<string[]> rows, byte[]? logo = null, bool coverPage = false)
     {
         Directory.CreateDirectory(exportFolder);
         var now = DateTime.Now;
@@ -25,6 +27,8 @@ public class PdfExportService
 
         Document.Create(container =>
         {
+            if (coverPage) container.Page(page => ComposeCoverPage(page, logo));
+
             container.Page(page =>
             {
                 page.Size(PageSizes.A4.Landscape());
@@ -70,6 +74,32 @@ public class PdfExportService
         }).GeneratePdf(fullPath);
 
         return fullPath;
+    }
+
+    /// <summary>Page de garde du bon de commande : logo à gauche, coordonnées du pôle à droite, titre souligné,
+    /// mention de livraison et numéro de marché.</summary>
+    private static void ComposeCoverPage(PageDescriptor page, byte[]? logo)
+    {
+        page.Size(PageSizes.A4.Landscape());
+        page.Margin(20);
+        page.DefaultTextStyle(x => x.FontFamily("Arial"));
+        page.Content().Column(col =>
+        {
+            col.Item().Row(row =>
+            {
+                if (logo is not null) row.ConstantItem(125).Height(90).Image(logo).FitArea();
+                else row.ConstantItem(125);
+                row.RelativeItem().AlignCenter().Column(c =>
+                {
+                    c.Item().AlignCenter().Text("POLE GESTION ET STRATEGIE").FontSize(12).Bold();
+                    c.Item().PaddingTop(4).AlignCenter().Text("Direction des Services Techniques").FontSize(9).Bold();
+                    c.Item().PaddingTop(10).AlignCenter().Text("Tél. 04.70.35.76.50 - Fax. 04.70.35.77.19").FontSize(8);
+                });
+            });
+            col.Item().PaddingTop(70).AlignCenter().Text("BON DE COMMANDE FILTRES").FontSize(15).Bold().Italic().Underline();
+            col.Item().PaddingTop(28).Text("LIVRAISON IMPERATIVE DE PLEIN PIED AVEC CAMION HAYON").FontSize(15).Bold();
+            col.Item().PaddingTop(30).Text("Marché RESAH N°2019-012").FontSize(12).Bold().Italic();
+        });
     }
 
     private static string SanitizeFileName(string name)
