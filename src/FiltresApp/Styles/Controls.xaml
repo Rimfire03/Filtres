@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:app="clr-namespace:FiltresApp">
+                    xmlns:app="clr-namespace:FiltresApp"
+                    xmlns:conv="clr-namespace:FiltresApp.Converters">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Colors.xaml"/>
@@ -703,9 +704,13 @@
     </DataTemplate>
 
     <DataTemplate x:Key="DestinationFilterHeaderTemplate">
+        <DataTemplate.Resources>
+            <conv:SubtractConverter x:Key="Subtract"/>
+        </DataTemplate.Resources>
         <StackPanel>
             <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" Padding="4,2" FontWeight="SemiBold"/>
-            <TextBox Margin="2,4,2,0" ToolTip="N'afficher que les lignes dont la destination contient ce texte"
+            <TextBox Margin="0,4,0,0" HorizontalAlignment="Left" ToolTip="N'afficher que les lignes dont la destination contient ce texte"
+                     Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridColumnHeader}, Converter={StaticResource Subtract}, ConverterParameter=10}"
                      Text="{Binding DataContext.HeaderFilter.NameFilter, RelativeSource={RelativeSource AncestorType=DataGrid}, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
     </DataTemplate>
