@@ -65,6 +65,7 @@ public partial class SettingsViewModel : ObservableObject
         _showFiltresModule = App.Settings.ShowFiltresModule;
         LoadHistoryYears();
         InitializePrintColumns();
+        InitializeCoverPage();
         InitializeRowColors();
     }
 

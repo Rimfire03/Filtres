@@ -9,6 +9,10 @@ public class AppSettings
     // racine du dossier publié, tout le reste (base de données, exports, réglages) va dans FiltreData.
     public string DatabasePath { get; set; } = "filtres.db";
     public string PdfExportPath { get; set; } = "exports";
+
+    /// <summary>Textes de la page de garde de l'export PDF Commande / Inventaire (voir <see cref="CoverPageInfo"/>),
+    /// modifiables dans Paramètres. Une ligne vide n'est pas imprimée.</summary>
+    public CoverPageInfo CoverPage { get; set; } = new();
     public bool AutoUpdateEnabled { get; set; } = true;
 
     /// <summary>Fenêtre "Rattacher des filtres..." : n'afficher par défaut que les filtres dont la dimension

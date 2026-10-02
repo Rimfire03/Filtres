@@ -16,9 +16,9 @@ public class PdfExportService
     }
 
     /// <param name="logo">Logo de l'entreprise (image), affiché à gauche du titre et sur la page de garde ; null = pas de logo.</param>
-    /// <param name="coverPage">Ajoute avant le tableau la page de garde du bon de commande (en-tête du pôle,
-    /// titre, mention de livraison, marché), comme le modèle de bon de commande attendu.</param>
-    public string ExportTable(string exportFolder, string documentTitle, string[] headers, IReadOnlyList<string[]> rows, byte[]? logo = null, bool coverPage = false)
+    /// <param name="coverPage">Page de garde du bon de commande à placer avant le tableau (textes de Paramètres, en-tête du pôle,
+    /// titre, mention de livraison, marché) ; null = pas de page de garde.</param>
+    public string ExportTable(string exportFolder, string documentTitle, string[] headers, IReadOnlyList<string[]> rows, byte[]? logo = null, CoverPageInfo? coverPage = null)
     {
         Directory.CreateDirectory(exportFolder);
         var now = DateTime.Now;
@@ -27,7 +27,7 @@ public class PdfExportService
 
         Document.Create(container =>
         {
-            if (coverPage) container.Page(page => ComposeCoverPage(page, logo));
+            if (coverPage is not null) container.Page(page => ComposeCoverPage(page, logo, coverPage));
 
             container.Page(page =>
             {
@@ -78,7 +78,7 @@ public class PdfExportService
 
     /// <summary>Page de garde du bon de commande : logo à gauche, coordonnées du pôle à droite, titre souligné,
     /// mention de livraison et numéro de marché.</summary>
-    private static void ComposeCoverPage(PageDescriptor page, byte[]? logo)
+    private static void ComposeCoverPage(PageDescriptor page, byte[]? logo, CoverPageInfo info)
     {
         page.Size(PageSizes.A4.Landscape());
         page.Margin(20);
@@ -91,16 +91,18 @@ public class PdfExportService
                 else row.ConstantItem(125);
                 row.RelativeItem().AlignCenter().Column(c =>
                 {
-                    c.Item().AlignCenter().Text("POLE GESTION ET STRATEGIE").FontSize(12).Bold();
-                    c.Item().PaddingTop(4).AlignCenter().Text("Direction des Services Techniques").FontSize(9).Bold();
-                    c.Item().PaddingTop(10).AlignCenter().Text("Tél. 04.70.35.76.50 - Fax. 04.70.35.77.19").FontSize(8);
+                    if (Has(info.Organisation)) c.Item().AlignCenter().Text(info.Organisation).FontSize(12).Bold();
+                    if (Has(info.Direction)) c.Item().PaddingTop(4).AlignCenter().Text(info.Direction).FontSize(9).Bold();
+                    if (Has(info.Contact)) c.Item().PaddingTop(10).AlignCenter().Text(info.Contact).FontSize(8);
                 });
             });
-            col.Item().PaddingTop(70).AlignCenter().Text("BON DE COMMANDE FILTRES").FontSize(15).Bold().Italic().Underline();
-            col.Item().PaddingTop(28).Text("LIVRAISON IMPERATIVE DE PLEIN PIED AVEC CAMION HAYON").FontSize(15).Bold();
-            col.Item().PaddingTop(30).Text("Marché RESAH N°2019-012").FontSize(12).Bold().Italic();
+            if (Has(info.Title)) col.Item().PaddingTop(70).AlignCenter().Text(info.Title).FontSize(15).Bold().Italic().Underline();
+            if (Has(info.Delivery)) col.Item().PaddingTop(28).Text(info.Delivery).FontSize(15).Bold();
+            if (Has(info.Market)) col.Item().PaddingTop(30).Text(info.Market).FontSize(12).Bold().Italic();
         });
     }
+
+    private static bool Has(string? text) => !string.IsNullOrWhiteSpace(text);
 
     private static string SanitizeFileName(string name)
     {

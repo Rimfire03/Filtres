@@ -183,7 +183,7 @@ public abstract partial class OrderLineListViewModelBase : ObservableObject, IRe
     [RelayCommand]
     private void ExportPdf()
     {
-        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, PdfTitle + FamilyFilter.TitleSuffix, PrintHeaders, BuildPrintRows(), App.CompanyLogo, coverPage: true);
+        var path = App.PdfExport.ExportTable(App.Settings.ResolvedPdfExportPath, PdfTitle + FamilyFilter.TitleSuffix, PrintHeaders, BuildPrintRows(), App.CompanyLogo, coverPage: App.Settings.CoverPage);
         App.Dialogs.ShowMessage("Export PDF", $"Bon de commande généré avec succès.\n\nIl est stocké dans :\n{path}");
     }
 }
