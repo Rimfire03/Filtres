@@ -15,7 +15,7 @@ public static class LicenseManager
 
     public static string FooterText => Mode switch
     {
-        LicenseMode.Free => "Licence gratuite",
+        LicenseMode.Free => Nf8.F2() is { } n ? $"Licence gratuite — {n}" : "Licence gratuite",
         LicenseMode.Active => Bt(Cs?.L),
         LicenseMode.Grace => Bt(Cs?.L) + " (mode hors ligne)",
         LicenseMode.Blocked => "Aucune licence",
@@ -107,7 +107,8 @@ public static class LicenseManager
     {
         if (l is null) return "Licence active";
         var t = string.IsNullOrWhiteSpace(l.T) ? "" : $" ({l.T})";
-        return l.Ex is { } e ? $"Licence active{t} - expire le {e:dd/MM/yyyy}" : $"Licence active{t}";
+        var baseText = l.Ex is { } e ? $"Licence active{t} - expire le {e:dd/MM/yyyy}" : $"Licence active{t}";
+        return string.IsNullOrWhiteSpace(l.Cn) ? baseText : $"Licence activée pour : {l.Cn} — {baseText}";
     }
 
     private static string Rm(string? r) => r switch

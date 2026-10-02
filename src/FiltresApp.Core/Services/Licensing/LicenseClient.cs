@@ -60,7 +60,8 @@ internal class Rc3
                 Mx = le.TryGetProperty("maxActivations", out var me) && me.ValueKind == JsonValueKind.Number ? me.GetInt32() : 0,
                 Ft = le.TryGetProperty("features", out var fe) && fe.ValueKind == JsonValueKind.Array
                     ? fe.EnumerateArray().Select(f => f.GetString() ?? "").Where(f => f.Length > 0).ToList()
-                    : new List<string>()
+                    : new List<string>(),
+                Cn = G1(le, "customerName")
             };
         }
 

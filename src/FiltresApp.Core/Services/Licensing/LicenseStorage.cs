@@ -15,6 +15,16 @@ internal static class Nf8
 
     public static bool F1() => File.Exists(P2);
 
+    public static string? F2()
+    {
+        try
+        {
+            var t = File.ReadAllText(P2).Trim();
+            return t.Length == 0 ? null : t.Split('\n')[0].Trim();
+        }
+        catch { return null; }
+    }
+
     public static Tu5? L()
     {
         try

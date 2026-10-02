@@ -8,6 +8,7 @@ internal class Vw2
     public DateTime? Ex { get; set; }
     public int Mx { get; set; }
     public List<string> Ft { get; set; } = new();
+    public string? Cn { get; set; }
 }
 
 internal class Tu5
