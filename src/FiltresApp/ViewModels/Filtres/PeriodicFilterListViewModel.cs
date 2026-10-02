@@ -62,14 +62,23 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     partial void OnSelectedConsultedMonthChanged(ConsultedMonthOption? value) => RefreshRows();
 
-    /// <summary>Jours proposés par le sélecteur "Jour" (1 à 31).</summary>
-    public List<int> DayOptions { get; } = Enumerable.Range(1, 31).ToList();
-
     /// <summary>Numéro de jour du mois utilisé quand on coche "Réalisé" : la date enregistrée est ce jour dans
     /// le <see cref="SelectedConsultedMonth">mois consulté</see> (ramené au dernier jour du mois s'il n'existe
     /// pas, ex. 31 en février). Par défaut le jour du mois d'aujourd'hui. Ne modifie jamais les dates déjà
     /// enregistrées : il ne sert qu'aux prochaines cases cochées.</summary>
-    [ObservableProperty] private int _selectedDay = DateTime.Today.Day;
+    private int _selectedDay = DateTime.Today.Day;
+
+    /// <summary>Champ de saisie "Jour" : un nombre de 1 à 31 (valeur hors limites ramenée à 1 ou 31, texte non
+    /// numérique ignoré : le champ reprend alors la dernière valeur valide).</summary>
+    public string DayInput
+    {
+        get => _selectedDay.ToString();
+        set
+        {
+            if (int.TryParse(value?.Trim(), out var day)) _selectedDay = Math.Clamp(day, 1, 31);
+            OnPropertyChanged();
+        }
+    }
 
     /// <summary>Reconstruit <see cref="ConsultedMonthOptions"/> pour l'année choisie, en conservant la
     /// même position dans la liste (donc le même mois "relatif") qu'avant le changement d'année.</summary>
@@ -268,7 +277,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private DateOnly DateForConsultedMonth()
     {
         if (SelectedConsultedMonth is not { } consulted) return DateOnly.FromDateTime(DateTime.Today);
-        var day = Math.Min(SelectedDay, DateTime.DaysInMonth(consulted.Year, consulted.Month));
+        var day = Math.Min(_selectedDay, DateTime.DaysInMonth(consulted.Year, consulted.Month));
         return new DateOnly(consulted.Year, consulted.Month, day);
     }
 
