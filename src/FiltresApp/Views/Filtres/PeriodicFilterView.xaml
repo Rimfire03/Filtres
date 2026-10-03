@@ -45,6 +45,8 @@
             <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <!-- G4 plissés / G4 plan / G3 uniquement (voir PeriodicFilterListViewModel.MoveFilter). -->
+            <Button Content="Déplacer vers..." Style="{StaticResource SecondaryButton}" Command="{Binding MoveFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding ShowMoveButton, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
         </StackPanel>

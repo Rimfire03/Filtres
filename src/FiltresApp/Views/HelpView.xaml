@@ -38,6 +38,18 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
+                    <TextBlock Text="Déplacer vers..." FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Sur les écrans G4 plissés, G4 plan et G3 (mode édition) : déplace la ligne sélectionnée
+                        vers l'un des deux autres écrans. Elle garde son historique de remplacements, sa couleur
+                        et son rattachement à Commande / Inventaire. L'option "Changé tous les 15 jours",
+                        propre aux G4 plissés, est retirée en quittant cet écran.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
                     <TextBlock Text="Couleur de ligne" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
                         Clic droit sur une ligne (filtres, K7, Commande, Inventaire) → "Couleur" : liste les

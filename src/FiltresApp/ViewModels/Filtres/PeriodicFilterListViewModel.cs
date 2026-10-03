@@ -45,7 +45,18 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     public string EditModeButtonLabel => IsEditMode ? "Quitter le mode édition" : "Mode édition";
 
-    partial void OnIsEditModeChanged(bool value) => OnPropertyChanged(nameof(EditModeButtonLabel));
+    partial void OnIsEditModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(EditModeButtonLabel));
+        OnPropertyChanged(nameof(ShowMoveButton));
+    }
+
+    /// <summary>Écrans entre lesquels une ligne peut être déplacée (bouton "Déplacer vers...", voir
+    /// <see cref="MoveFilter"/>) : G4 plissés, G4 plan et G3 - pas Charbon.</summary>
+    private static readonly FilterCategory[] MovableCategories = { FilterCategory.G4Plisse, FilterCategory.G4Plan, FilterCategory.G3 };
+
+    /// <summary>Bouton "Déplacer vers..." : en mode édition, sur les écrans de <see cref="MovableCategories"/>.</summary>
+    public bool ShowMoveButton => IsEditMode && MovableCategories.Contains(_category);
 
     [RelayCommand]
     private void ToggleEditMode() => IsEditMode = !IsEditMode;
@@ -235,6 +246,36 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         App.Db.PeriodicFilters.Add(copy);
         App.Db.SaveChanges();
         Load();
+    }
+
+    /// <summary>Déplace la ligne sélectionnée vers un autre écran parmi G4 plissés / G4 plan / G3 (choisi dans
+    /// une petite fenêtre) : seule sa catégorie change, elle garde son historique de remplacements, sa
+    /// couleur et son rattachement à Commande / Inventaire. L'option "Changé tous les 15 jours", propre aux
+    /// G4 plissés (et qui double le besoin calculé, voir OrderNeedCalculationService), est retirée en quittant
+    /// cet écran : elle n'y serait plus ni visible ni modifiable.</summary>
+    [RelayCommand]
+    private void MoveFilter()
+    {
+        if (!App.GuardWritable()) return;
+        if (SelectedFilter is null) return;
+
+        var targets = MovableCategories.Where(c => c != _category).ToList();
+        var labels = targets.Select(OrderLine.FamilyLabelFor).ToList();
+        var targetIndex = 0;
+        var fields = new List<EditField>
+        {
+            EditField.ComboField("Déplacer vers", labels, () => targetIndex, v => targetIndex = v)
+        };
+        var location = SelectedFilter.Location;
+        if (!App.Dialogs.EditFields($"Déplacer « {location} »", fields)) return;
+
+        var target = targets[targetIndex];
+        var tracked = App.Db.PeriodicFilters.First(f => f.Id == SelectedFilter.Id);
+        tracked.Category = target;
+        if (target != FilterCategory.G4Plisse) tracked.ChangedEvery15Days = false;
+        App.Db.SaveChanges();
+        Load();
+        App.Dialogs.ShowMessage("Déplacer", $"« {location} » a été déplacé vers « {labels[targetIndex]} ».");
     }
 
     private bool EditEntity(PeriodicFilter entity, bool isNew)
