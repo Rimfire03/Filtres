@@ -125,7 +125,7 @@ public partial class DynamicFilterListViewModel : TrackedItemListViewModel<Dynam
             FamilyField(entity.DynamicFilterFamilyId, id => entity.DynamicFilterFamilyId = id),
             EditField.Multiline("Nom de la centrale d'air", () => entity.Location, v => entity.Location = v, required: true),
             EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
-            EditField.NullableText("Type", () => entity.FilterType, v => entity.FilterType = v),
+            EditField.NullableText("Type", () => entity.FilterType, v => entity.FilterType = v, uppercase: true),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v)
         };

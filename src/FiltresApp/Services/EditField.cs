@@ -32,21 +32,30 @@ public class EditField
     public EditField? EnabledWhenFieldEquals { get; set; }
     public Func<object?, bool>? EnabledPredicate { get; set; }
 
-    public static EditField Text(string label, Func<string> get, Action<string> set, bool required = false) => new()
+    /// <summary>Texte toujours en majuscules (colonnes "Type", "Type de courroies", "Réf. roulement") :
+    /// converti pendant la frappe par <see cref="DynamicEditWindow"/> et à l'enregistrement. Même conversion
+    /// que la migration 24 des valeurs existantes (DatabaseMigrations).</summary>
+    public bool Uppercase { get; init; }
+
+    private static string? ToCase(string? value, bool uppercase) => uppercase ? value?.ToUpperInvariant() : value;
+
+    public static EditField Text(string label, Func<string> get, Action<string> set, bool required = false, bool uppercase = false) => new()
     {
         Label = label,
         Type = EditFieldType.Text,
         GetValue = () => get(),
-        SetValue = v => set((string?)v ?? string.Empty),
-        Required = required
+        SetValue = v => set(ToCase((string?)v, uppercase) ?? string.Empty),
+        Required = required,
+        Uppercase = uppercase
     };
 
-    public static EditField NullableText(string label, Func<string?> get, Action<string?> set) => new()
+    public static EditField NullableText(string label, Func<string?> get, Action<string?> set, bool uppercase = false) => new()
     {
         Label = label,
         Type = EditFieldType.Text,
         GetValue = () => get(),
-        SetValue = v => set(string.IsNullOrWhiteSpace((string?)v) ? null : (string)v!)
+        SetValue = v => set(string.IsNullOrWhiteSpace((string?)v) ? null : ToCase((string)v!, uppercase)),
+        Uppercase = uppercase
     };
 
     public static EditField Multiline(string label, Func<string?> get, Action<string?> set) => new()

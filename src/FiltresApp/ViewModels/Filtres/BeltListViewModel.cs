@@ -58,7 +58,7 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
         {
             FamilyField(entity.BeltFamilyId, id => entity.BeltFamilyId = id),
             EditField.Multiline("Nom de la centrale", () => entity.Location, v => entity.Location = v, required: true),
-            EditField.NullableText("Type de courroies", () => entity.BeltType, v => entity.BeltType = v),
+            EditField.NullableText("Type de courroies", () => entity.BeltType, v => entity.BeltType = v, uppercase: true),
             EditField.IntField("Nombre", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v)
         };

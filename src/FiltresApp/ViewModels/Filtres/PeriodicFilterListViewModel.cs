@@ -286,7 +286,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             // Édition multiligne (retour à la ligne possible), comme sur toutes les autres vues.
             EditField.Multiline(_locationColumnLabel, () => entity.Location, v => entity.Location = v, required: true),
             EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
-            EditField.Text("Type", () => entity.MediaType, v => entity.MediaType = v),
+            EditField.Text("Type", () => entity.MediaType, v => entity.MediaType = v, uppercase: true),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
             EditField.MonthsField("Périodicité de remplacement (mois)", () => months, v => months = v)
         };

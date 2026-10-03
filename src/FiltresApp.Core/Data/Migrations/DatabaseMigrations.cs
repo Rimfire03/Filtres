@@ -1,5 +1,6 @@
 using FiltresApp.Core.Models;
 using FiltresApp.Core.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.Core.Data.Migrations;
@@ -46,7 +47,30 @@ internal static class DatabaseMigrations
         (21, "Suppression du champ Notes (écrans de filtres, inutilisé hors édition)", RemoveFilterNotesColumns),
         (22, "Suppression du champ Référence Liste K7 (écran Filtres G3)", RemoveK7ReferenceColumn),
         (23, "Modules activables « Courroies » et « Roulements » (menu Paramètres)", AddBeltAndBearingSchema),
+        (24, "Colonnes Type, Type de courroies et Réf. roulement en majuscules", UppercaseTypeAndReferenceColumns),
     };
+
+    /// <summary>Le contenu des colonnes "Type" (filtres G4 / G3 / Charbon et F7 à H14), "Type de courroies"
+    /// et "Réf. roulement" (avant / arrière / volute) est désormais toujours en majuscules (saisie convertie,
+    /// voir EditField côté WPF) : les valeurs existantes sont converties ici. <c>UPPER()</c> de SQLite ne
+    /// convertit que l'ASCII (un « é » resterait en minuscule) : conversion .NET via une fonction SQL
+    /// enregistrée sur la connexion, ouverte pendant toute la migration (transaction).</summary>
+    private static void UppercaseTypeAndReferenceColumns(FiltresDbContext ctx)
+    {
+        var connection = (SqliteConnection)ctx.Database.GetDbConnection();
+        connection.CreateFunction("dotnet_upper", (string? value) => value?.ToUpperInvariant(), isDeterministic: true);
+
+        ctx.Database.ExecuteSqlRaw("""UPDATE "PeriodicFilters" SET "MediaType" = dotnet_upper("MediaType");""");
+        ctx.Database.ExecuteSqlRaw("""UPDATE "DynamicFilters" SET "FilterType" = dotnet_upper("FilterType") WHERE "FilterType" IS NOT NULL;""");
+        ctx.Database.ExecuteSqlRaw("""UPDATE "Belts" SET "BeltType" = dotnet_upper("BeltType") WHERE "BeltType" IS NOT NULL;""");
+        ctx.Database.ExecuteSqlRaw(
+            """
+            UPDATE "BearingUnits" SET
+                "RefAvant" = dotnet_upper("RefAvant"),
+                "RefArriere" = dotnet_upper("RefArriere"),
+                "RefVolute" = dotnet_upper("RefVolute");
+            """);
+    }
 
     /// <summary>Modules "Courroies" et "Roulements" (menu Paramètres, activables indépendamment) : même
     /// principe que <see cref="DynamicFilter"/> (menu "Filtres F7 à H14" - familles créées à la main,

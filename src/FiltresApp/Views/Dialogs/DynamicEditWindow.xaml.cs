@@ -37,7 +37,11 @@ public partial class DynamicEditWindow : Window
             {
                 case EditFieldType.Text:
                 {
-                    var tb = new TextBox { Text = field.GetValue()?.ToString() ?? string.Empty };
+                    var tb = new TextBox
+                    {
+                        Text = field.GetValue()?.ToString() ?? string.Empty,
+                        CharacterCasing = field.Uppercase ? CharacterCasing.Upper : CharacterCasing.Normal
+                    };
                     container.Children.Add(tb);
                     _controls[field] = tb;
                     _liveGetters[field] = () => tb.Text;

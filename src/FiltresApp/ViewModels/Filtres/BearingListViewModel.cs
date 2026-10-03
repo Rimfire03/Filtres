@@ -87,7 +87,7 @@ public partial class BearingListViewModel : TrackedItemListViewModel<BearingUnit
         // "Entraînement direct" (index 1) : pas de roulement volute (voir BearingRowViewModel.IsDirectDrive
         // et VoluteCellStyle) - le sélecteur n'est alors pas accessible et sa valeur devient forcément nulle
         // (voir DynamicEditWindow.RefreshConditionalFields, qui vide le champ dès qu'il se désactive).
-        var voluteField = EditField.NullableText("Référence roulement volute", () => entity.RefVolute, v => entity.RefVolute = v);
+        var voluteField = EditField.NullableText("Référence roulement volute", () => entity.RefVolute, v => entity.RefVolute = v, uppercase: true);
         voluteField.EnabledWhenFieldEquals = typeField;
         voluteField.EnabledPredicate = v => !(v is int i && i == 1);
 
@@ -96,8 +96,8 @@ public partial class BearingListViewModel : TrackedItemListViewModel<BearingUnit
             FamilyField(entity.BearingFamilyId, id => entity.BearingFamilyId = id),
             EditField.Multiline("Nom de la centrale", () => entity.Location, v => entity.Location = v, required: true),
             typeField,
-            EditField.NullableText("Référence roulement avant", () => entity.RefAvant, v => entity.RefAvant = v),
-            EditField.NullableText("Référence roulement arrière", () => entity.RefArriere, v => entity.RefArriere = v),
+            EditField.NullableText("Référence roulement avant", () => entity.RefAvant, v => entity.RefAvant = v, uppercase: true),
+            EditField.NullableText("Référence roulement arrière", () => entity.RefArriere, v => entity.RefArriere = v, uppercase: true),
             voluteField,
             EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v)
         };
