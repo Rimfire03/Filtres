@@ -10,6 +10,8 @@
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <InvariantGlobalization>false</InvariantGlobalization>
     <Version>1.6.7</Version>
+    <Company>TomLine prod&amp;co</Company>
+    <Copyright>© TomLine prod&amp;co by Thomas Guidez</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
