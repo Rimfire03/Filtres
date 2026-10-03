@@ -166,9 +166,16 @@ pour rendre chaque migration idempotente.
 - `ViewModels/` : un ViewModel par écran, découpés en fichiers partiels par sujet pour les gros
   écrans (ex. `*.Families.cs`, `SettingsViewModel.Logo.cs`/`.History.cs`/`.Updates.cs`).
 - `Services/` : dialogues, impression, préférences de colonnes, chargement d'image.
-- Éléments réutilisés par plusieurs écrans : styles de grille communs (`Styles/Controls.xaml`),
-  `OrderLineListViewModelBase` (Inventaire/Commande), `LinkedFilterRowViewModel` (puce "Lié"),
-  `ConsultedMonthOption`, `PrintService.BuildGroupedRows`.
+- Éléments réutilisés par plusieurs écrans : styles de grille communs (`Styles/Controls.xaml`, dont
+  `FlashingCellStyle`), `OrderLineListViewModelBase` (Inventaire/Commande), `LinkedFilterRowViewModel`
+  (puce "Lié"), `ConsultedMonthOption`, `PrintService.BuildGroupedRows`.
+- "Filtres F7 à H14", "Courroies" et "Roulements" partagent la même mécanique (familles créées à la main,
+  remplacements datés sans périodicité fixe) : `TrackedItemListViewModel` (écran : mode édition, familles,
+  Ajouter/Modifier/Dupliquer/Supprimer, couleur de ligne), `TrackedItemRowViewModel` (ligne : saisie
+  d'une date avec flash vert, colonnes de l'année consultée) et `ReplacementHistoryWindow` ("Consulter
+  l'historique..."), s'appuyant sur les interfaces `IFamilyTrackedItem` / `INamedFamily` /
+  `IDatedReplacement` des modèles. Chaque module n'écrit que ses requêtes, son formulaire, sa saisie d'un
+  remplacement et son impression.
 
 ## Pistes d'amélioration
 

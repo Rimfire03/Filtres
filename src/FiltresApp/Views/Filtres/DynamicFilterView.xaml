@@ -9,7 +9,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
     <UserControl.Resources>
         <!-- Filtres regroupés par famille : un bandeau titre par famille (même style que la Liste K7). -->
-        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Filters}">
+        <CollectionViewSource x:Key="GroupedFilters" Source="{Binding Rows}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
             </CollectionViewSource.GroupDescriptions>
@@ -37,10 +37,10 @@
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
             <!-- Distinct du bouton "Mode édition" ci-dessus (qui ne concerne que les filtres de cette
@@ -69,7 +69,7 @@
         </Border>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
-                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedRow}" IsReadOnly="True"
                   AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" CellStyle="{StaticResource FlashingCellStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">

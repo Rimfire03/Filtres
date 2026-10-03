@@ -15,6 +15,10 @@ public interface INamedFamily
 {
     int Id { get; }
     string Nom { get; set; }
+
+    /// <summary>Titre du séparateur (et choix du filtre "Famille") des éléments sans famille ; nom réservé,
+    /// refusé pour une famille créée à la main.</summary>
+    public const string NoFamilyLabel = "Sans famille";
 }
 
 /// <summary>Élément suivi par famille avec un historique de remplacements datés, sans périodicité mensuelle

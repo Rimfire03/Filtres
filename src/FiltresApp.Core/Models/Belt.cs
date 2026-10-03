@@ -22,7 +22,7 @@ public class Belt : IFamilyTrackedItem
     public int? BeltFamilyId { get; set; }
     public BeltFamily? Family { get; set; }
 
-    public const string NoFamilyLabel = "Sans famille";
+    public const string NoFamilyLabel = INamedFamily.NoFamilyLabel;
 
     [NotMapped]
     public string FamilyGroupLabel => Family?.Nom ?? NoFamilyLabel;

@@ -9,7 +9,7 @@
     <UserControl.Resources>
         <!-- Jeux de roulements regroupés par famille : un bandeau titre par famille (même style que les
              autres écrans). -->
-        <CollectionViewSource x:Key="GroupedBearings" Source="{Binding Bearings}">
+        <CollectionViewSource x:Key="GroupedBearings" Source="{Binding Rows}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
             </CollectionViewSource.GroupDescriptions>
@@ -34,10 +34,10 @@
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteBearingCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
             <TextBlock Text="{Binding YearContext.Year, StringFormat='Année consultée : {0}'}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}" FontWeight="SemiBold"/>
         </StackPanel>
@@ -57,7 +57,7 @@
         </Border>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedBearings}}"
-                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" SelectedItem="{Binding SelectedBearing}" IsReadOnly="True"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" SelectedItem="{Binding SelectedRow}" IsReadOnly="True"
                   AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" CellStyle="{StaticResource FlashingCellStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">

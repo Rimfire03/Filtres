@@ -28,7 +28,7 @@ public class DynamicFilter : IFamilyTrackedItem
     public int? DynamicFilterFamilyId { get; set; }
     public DynamicFilterFamily? Family { get; set; }
 
-    public const string NoFamilyLabel = "Sans famille";
+    public const string NoFamilyLabel = INamedFamily.NoFamilyLabel;
 
     /// <summary>Titre du séparateur de famille dans la grille.</summary>
     [NotMapped]

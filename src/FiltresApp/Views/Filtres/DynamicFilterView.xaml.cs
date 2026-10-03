@@ -24,7 +24,7 @@ public partial class DynamicFilterView : UserControl
         var cell = (e.OriginalSource as DependencyObject).FindAncestor<DataGridCell>();
         if (cell?.Column != TypeColumn || cell.DataContext is not DynamicFilterRowViewModel row || DataContext is not DynamicFilterListViewModel vm) return;
 
-        vm.SelectedFilter = row;
+        vm.SelectedRow = row;
         var menu = new ContextMenu { PlacementTarget = cell, Placement = PlacementMode.MousePoint };
         var types = vm.GetDistinctFilterTypes();
 

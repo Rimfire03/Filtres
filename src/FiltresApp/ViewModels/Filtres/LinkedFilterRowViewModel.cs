@@ -2,8 +2,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace FiltresApp.ViewModels.Filtres;
 
-/// <summary>Base commune des lignes de filtres (écrans à périodicité et F7 à H13) : puce verte / rouge de la
-/// colonne "Lié" (modèle <c>LinkDotCellTemplate</c> de Styles/Controls.xaml).</summary>
+/// <summary>Base commune des lignes de filtres (écrans à périodicité, et via
+/// <see cref="TrackedItemRowViewModel{TEntity}"/> F7 à H14, Courroies et Roulements) : puce verte / rouge de
+/// la colonne "Lié" (modèle <c>LinkDotCellTemplate</c> de Styles/Controls.xaml).</summary>
 public abstract class LinkedFilterRowViewModel : ObservableObject
 {
     protected LinkedFilterRowViewModel(string? linkedOrderLine) => LinkedOrderLine = linkedOrderLine;
