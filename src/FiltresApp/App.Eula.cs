@@ -6,9 +6,11 @@ using FiltresApp.Views.Dialogs;
 namespace FiltresApp;
 
 /// <summary>Contrat de licence utilisateur final (CLUF) : le texte est intégré à l'exécutable
-/// (Legal\CLUF.txt, ressource incorporée) ; sa copie dans FiltreData\CLUF.txt vaut acceptation. Tant que
-/// ce fichier est absent (première installation, fichier supprimé), le contrat est présenté au démarrage
-/// et doit être accepté pour continuer. Relisible à tout moment depuis Paramètres (<see cref="ShowEula"/>).</summary>
+/// (Legal\CLUF.txt, ressource incorporée) ; sa copie dans FiltreData\CLUF.txt vaut acceptation de CETTE
+/// version du texte. Le contrat est présenté au démarrage, et doit être accepté pour continuer, tant que ce
+/// fichier est absent (première installation, fichier supprimé) ou que son contenu diffère du texte intégré
+/// (contrat modifié par une nouvelle release). Relisible à tout moment depuis Paramètres
+/// (<see cref="ShowEula"/>).</summary>
 public partial class App
 {
     private const string EulaResourceName = "FiltresApp.CLUF.txt";
@@ -24,13 +26,34 @@ public partial class App
         return reader.ReadToEnd();
     }
 
-    /// <summary>False si l'utilisateur refuse le contrat (l'application doit alors s'arrêter).</summary>
+    /// <summary>Texte déjà accepté sur ce poste (copie dans FiltreData), ou null s'il n'y en a pas ou
+    /// qu'elle est illisible.</summary>
+    private static string? ReadAcceptedEulaText()
+    {
+        try
+        {
+            return File.Exists(EulaFilePath) ? File.ReadAllText(EulaFilePath, Encoding.UTF8) : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Comparaison du contenu seul : fins de ligne (Git peut les convertir), BOM et blancs de
+    /// début / fin ne comptent pas comme une modification du contrat.</summary>
+    private static string NormalizeEula(string text) => text.Replace("\r\n", "\n").Trim('﻿', ' ', '\n', '\r', '\t');
+
+    /// <summary>False si l'utilisateur refuse le contrat (l'application doit alors s'arrêter). Un refus
+    /// après mise à jour laisse en place l'ancienne acceptation : le nouveau contrat sera redemandé au
+    /// prochain lancement.</summary>
     private static bool EnsureEulaAccepted()
     {
-        if (File.Exists(EulaFilePath)) return true;
-
         var text = LoadEulaText();
-        if (new EulaWindow(text).ShowDialog() != true) return false;
+        var accepted = ReadAcceptedEulaText();
+        if (accepted is not null && NormalizeEula(accepted) == NormalizeEula(text)) return true;
+
+        if (new EulaWindow(text, isUpdate: accepted is not null).ShowDialog() != true) return false;
 
         try
         {

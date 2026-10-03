@@ -66,7 +66,9 @@ réglages, police PDF) est dans le sous-dossier **`FiltreData\`**, à côté de 
 - `FiltreData\CLUF.txt` : contrat de licence utilisateur final (le logiciel reste la propriété de
   TomLine prod&co). Jamais livré dans une release : le texte est intégré à l'exécutable
   (`src\FiltresApp\Legal\CLUF.txt`) et ce fichier n'est écrit qu'à son acceptation. Tant qu'il est
-  absent, le contrat est présenté au démarrage ; le refuser ferme l'application.
+  absent, ou différent du texte intégré (contrat modifié dans une nouvelle release), le contrat est
+  présenté au démarrage ; le refuser ferme l'application. Toute modification du texte de
+  `Legal\CLUF.txt` (hors fins de ligne) fera donc réaccepter le contrat sur tous les postes.
 - Le choix des colonnes affichées et leurs largeurs (par écran) sont propres à chaque poste,
   stockés dans `%LocalAppData%\FiltresApp\grilles.json` (pas dans `FiltreData\`, donc pas
   partagés entre postes même si l'exécutable et la base sont sur un disque réseau).
