@@ -122,7 +122,8 @@ ligne reste à gauche).
   commun à tous les postes), mises à jour automatiques (vérifie les releases GitHub, sauvegarde
   la base avant d'installer), sauvegarde manuelle (export/import d'un fichier `.db`).
 - **Réglages du module Filtre** (via sa roue dentée) : rattachement filtre↔commande par
-  dimension, export Excel de l'année, colonnes imprimées par écran, couleurs de ligne
+  dimension, export Excel de l'année, page de garde du bon de commande PDF (Commande / Inventaire),
+  colonnes imprimées par écran, couleurs de ligne
   (palette partagée, proposée au clic droit sur toute grille), suppression définitive de
   l'historique d'une année (avec sauvegarde préalable).
 

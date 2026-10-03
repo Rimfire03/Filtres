@@ -4,8 +4,9 @@ using FiltresApp.Core.Services;
 
 namespace FiltresApp.ViewModels;
 
-/// <summary>Section "Page de garde du bon de commande" de l'écran Paramètres : textes de la page de garde
-/// de l'export PDF Commande / Inventaire (voir <see cref="CoverPageInfo"/>).</summary>
+/// <summary>Section "Page de garde du bon de commande" des paramètres du module « Filtre »
+/// (ModuleSettingsView.xaml) : textes de la page de garde de l'export PDF Commande / Inventaire (voir
+/// <see cref="CoverPageInfo"/>).</summary>
 public partial class SettingsViewModel
 {
     [ObservableProperty] private string _coverOrganisation = string.Empty;
