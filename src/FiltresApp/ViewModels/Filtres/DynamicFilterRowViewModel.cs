@@ -97,14 +97,15 @@ public partial class DynamicFilterRowViewModel : LinkedFilterRowViewModel
 
     public int ReplacementCountInYear => ReplacementsForYear.Count();
 
-    /// <summary>Bref flash vert de la ligne (voir DynamicFilterView.xaml, DataTrigger sur IsFlashing) pour
-    /// confirmer visuellement l'enregistrement d'un changement, sans attendre un rechargement de la grille.</summary>
+    /// <summary>Bref flash vert de la ligne (voir DynamicFilterView.xaml, DataTrigger sur IsFlashing : fondu
+    /// d'apparition au passage à true, fondu de disparition au retour à false) pour confirmer visuellement
+    /// l'enregistrement d'un changement, sans attendre un rechargement de la grille.</summary>
     [ObservableProperty] private bool _isFlashing;
 
     private async void TriggerSavedFlash()
     {
         IsFlashing = true;
-        await System.Threading.Tasks.Task.Delay(1500);
+        await System.Threading.Tasks.Task.Delay(500);
         IsFlashing = false;
     }
 

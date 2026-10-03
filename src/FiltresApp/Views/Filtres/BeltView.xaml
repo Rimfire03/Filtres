@@ -57,7 +57,7 @@
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedBelts}}"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" SelectedItem="{Binding SelectedBelt}" IsReadOnly="True"
-                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
+                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" CellStyle="{StaticResource FlashingCellStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                     <Setter Property="Background" Value="{Binding RowColorBrush}"/>
@@ -69,13 +69,6 @@
                             </ContextMenu>
                         </Setter.Value>
                     </Setter>
-                    <Style.Triggers>
-                        <!-- Flash vert bref pour confirmer l'enregistrement d'un changement (voir
-                             BeltRowViewModel.TriggerSavedFlash). -->
-                        <DataTrigger Binding="{Binding IsFlashing}" Value="True">
-                            <Setter Property="Background" Value="#FF66BB6A"/>
-                        </DataTrigger>
-                    </Style.Triggers>
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>

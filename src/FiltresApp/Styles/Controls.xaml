@@ -635,6 +635,48 @@
         <Setter Property="FontWeight" Value="Bold"/>
     </Style>
 
+    <!-- Flash vert pour confirmer l'enregistrement d'un changement (CellStyle des grilles Filtres F7 à H14,
+         Courroies, Roulements ; voir TriggerSavedFlash dans leurs RowViewModel, qui maintient IsFlashing à
+         true 0,5 s = fondu d'apparition 0,2 s + vert plein 0,3 s, puis fondu de disparition 0,2 s) : calque
+         vert posé au-dessus du fond de chaque cellule, dont seule l'opacité est animée - quel que soit le fond
+         en dessous (couleur de ligne, sélection), qui n'est jamais modifié. Porté par les cellules et non par
+         la ligne, car le fond de sélection des cellules masquerait celui de la ligne. -->
+    <Style x:Key="FlashingCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Border x:Name="FlashOverlay" Background="#FF00C853" Opacity="0" IsHitTestVisible="False"/>
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsFlashing}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FlashOverlay" Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="FlashOverlay" Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Case à cocher centrée dans DataGrid -->
     <Style x:Key="CenteredCheckBoxCellStyle" TargetType="CheckBox">
         <Setter Property="HorizontalAlignment" Value="Center"/>

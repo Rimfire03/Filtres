@@ -70,7 +70,7 @@
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedFilters}}" PreviewMouseRightButtonUp="Grid_PreviewMouseRightButtonUp"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedFilter}" IsReadOnly="True"
-                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
+                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" CellStyle="{StaticResource FlashingCellStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                     <Setter Property="Background" Value="{Binding RowColorBrush}"/>
@@ -84,25 +84,6 @@
                             </ContextMenu>
                         </Setter.Value>
                     </Setter>
-                    <Style.Triggers>
-                        <!-- Flash vert bref pour confirmer l'enregistrement d'un changement (voir
-                             DynamicFilterRowViewModel.TriggerSavedFlash), revient ensuite à la couleur de
-                             ligne habituelle (Setter ci-dessus) une fois IsFlashing repassé à false. -->
-                        <DataTrigger Binding="{Binding IsFlashing}" Value="True">
-                            <Setter Property="Background" Value="#FF66BB6A"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-                <!-- Même flash sur les cellules : la ligne venant d'être cliquée est sélectionnée, et le fond de
-                     sélection des cellules masquerait sinon celui de la ligne. -->
-                <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsFlashing}" Value="True">
-                            <Setter Property="Background" Value="#FF66BB6A"/>
-                            <Setter Property="BorderBrush" Value="#FF66BB6A"/>
-                            <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
-                        </DataTrigger>
-                    </Style.Triggers>
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
