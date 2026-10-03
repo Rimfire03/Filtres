@@ -183,7 +183,10 @@ public partial class BeltListViewModel : ObservableObject, IReloadable
     public void ShowHistory(Belt belt)
     {
         var replacements = App.Db.BeltReplacements.AsNoTracking().Where(r => r.BeltId == belt.Id).ToList();
-        App.Dialogs.ShowBeltHistory(belt.Location, replacements);
+        App.Dialogs.ShowReplacementHistory(new ReplacementHistory<BeltReplacement>(
+            $"Nom de la centrale : {belt.Location}",
+            "Aucun historique disponible pour cette courroie : aucun remplacement enregistré en base pour l'instant.",
+            "Quantité changée", r => r.QuantityChanged.ToString(), r => $"quantité {r.QuantityChanged}"), replacements);
         Reload();
     }
 

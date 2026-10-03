@@ -6,7 +6,7 @@ namespace FiltresApp.Core.Models;
 /// périodicité mensuelle fixe, un historique de remplacements où chaque enregistrement précise lesquels
 /// des trois roulements (avant / arrière / volute) ont été changés à cette date - même principe que
 /// <see cref="DynamicFilter"/> (menu "Filtres F7 à H14"), sans notion de variété (un seul module).</summary>
-public class BearingUnit
+public class BearingUnit : IFamilyTrackedItem
 {
     public int Id { get; set; }
 
@@ -47,11 +47,14 @@ public class BearingUnit
     public int ReplacementCount => Replacements.Count;
 
     public static readonly string[] CentraleTypeOptions = { "Courroies", "Entraînement direct" };
+
+    int? IFamilyTrackedItem.FamilyId => BearingFamilyId;
+    IEnumerable<IDatedReplacement> IFamilyTrackedItem.DatedReplacements => Replacements;
 }
 
 /// <summary>Un enregistrement de changement : la date, et lesquels des trois roulements ont été changés ce
 /// jour-là (au moins un, choisi à la saisie - voir BearingListViewModel.AddReplacement).</summary>
-public class BearingReplacement
+public class BearingReplacement : IDatedReplacement
 {
     public int Id { get; set; }
     public int BearingUnitId { get; set; }
@@ -77,7 +80,7 @@ public class BearingReplacement
 }
 
 /// <summary>Famille de jeux de roulements, créée à la main et attribuée manuellement à chaque ligne.</summary>
-public class BearingFamily
+public class BearingFamily : INamedFamily
 {
     public int Id { get; set; }
     public string Nom { get; set; } = string.Empty;

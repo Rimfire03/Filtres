@@ -5,7 +5,7 @@ namespace FiltresApp.Core.Models;
 /// <summary>Courroie d'une centrale (menu "Paramètres", module activable "Courroies") : pas de périodicité
 /// mensuelle fixe, juste un historique de remplacements successifs (nombre changé + date) - même principe
 /// que <see cref="DynamicFilter"/> (menu "Filtres F7 à H14"), sans notion de variété (un seul module).</summary>
-public class Belt
+public class Belt : IFamilyTrackedItem
 {
     public int Id { get; set; }
 
@@ -39,9 +39,12 @@ public class Belt
 
     [NotMapped]
     public int ReplacementCount => Replacements.Count;
+
+    int? IFamilyTrackedItem.FamilyId => BeltFamilyId;
+    IEnumerable<IDatedReplacement> IFamilyTrackedItem.DatedReplacements => Replacements;
 }
 
-public class BeltReplacement
+public class BeltReplacement : IDatedReplacement
 {
     public int Id { get; set; }
     public int BeltId { get; set; }
@@ -52,7 +55,7 @@ public class BeltReplacement
 }
 
 /// <summary>Famille de courroies, créée à la main et attribuée manuellement à chaque courroie.</summary>
-public class BeltFamily
+public class BeltFamily : INamedFamily
 {
     public int Id { get; set; }
     public string Nom { get; set; } = string.Empty;

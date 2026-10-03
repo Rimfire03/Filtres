@@ -1,4 +1,4 @@
-<Window x:Class="FiltresApp.Views.Dialogs.BeltHistoryWindow"
+<Window x:Class="FiltresApp.Views.Dialogs.ReplacementHistoryWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Consulter l'historique"
@@ -22,17 +22,20 @@
             <ComboBox x:Name="YearCombo" Width="120" SelectionChanged="YearCombo_SelectionChanged"/>
         </StackPanel>
 
-        <TextBlock x:Name="NoHistoryText" Grid.Row="3" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"
-                   Text="Aucun historique disponible pour cette courroie : aucun remplacement enregistré en base pour l'instant."/>
+        <TextBlock x:Name="NoHistoryText" Grid.Row="3" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}" Visibility="Collapsed"/>
 
-        <!-- Clic droit sur une ligne : menu "Supprimer cet enregistrement" construit dans le code-behind
-             (voir ReplacementsGrid_PreviewMouseRightButtonUp). -->
+        <!-- Pas de notion de mois fixe : liste chronologique des remplacements datés de l'année choisie,
+             plutôt qu'une grille à 12 mois. Titre et largeur de la colonne "détail" fixés par l'appelant (voir
+             ReplacementHistory). Clic droit sur une ligne : menu "Supprimer cet enregistrement" construit dans
+             le code-behind (voir ReplacementsGrid_PreviewMouseRightButtonUp) - un MenuItem avec Click défini
+             directement en XAML à l'intérieur d'un Setter.Value de Style n'est pas résolu par le compilateur
+             XAML. -->
         <DataGrid x:Name="ReplacementsGrid" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
                   ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}"
                   PreviewMouseRightButtonUp="ReplacementsGrid_PreviewMouseRightButtonUp">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Date du changement" Binding="{Binding DateLabel}" Width="1.6*" ElementStyle="{StaticResource WrappingCellStyle}"/>
-                <DataGridTextColumn Header="Quantité changée" Binding="{Binding Quantity}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn x:Name="DateColumn" Header="Date du changement" Binding="{Binding DateLabel}" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <DataGridTextColumn x:Name="DetailColumn" Binding="{Binding Detail}" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>
 

@@ -214,7 +214,11 @@ public partial class BearingListViewModel : ObservableObject, IReloadable
     public void ShowHistory(BearingUnit bearing)
     {
         var replacements = App.Db.BearingReplacements.AsNoTracking().Where(r => r.BearingUnitId == bearing.Id).ToList();
-        App.Dialogs.ShowBearingHistory(bearing.Location, replacements);
+        App.Dialogs.ShowReplacementHistory(new ReplacementHistory<BearingReplacement>(
+            $"Nom de la centrale : {bearing.Location}",
+            "Aucun historique disponible pour ce jeu de roulements : aucun remplacement enregistré en base pour l'instant.",
+            "Roulements changés", r => r.ChangedLabel, r => r.ChangedLabel,
+            DateColumnWidth: 1.2, DetailColumnWidth: 1.4), replacements);
         Reload();
     }
 

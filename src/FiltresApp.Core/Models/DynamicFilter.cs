@@ -6,7 +6,7 @@ namespace FiltresApp.Core.Models;
 /// "Filtres F7 à H14") : pas de périodicité mensuelle fixe, juste un historique de remplacements
 /// successifs (qté changée + date). Équivalent généralisé de l'ancien <c>OpacimetricFilter</c>
 /// (auparavant une seule variété codée en dur, "F7 à H13").</summary>
-public class DynamicFilter
+public class DynamicFilter : IFamilyTrackedItem
 {
     public int Id { get; set; }
 
@@ -46,9 +46,12 @@ public class DynamicFilter
 
     [NotMapped]
     public int ReplacementCount => Replacements.Count;
+
+    int? IFamilyTrackedItem.FamilyId => DynamicFilterFamilyId;
+    IEnumerable<IDatedReplacement> IFamilyTrackedItem.DatedReplacements => Replacements;
 }
 
-public class DynamicFilterReplacement
+public class DynamicFilterReplacement : IDatedReplacement
 {
     public int Id { get; set; }
     public int DynamicFilterId { get; set; }

@@ -277,7 +277,11 @@ public partial class DynamicFilterListViewModel : ObservableObject, IReloadable
             .AsNoTracking()
             .Where(r => r.DynamicFilterId == filter.Id)
             .ToList();
-        App.Dialogs.ShowDynamicFilterHistory(filter.Location, filter.Dimension, replacements);
+        var dimensionText = string.IsNullOrWhiteSpace(filter.Dimension) ? "-" : filter.Dimension;
+        App.Dialogs.ShowReplacementHistory(new ReplacementHistory<DynamicFilterReplacement>(
+            $"Nom de la centrale d'air : {filter.Location}    —    Dimension : {dimensionText}",
+            "Aucun historique disponible pour ce filtre : aucun remplacement enregistré en base pour l'instant.",
+            "Quantité changée", r => r.QuantityChanged.ToString(), r => $"quantité {r.QuantityChanged}"), replacements);
         Reload();
     }
 

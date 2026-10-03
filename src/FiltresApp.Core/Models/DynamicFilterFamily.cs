@@ -3,7 +3,7 @@ namespace FiltresApp.Core.Models;
 /// <summary>Famille de filtres d'une <see cref="FilterVariety"/> donnée, créée à la main et attribuée
 /// manuellement à chaque filtre (même principe que l'ancien <c>OpacimetricFamily</c>). Les familles sont
 /// propres à chaque variété : deux variétés différentes ne partagent pas leurs familles.</summary>
-public class DynamicFilterFamily
+public class DynamicFilterFamily : INamedFamily
 {
     public int Id { get; set; }
 
