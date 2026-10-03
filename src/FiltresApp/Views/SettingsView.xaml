@@ -120,6 +120,15 @@
                 </StackPanel>
             </Border>
 
+            <!-- Contrat de licence utilisateur final : relecture seule (accepté au premier lancement, voir App.Eula.cs). -->
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Contrat de licence" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Contrat de licence utilisateur final (CLUF) accepté lors de l'installation du logiciel." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                    <Button Content="Lire le contrat de licence (CLUF)" Style="{StaticResource SecondaryButton}" Command="{Binding ShowEulaCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

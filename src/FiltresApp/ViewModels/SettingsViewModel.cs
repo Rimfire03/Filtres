@@ -118,6 +118,10 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void OpenBearingsModuleSettings() => _main.SelectedItem = _main.BearingsSettingsItem;
 
+    /// <summary>"Lire le contrat de licence (CLUF)" (dernière carte de l'écran) : relecture seule.</summary>
+    [RelayCommand]
+    private void ShowEula() => App.ShowEula();
+
     /// <summary>Carte "Licence" masquée en licence gratuite (flag de build ou licence.ini) : rien à
     /// afficher ni à déconnecter dans ce cas.</summary>
     public bool ShowLicenseCard => !LicenseManager.IsFreeLicense;

@@ -8,24 +8,28 @@ namespace FiltresApp;
 /// <summary>Contrat de licence utilisateur final (CLUF) : le texte est intégré à l'exécutable
 /// (Legal\CLUF.txt, ressource incorporée) ; sa copie dans FiltreData\CLUF.txt vaut acceptation. Tant que
 /// ce fichier est absent (première installation, fichier supprimé), le contrat est présenté au démarrage
-/// et doit être accepté pour continuer.</summary>
+/// et doit être accepté pour continuer. Relisible à tout moment depuis Paramètres (<see cref="ShowEula"/>).</summary>
 public partial class App
 {
     private const string EulaResourceName = "FiltresApp.CLUF.txt";
 
     private static string EulaFilePath => Path.Combine(AppContext.BaseDirectory, "FiltreData", "CLUF.txt");
 
+    /// <summary>Texte du contrat de cette version du logiciel (ressource incorporée).</summary>
+    private static string LoadEulaText()
+    {
+        using var stream = typeof(App).Assembly.GetManifestResourceStream(EulaResourceName)
+                           ?? throw new InvalidOperationException($"Ressource {EulaResourceName} introuvable.");
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
     /// <summary>False si l'utilisateur refuse le contrat (l'application doit alors s'arrêter).</summary>
     private static bool EnsureEulaAccepted()
     {
         if (File.Exists(EulaFilePath)) return true;
 
-        string text;
-        using (var stream = typeof(App).Assembly.GetManifestResourceStream(EulaResourceName)
-                            ?? throw new InvalidOperationException($"Ressource {EulaResourceName} introuvable."))
-        using (var reader = new StreamReader(stream, Encoding.UTF8))
-            text = reader.ReadToEnd();
-
+        var text = LoadEulaText();
         if (new EulaWindow(text).ShowDialog() != true) return false;
 
         try
@@ -42,4 +46,8 @@ public partial class App
         }
         return true;
     }
+
+    /// <summary>Relecture du contrat (bouton de l'écran Paramètres), sans demande d'acceptation.</summary>
+    public static void ShowEula() =>
+        new EulaWindow(LoadEulaText(), readOnly: true) { Owner = Current.MainWindow }.ShowDialog();
 }

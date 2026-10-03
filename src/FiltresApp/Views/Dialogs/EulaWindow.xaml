@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Contrat de licence utilisateur final" Style="{StaticResource HeaderText}"/>
-        <TextBlock Grid.Row="1" Margin="0,8,0,12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}"
+        <TextBlock x:Name="IntroText" Grid.Row="1" Margin="0,8,0,12" TextWrapping="Wrap" Foreground="{StaticResource BrushTextSecondary}"
                    Text="Veuillez lire le contrat ci-dessous. Vous devez l'accepter pour utiliser le logiciel."/>
 
         <TextBox x:Name="EulaText" Grid.Row="2" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12"
@@ -25,7 +25,7 @@
                   Checked="AcceptCheck_Changed" Unchecked="AcceptCheck_Changed"/>
 
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <Button Content="Je refuse" Style="{StaticResource SecondaryButton}" Width="110" Click="Decline_Click"/>
+            <Button x:Name="DeclineButton" Content="Je refuse" Style="{StaticResource SecondaryButton}" Width="110" Click="Decline_Click"/>
             <Button x:Name="AcceptButton" Content="J'accepte" Style="{StaticResource PrimaryButton}" Width="110" Margin="8,0,0,0"
                     IsEnabled="False" Click="Accept_Click"/>
         </StackPanel>
