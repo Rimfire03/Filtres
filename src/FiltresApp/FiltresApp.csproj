@@ -30,4 +30,11 @@
     <None Include="data\filtres.db" CopyToOutputDirectory="PreserveNewest" TargetPath="FiltreData\filtres.db" Condition="'$(Configuration)' != 'Release' AND Exists('data\filtres.db')" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Contrat de licence utilisateur final, intégré à l'exécutable : volontairement PAS copié dans
+         FiltreData\, puisque FiltreData\CLUF.txt n'y est écrit qu'à l'acceptation du contrat au premier
+         lancement (voir App.Eula.cs). -->
+    <EmbeddedResource Include="Legal\CLUF.txt" LogicalName="FiltresApp.CLUF.txt" />
+  </ItemGroup>
+
 </Project>

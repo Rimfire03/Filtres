@@ -63,6 +63,10 @@ réglages, police PDF) est dans le sous-dossier **`FiltreData\`**, à côté de 
   modifiables dans l'écran **Paramètres**. Changer le chemin de la base redémarre
   automatiquement l'application pour l'ouvrir à son nouvel emplacement.
 - `FiltreData\filtres.db` : base SQLite.
+- `FiltreData\CLUF.txt` : contrat de licence utilisateur final (le logiciel reste la propriété de
+  TomLine prod&co). Jamais livré dans une release : le texte est intégré à l'exécutable
+  (`src\FiltresApp\Legal\CLUF.txt`) et ce fichier n'est écrit qu'à son acceptation. Tant qu'il est
+  absent, le contrat est présenté au démarrage ; le refuser ferme l'application.
 - Le choix des colonnes affichées et leurs largeurs (par écran) sont propres à chaque poste,
   stockés dans `%LocalAppData%\FiltresApp\grilles.json` (pas dans `FiltreData\`, donc pas
   partagés entre postes même si l'exécutable et la base sont sur un disque réseau).

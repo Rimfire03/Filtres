@@ -1,0 +1,150 @@
+﻿CONTRAT DE LICENCE UTILISATEUR FINAL (CLUF)
+Logiciel « Suivi maintenance Filtres »
+
+Le présent contrat de licence utilisateur final (ci-après le « Contrat ») est conclu entre TomLine
+prod&co (ci-après l'« Éditeur ») et toute personne physique ou morale qui installe, copie ou utilise le
+logiciel « Suivi maintenance Filtres » (ci-après l'« Utilisateur »).
+
+EN INSTALLANT, EN COPIANT OU EN UTILISANT LE LOGICIEL, L'UTILISATEUR RECONNAÎT AVOIR LU LE PRÉSENT
+CONTRAT ET EN ACCEPTER SANS RÉSERVE L'ENSEMBLE DES CONDITIONS. S'IL N'EN ACCEPTE PAS LES TERMES, IL NE
+DOIT NI INSTALLER, NI COPIER, NI UTILISER LE LOGICIEL.
+
+
+ARTICLE 1 - DÉFINITIONS
+
+« Logiciel » : le programme « Suivi maintenance Filtres » sous forme exécutable, ses modules (Filtre,
+Courroies, Roulements), ses mises à jour, sa documentation et tout fichier fourni avec lui, à
+l'exclusion des Données de l'Utilisateur.
+
+« Données de l'Utilisateur » : les informations saisies, importées ou produites par l'Utilisateur au
+moyen du Logiciel (base de données, exports PDF et Excel, réglages, logo).
+
+« Licence » : le droit d'utilisation du Logiciel concédé à l'Utilisateur, gratuit ou associé à une clé
+de licence délivrée par l'Éditeur.
+
+
+ARTICLE 2 - PROPRIÉTÉ
+
+Le Logiciel est et demeure la propriété exclusive de TomLine prod&co. Il est protégé par les
+dispositions du Code de la propriété intellectuelle et par les conventions internationales relatives
+au droit d'auteur.
+
+Le présent Contrat ne transfère à l'Utilisateur aucun droit de propriété sur le Logiciel : il lui
+concède uniquement un droit d'utilisation, dans les limites définies ci-après. Tous les droits non
+expressément concédés sont réservés à l'Éditeur.
+
+L'Utilisateur s'engage à ne pas supprimer ni modifier les mentions de propriété, de marque ou de droit
+d'auteur figurant dans le Logiciel.
+
+
+ARTICLE 3 - DROITS CONCÉDÉS
+
+Sous réserve du respect du présent Contrat, l'Éditeur concède à l'Utilisateur un droit personnel, non
+exclusif, non cessible et non transférable d'utiliser le Logiciel, pour ses besoins internes, sur le
+nombre de postes autorisé par sa Licence.
+
+L'Utilisateur peut installer le Logiciel sur un disque partagé de son réseau interne, afin qu'il soit
+utilisé depuis plusieurs postes, dans la limite du nombre de postes autorisé par sa Licence.
+
+L'Utilisateur peut réaliser une copie de sauvegarde du Logiciel, à des fins exclusives de sécurité.
+
+Lorsque la Licence est associée à une clé, l'étendue des droits (durée, modules, nombre de postes) est
+celle attachée à cette clé. L'Utilisateur s'interdit de communiquer sa clé de licence à un tiers.
+
+
+ARTICLE 4 - RESTRICTIONS
+
+Sauf accord écrit préalable de l'Éditeur, et sous réserve des droits que la loi accorde
+impérativement à l'Utilisateur, celui-ci s'interdit de :
+
+  a) vendre, louer, prêter, céder, distribuer ou sous-licencier le Logiciel, à titre gratuit ou
+     onéreux ;
+  b) mettre le Logiciel à la disposition de tiers, y compris sous forme de service en ligne ;
+  c) modifier, adapter, traduire le Logiciel ou créer des œuvres dérivées ;
+  d) décompiler, désassembler ou procéder à l'ingénierie inverse du Logiciel, hors des cas
+     expressément autorisés par l'article L. 122-6-1 du Code de la propriété intellectuelle ;
+  e) contourner, désactiver ou altérer le système de gestion des licences ou toute autre mesure
+     technique de protection du Logiciel.
+
+
+ARTICLE 5 - DONNÉES DE L'UTILISATEUR
+
+Les Données de l'Utilisateur restent sa propriété exclusive. Le Logiciel les enregistre localement
+(dossier « FiltreData » ou emplacement choisi dans les Paramètres) : l'Éditeur n'y a pas accès.
+
+Il appartient à l'Utilisateur d'effectuer des sauvegardes régulières de ses données (le Logiciel
+propose une fonction d'export de la base de données) et de ne pas placer la base de données dans un
+dossier synchronisé (type OneDrive ou Dropbox), ce qui pourrait l'endommager.
+
+Pour vérifier la Licence et rechercher les mises à jour, le Logiciel peut communiquer avec les
+serveurs de l'Éditeur ou avec la plateforme de publication des mises à jour. Seules les informations
+nécessaires à ces fonctions sont transmises (clé de licence, identifiant technique et nom du poste,
+version du Logiciel). Aucune Donnée de l'Utilisateur n'est transmise.
+
+
+ARTICLE 6 - MISES À JOUR
+
+L'Éditeur peut, sans y être tenu, proposer des mises à jour du Logiciel. Une mise à jour peut faire
+évoluer la structure de la base de données : le Logiciel réalise alors une sauvegarde automatique de
+la base avant de l'appliquer. Les mises à jour sont soumises au présent Contrat, sauf contrat
+spécifique les accompagnant.
+
+
+ARTICLE 7 - COMPOSANTS TIERS
+
+Le Logiciel intègre des composants de tiers (notamment .NET, Entity Framework Core, SQLite,
+CommunityToolkit.Mvvm, ClosedXML et QuestPDF), qui restent la propriété de leurs auteurs respectifs et
+sont régis par leurs propres licences. Le présent Contrat ne modifie en rien les droits et
+obligations résultant de ces licences.
+
+
+ARTICLE 8 - GARANTIE
+
+Le Logiciel est fourni « en l'état ». Dans les limites permises par la loi, l'Éditeur ne garantit pas
+que le Logiciel répondra aux besoins particuliers de l'Utilisateur, ni qu'il fonctionnera sans
+interruption ni erreur.
+
+Le Logiciel est un outil d'aide au suivi de la maintenance : il ne se substitue pas aux obligations
+réglementaires, aux préconisations des fabricants ni aux contrôles qui incombent à l'Utilisateur.
+
+
+ARTICLE 9 - RESPONSABILITÉ
+
+Dans les limites permises par la loi, l'Éditeur ne pourra être tenu responsable des dommages indirects
+résultant de l'utilisation ou de l'impossibilité d'utiliser le Logiciel, notamment la perte de
+données, la perte d'exploitation ou le préjudice commercial.
+
+Lorsque la Licence a été concédée à titre onéreux, la responsabilité de l'Éditeur, toutes causes
+confondues, est limitée au montant effectivement payé par l'Utilisateur pour cette Licence au cours
+des douze (12) mois précédant le fait générateur.
+
+Ces limitations ne s'appliquent pas en cas de faute lourde ou intentionnelle de l'Éditeur, ni aux
+dommages corporels.
+
+
+ARTICLE 10 - DURÉE ET RÉSILIATION
+
+Le présent Contrat prend effet à la première installation ou utilisation du Logiciel. Il reste en
+vigueur pendant toute la durée de la Licence.
+
+En cas de manquement de l'Utilisateur à l'une de ses obligations, l'Éditeur pourra résilier le
+Contrat de plein droit, quinze (15) jours après une mise en demeure restée sans effet. À la fin du
+Contrat, quelle qu'en soit la cause, l'Utilisateur doit cesser d'utiliser le Logiciel et en
+supprimer toutes les copies. Il conserve ses Données, qu'il lui appartient d'exporter au préalable.
+
+
+ARTICLE 11 - DROIT APPLICABLE ET LITIGES
+
+Le présent Contrat est régi par le droit français. En cas de litige relatif à sa validité, à son
+interprétation ou à son exécution, les parties rechercheront d'abord une solution amiable. À défaut
+d'accord, le litige sera porté devant les tribunaux français compétents.
+
+
+ARTICLE 12 - DISPOSITIONS GÉNÉRALES
+
+Si l'une des clauses du présent Contrat était déclarée nulle ou inapplicable, les autres clauses
+resteraient en vigueur. Le fait pour l'Éditeur de ne pas se prévaloir d'un manquement ne vaut pas
+renonciation à s'en prévaloir ultérieurement.
+
+
+© TomLine prod&co - Tous droits réservés.

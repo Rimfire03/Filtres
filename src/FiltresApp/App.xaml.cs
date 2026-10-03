@@ -42,6 +42,12 @@ public partial class App : Application
         // MainWindow, pour que fermer celle-ci quitte bien l'application normalement.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+        if (!EnsureEulaAccepted())
+        {
+            Shutdown(-1);
+            return;
+        }
+
         if (!Qw9())
         {
             Shutdown(-1);
