@@ -41,32 +41,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Page de garde du bon de commande PDF (Commande / Inventaire, propres au module Filtre) : textes
-                     modifiables, une ligne vide n'est pas imprimée. -->
-                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Page de garde du bon de commande" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text="Textes de la première page des exports PDF Commande et Inventaire. Une ligne laissée vide n'est pas imprimée." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
-                        <TextBlock Text="Service (en-tête) :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Settings.CoverOrganisation, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Direction :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Settings.CoverDirection, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Téléphone / fax :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Settings.CoverContact, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Titre du document :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Settings.CoverTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Mention de livraison :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Settings.CoverDelivery, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Marché :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding Settings.CoverMarket, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="Enregistrer" Style="{StaticResource PrimaryButton}" Command="{Binding Settings.SaveCoverPageCommand}"/>
-                            <Button Content="Remettre les textes d'origine" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Command="{Binding Settings.ResetCoverPageCommand}"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding Settings.CoverStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
-                    </StackPanel>
-                </Border>
-
                 <!-- Colonnes imprimées : choix par écran, indépendant de l'affichage à l'écran. -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
@@ -143,6 +117,32 @@
                         </StackPanel>
 
                         <TextBlock Text="{Binding Settings.HistoryStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Page de garde du bon de commande PDF (Commande / Inventaire, propres au module Filtre) : textes
+                     modifiables, une ligne vide n'est pas imprimée. En dernière position de la page. -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Page de garde du bon de commande" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Textes de la première page des exports PDF Commande et Inventaire. Une ligne laissée vide n'est pas imprimée." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                        <TextBlock Text="Service (en-tête) :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding Settings.CoverOrganisation, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Direction :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding Settings.CoverDirection, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Téléphone / fax :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding Settings.CoverContact, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Titre du document :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding Settings.CoverTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Mention de livraison :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding Settings.CoverDelivery, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Marché :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding Settings.CoverMarket, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Enregistrer" Style="{StaticResource PrimaryButton}" Command="{Binding Settings.SaveCoverPageCommand}"/>
+                            <Button Content="Remettre les textes d'origine" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Command="{Binding Settings.ResetCoverPageCommand}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Settings.CoverStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
