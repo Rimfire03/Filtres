@@ -74,11 +74,30 @@ public abstract partial class TrackedItemListViewModel<TEntity, TFamily, TRow> :
 
     protected abstract TRow CreateRow(TEntity entity);
 
-    protected virtual void Load() =>
-        Rows = new ObservableCollection<TRow>(LoadEntities(SelectedFamily ?? AllFamilies).Select(CreateRow));
+    /// <summary>Recherche « contient » sur le nom de la centrale (champ sous l'en-tête de la colonne, modèle
+    /// <c>NameSearchHeaderTemplate</c> de Styles/Controls.xaml), sans tenir compte des majuscules ni des accents.
+    /// Utilisée par Courroies et Roulements (la variété F7 à H14 a son propre filtre, voir HeaderFilter).</summary>
+    public NameDimensionFilter NameSearch { get; }
+
+    protected TrackedItemListViewModel() => NameSearch = new NameDimensionFilter(ApplyNameSearch);
+
+    private List<TRow> _allRows = new();
+
+    protected virtual void Load()
+    {
+        _allRows = LoadEntities(SelectedFamily ?? AllFamilies).Select(CreateRow).ToList();
+        ApplyNameSearch();
+    }
+
+    /// <summary>Applique la recherche sur le nom sans relire la base.</summary>
+    private void ApplyNameSearch() =>
+        Rows = new ObservableCollection<TRow>(_allRows.Where(r => NameSearch.Matches(r.Location, NameDimensionFilter.AllDimensions)));
+
+    [RelayCommand]
+    private void ResetNameSearch() => NameSearch.Reset();
 
     /// <summary>Titre d'impression : celui de l'écran, suivi de la famille filtrée le cas échéant.</summary>
-    protected string PrintTitle => SelectedFamily is null || SelectedFamily.IsAll ? Title : $"{Title} - {SelectedFamily.Label}";
+    protected string PrintTitle => (SelectedFamily is null || SelectedFamily.IsAll ? Title : $"{Title} - {SelectedFamily.Label}") + NameSearch.TitleSuffix;
 
     // ---- Ajouter / Modifier / Dupliquer / Supprimer ----
 

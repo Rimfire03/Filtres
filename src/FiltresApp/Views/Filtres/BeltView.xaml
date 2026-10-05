@@ -52,6 +52,8 @@
                         Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
                 <Button Content="Supprimer la famille" Style="{StaticResource SecondaryButton}"
                         Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Réinitialiser la recherche" Style="{StaticResource SecondaryButton}" Command="{Binding ResetNameSearchCommand}" Margin="24,0,0,0"
+                        ToolTip="Vide le champ de recherche sous « Nom de la centrale »"/>
             </DockPanel>
         </Border>
 
@@ -72,7 +74,7 @@
                 </Style>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="2.3*" ElementStyle="{StaticResource BoldWrappingCellStyle}"/>
+                <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="2.3*" ElementStyle="{StaticResource BoldWrappingCellStyle}" HeaderTemplate="{StaticResource NameSearchHeaderTemplate}"/>
                 <DataGridTextColumn Header="Type soufflage" Binding="{Binding BeltTypeSoufflage}" Width="0.9*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nb soufflage" Binding="{Binding QuantitySoufflage, StringFormat='{}{0:0;-0;\-}'}" Width="0.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Type extraction" Binding="{Binding BeltTypeExtraction}" Width="0.9*" ElementStyle="{StaticResource CenteredCellStyle}"/>
