@@ -95,8 +95,22 @@ Chaque module listé ci-dessous est **activable/désactivable** depuis Paramètr
 "Modules" (désactiver un module ne supprime jamais ses données, il est juste masqué du menu) ;
 une roue dentée à côté de chaque case ouvre ses réglages spécifiques.
 
-- **Module "Filtre"** (G4 plissés, G4 plan, G3, Charbon, menu "Filtres F7 à H14", Liste K7,
+- **Module "Filtre"** (menu dépliant « Changement filtre périodique » : G4 plissés, G4 plan, G3, Charbon
+  et vues créées ; menu dépliant « Changement sur encrassement » : variétés F7 à H14 ; Liste K7,
   Inventaire, Commande — considérés comme un seul module) :
+  - **Menus dépliants** (migration 27) : « Changement filtre périodique » regroupe les quatre vues d'origine
+    (table `PeriodicViews`, non supprimables) et celles que l'utilisateur crée — même fonctionnement que les
+    variétés du menu « Changement sur encrassement » (anciennement « Filtres F7 à H14 ») : page de gestion
+    atteinte par le menu parent en mode édition (bouton « Gérer les vues » sur chaque vue), titre / icône /
+    libellé de colonne / position modifiables. Une vue créée fonctionne comme une vue G4 (suivi mensuel,
+    famille de Commande avec besoin calculé automatiquement ; Charbon, lui, n'a pas de besoin calculé).
+    Chaque filtre périodique appartient à une vue (`PeriodicFilters.PeriodicViewId`) ; les titres de vues sont
+    relus par `PeriodicViewRegistry` (jamais codés en dur : une vue renommée garde ses familles de Commande).
+    Titres, icônes (vues et variétés) et état plié / déplié au lancement des deux menus se règlent dans
+    « Paramètres du module Filtre » (tables `MenuEntries`, `PeriodicViews.Icon`, `FilterVarieties.Icon`,
+    communs à tous les postes) ; les menus dépliants n'ont pas d'icône devant leur titre. Un titre est unique
+    parmi les menus, vues et variétés. Le renommage d'une variété suit les lignes de Commande qui l'ont
+    choisie comme famille.
   - **G4 plissés / G4 plan / G3 / Charbon** : grille par mois consulté (case "Réalisé" + date
     directement dans la grille), échéance recalculée automatiquement, impression (feuille de
     terrain avec case à cocher "Fait"), export Excel de l'année, historique complet par clic

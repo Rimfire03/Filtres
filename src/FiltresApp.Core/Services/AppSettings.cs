@@ -27,6 +27,11 @@ public class AppSettings
     [JsonIgnore]
     public bool AllowFilterVarietyCreation { get; set; } = false;
 
+    /// <summary>Même principe pour le menu dépliant « Changement filtre périodique » : autorise la création, le
+    /// renommage et la suppression de ses vues (non persisté, désactivé à chaque lancement).</summary>
+    [JsonIgnore]
+    public bool AllowPeriodicViewCreation { get; set; } = false;
+
     /// <summary>Modules activables depuis Paramètres (menu dédié dans la barre latérale si activé) :
     /// "Courroies" et "Roulements". Persistés (contrairement à <see cref="AllowFilterVarietyCreation"/>
     /// ci-dessus) : une fois activé, un module le reste d'une session à l'autre.</summary>

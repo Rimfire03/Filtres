@@ -12,6 +12,11 @@ public class PeriodicFilter
     public int Id { get; set; }
     public FilterCategory Category { get; set; }
 
+    /// <summary>Vue (menu « Changement filtre périodique ») à laquelle appartient le filtre ; renseignée pour tous
+    /// les filtres depuis la migration 27 (voir <see cref="PeriodicView"/>).</summary>
+    public int? PeriodicViewId { get; set; }
+    public PeriodicView? PeriodicView { get; set; }
+
     /// <summary>Nom de la centrale d'air (G4 plissé) ou emplacement de l'appareil (G4 plan, G3, Charbon).</summary>
     public string Location { get; set; } = string.Empty;
 

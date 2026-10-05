@@ -23,8 +23,8 @@ public class ExcelExportService
 
         using var workbook = new XLWorkbook();
 
-        foreach (var category in new[] { FilterCategory.G4Plisse, FilterCategory.G4Plan, FilterCategory.G3, FilterCategory.Charbon })
-            AddPeriodicSheet(workbook, ctx, category, year, groupByFamily: category == FilterCategory.G3);
+        foreach (var view in ctx.PeriodicViews.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
+            AddPeriodicSheet(workbook, ctx, view, year, groupByFamily: view.Category == FilterCategory.G3);
 
         foreach (var variety in ctx.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
             AddDynamicSheet(workbook, ctx, variety);
@@ -38,11 +38,11 @@ public class ExcelExportService
 
     // ---- Filtres à périodicité (G4 plissés, G4 plan, G3, Charbon) ----
 
-    private static void AddPeriodicSheet(XLWorkbook workbook, FiltresDbContext ctx, FilterCategory category,
+    private static void AddPeriodicSheet(XLWorkbook workbook, FiltresDbContext ctx, PeriodicView view,
         int year, bool groupByFamily)
     {
         var filters = ctx.PeriodicFilters.AsNoTracking()
-            .Where(f => f.Category == category)
+            .Where(f => f.PeriodicViewId == view.Id)
             .OrderBy(f => f.Location)
             .ToList();
 
@@ -53,7 +53,7 @@ public class ExcelExportService
             .ToLookup(r => r.PeriodicFilterId);
 
         var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place", "Périodicité" };
-        if (category == FilterCategory.Charbon) headers.Add("Compteur d'heures");
+        if (view.Category == FilterCategory.Charbon) headers.Add("Compteur d'heures");
         var firstMonthCol = headers.Count + 1;
         for (var m = 1; m <= 12; m++)
         {
@@ -61,7 +61,7 @@ public class ExcelExportService
             headers.Add($"{MonthShortNames[m - 1]} {year} date");
         }
 
-        var ws = AddSheet(workbook, OrderLine.FamilyLabelFor(category));
+        var ws = AddSheet(workbook, view.Nom);
         WriteHeader(ws, headers);
 
         // G3 : familles à remplacer / à laver / sans dimension, comme à l'écran.
@@ -81,7 +81,7 @@ public class ExcelExportService
                 ws.Cell(row, col++).Value = f.MediaType;
                 ws.Cell(row, col++).Value = f.QuantityInPlace;
                 ws.Cell(row, col++).Value = f.PeriodicityDisplay;
-                if (category == FilterCategory.Charbon) ws.Cell(row, col++).Value = f.HourCounter;
+                if (view.Category == FilterCategory.Charbon) ws.Cell(row, col++).Value = f.HourCounter;
 
                 var repsForFilter = replacements[f.Id];
                 for (var m = 1; m <= 12; m++)

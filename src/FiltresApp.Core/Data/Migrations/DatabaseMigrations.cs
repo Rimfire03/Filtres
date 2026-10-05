@@ -50,7 +50,75 @@ internal static class DatabaseMigrations
         (24, "Colonnes Type, Type de courroies et Réf. roulement en majuscules", UppercaseTypeAndReferenceColumns),
         (25, "Courroies : quantités soufflage / extraction et choix de la fonction changée", AddBeltFunctionColumns),
         (26, "Courroies : type (référence) distinct pour le soufflage et l'extraction", AddBeltFunctionTypeColumns),
+        (27, "Menus « Changement filtre périodique » / « Changement sur encrassement » : vues, titres, icônes", AddPeriodicViewsAndMenuEntries),
     };
+
+    /// <summary>Menu « Changement filtre périodique » : une table de vues (les quatre d'origine G4 plissés, G4 plan, G3,
+    /// Charbon, créées ici, plus celles que l'utilisateur ajoutera), rattachement de chaque filtre périodique à sa
+    /// vue, table des titres / icônes / état par défaut des deux menus dépliants, et icône des variétés F7 à H14.
+    /// Idempotent.</summary>
+    private static void AddPeriodicViewsAndMenuEntries(FiltresDbContext ctx)
+    {
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "PeriodicViews" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_PeriodicViews" PRIMARY KEY AUTOINCREMENT,
+                "Nom" TEXT NOT NULL,
+                "Icon" TEXT NOT NULL DEFAULT '🟦',
+                "Ordre" INTEGER NOT NULL DEFAULT 0,
+                "LocationLabel" TEXT NOT NULL DEFAULT 'Emplacement de l''appareil',
+                "Category" INTEGER NULL
+            );
+            """);
+
+        // Vues d'origine (une seule fois : repérées par leur catégorie).
+        var builtIns = new (int Category, string Nom, string Icon, string Label)[]
+        {
+            (0, "Filtres G4 plissés", "🟦", "Nom de la centrale d''air"),
+            (1, "Filtres G4 plan", "🟦", "Emplacement de l''appareil"),
+            (2, "Filtres G3", "🟩", "Emplacement de l''appareil"),
+            (3, "Charbon", "⬛", "Emplacement de l''appareil")
+        };
+        for (var i = 0; i < builtIns.Length; i++)
+        {
+            var b = builtIns[i];
+            ctx.Database.ExecuteSqlRaw(
+                $"""
+                INSERT INTO "PeriodicViews" ("Nom", "Icon", "Ordre", "LocationLabel", "Category")
+                SELECT '{b.Nom}', '{b.Icon}', {i}, '{b.Label}', {b.Category}
+                WHERE NOT EXISTS (SELECT 1 FROM "PeriodicViews" WHERE "Category" = {b.Category});
+                """);
+        }
+
+        var filterColumns = SchemaInspector.GetColumns(ctx, "PeriodicFilters");
+        if (!filterColumns.Contains("PeriodicViewId"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicFilters" ADD COLUMN "PeriodicViewId" INTEGER NULL REFERENCES "PeriodicViews" ("Id") ON DELETE SET NULL;""");
+        ctx.Database.ExecuteSqlRaw("""CREATE INDEX IF NOT EXISTS "IX_PeriodicFilters_PeriodicViewId" ON "PeriodicFilters" ("PeriodicViewId");""");
+        ctx.Database.ExecuteSqlRaw(
+            """
+            UPDATE "PeriodicFilters" SET "PeriodicViewId" = (SELECT "Id" FROM "PeriodicViews" WHERE "PeriodicViews"."Category" = "PeriodicFilters"."Category")
+            WHERE "PeriodicViewId" IS NULL;
+            """);
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            CREATE TABLE IF NOT EXISTS "MenuEntries" (
+                "Key" TEXT NOT NULL CONSTRAINT "PK_MenuEntries" PRIMARY KEY,
+                "Title" TEXT NOT NULL,
+                "Icon" TEXT NOT NULL,
+                "DefaultExpanded" INTEGER NOT NULL DEFAULT 1
+            );
+            """);
+        ctx.Database.ExecuteSqlRaw(
+            """
+            INSERT OR IGNORE INTO "MenuEntries" ("Key", "Title", "Icon", "DefaultExpanded") VALUES
+                ('periodic', 'Changement filtre périodique', '🟦', 1),
+                ('fouling', 'Changement sur encrassement', '🟪', 1);
+            """);
+
+        if (!SchemaInspector.GetColumns(ctx, "FilterVarieties").Contains("Icon"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "FilterVarieties" ADD COLUMN "Icon" TEXT NOT NULL DEFAULT '▫';""");
+    }
 
     /// <summary>Courroies : un type (référence) par fonction. L'ancien type unique ("BeltType", colonne conservée
     /// mais plus lue) est repris pour chaque fonction qui a une quantité ; s'il contient « 1400 SPA / 1550 SPA »

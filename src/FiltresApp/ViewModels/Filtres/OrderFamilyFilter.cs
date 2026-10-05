@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,8 +14,8 @@ public partial class OrderFamilyFilter : ObservableObject
 {
     private const string AllLabel = "Toutes les familles";
 
-    private static readonly string[] CategoryFamilies =
-        Enum.GetValues<FilterCategory>().Select(OrderLine.FamilyLabelFor).ToArray();
+    /// <summary>Familles des vues « Changement filtre périodique » (titres courants, modifiables), dans l'ordre du menu.</summary>
+    private static string[] CategoryFamilies => PeriodicViewRegistry.Entries.Select(e => e.Title).ToArray();
 
     private readonly Action _onFilterChanged;
     private bool _updatingOptions;
@@ -96,7 +97,7 @@ public partial class OrderFamilyFilter : ObservableObject
 
     /// <summary>Familles au choix manuel : catégories, variétés "Filtres F7 à H14", "Sans famille".</summary>
     private static List<ManualChoice> ManualChoices() =>
-        Enum.GetValues<FilterCategory>().Select(c => new ManualChoice(OrderLine.FamilyLabelFor(c), (int)c, null))
+        PeriodicViewRegistry.Entries.Select(e => new ManualChoice(e.Title, e.Category is FilterCategory c ? (int)c : PeriodicViewRegistry.ViewOverrideBase + e.Id, null))
             .Concat(LoadVarietyNames().Select(t => new ManualChoice(t, OrderLine.DynamicTypeOverride, t)))
             .Append(new ManualChoice(OrderLine.NoFamilyLabel, OrderLine.NoFamilyOverride, null))
             .ToList();

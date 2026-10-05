@@ -20,6 +20,21 @@ public partial class MainViewModel : ObservableObject
     /// disposition que l'ancien écran unique "Filtres F7 à H13".</summary>
     private readonly NavigationItem _dynamicFiltersMenu;
 
+    /// <summary>Menu dépliant « Changement filtre périodique » : ses enfants sont les vues (G4 plissés, G4 plan,
+    /// G3, Charbon et celles créées par l'utilisateur, voir <see cref="PeriodicView"/>). Même fonctionnement que
+    /// <see cref="_dynamicFiltersMenu"/> : le menu lui-même affiche la page de gestion des vues
+    /// (<see cref="PeriodicViewListViewModel"/>) quand le mode édition est activé, sinon ouvre la première vue.</summary>
+    private readonly NavigationItem _periodicMenu;
+
+    /// <summary>Menu dépliant géré par une page d'accueil de gestion (voir <see cref="_expandableMenus"/>).</summary>
+    private sealed record ExpandableMenu(NavigationItem Item, Func<bool> AllowManagement);
+
+    private readonly List<ExpandableMenu> _expandableMenus = new();
+
+    /// <summary>Titres des menus dépliants (modifiables dans « Paramètres du module Filtre »).</summary>
+    public string PeriodicMenuTitle => _periodicMenu.Title;
+    public string FoulingMenuTitle => _dynamicFiltersMenu.Title;
+
     /// <summary>Menu "Aide" : à part de <see cref="NavigationItems"/> (pas dans l'arbre défilant), affiché
     /// séparément tout en bas de la barre latérale (voir MainWindow.xaml) - toujours accessible sans avoir
     /// à faire défiler le reste du menu.</summary>
@@ -65,16 +80,23 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        _dynamicFiltersMenu = new NavigationItem("Filtres F7 à H14", "🟪", () => new FilterVarietyListViewModel(this));
+        var periodicEntry = LoadMenuEntry(MenuEntry.PeriodicMenuKey);
+        var foulingEntry = LoadMenuEntry(MenuEntry.FoulingMenuKey);
+
+        _periodicMenu = new NavigationItem(periodicEntry.Title, string.Empty, () => new PeriodicViewListViewModel(this)) { IsExpanded = periodicEntry.DefaultExpanded };
+        foreach (var view in App.Db.PeriodicViews.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
+            _periodicMenu.Children.Add(CreatePeriodicViewItem(view));
+
+        _dynamicFiltersMenu = new NavigationItem(foulingEntry.Title, string.Empty, () => new FilterVarietyListViewModel(this)) { IsExpanded = foulingEntry.DefaultExpanded };
         foreach (var variety in App.Db.FilterVarieties.OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList())
             _dynamicFiltersMenu.Children.Add(CreateVarietyItem(variety));
 
+        _expandableMenus.Add(new ExpandableMenu(_periodicMenu, () => App.Settings.AllowPeriodicViewCreation));
+        _expandableMenus.Add(new ExpandableMenu(_dynamicFiltersMenu, () => App.Settings.AllowFilterVarietyCreation));
+
         _filtreItems = new List<NavigationItem>
         {
-            new("Filtres G4 plissés", "🟦", () => new PeriodicFilterListViewModel(FilterCategory.G4Plisse, "Filtres G4 plissés", "Nom de la centrale d'air")),
-            new("Filtres G4 plan", "🟦", () => new PeriodicFilterListViewModel(FilterCategory.G4Plan, "Filtres G4 plan", "Emplacement de l'appareil")),
-            new("Filtres G3", "🟩", () => new PeriodicFilterListViewModel(FilterCategory.G3, "Filtres G3", "Emplacement de l'appareil")),
-            new("Charbon", "⬛", () => new PeriodicFilterListViewModel(FilterCategory.Charbon, "Charbon", "Emplacement de l'appareil")),
+            _periodicMenu,
             _dynamicFiltersMenu,
             new("Liste K7", "🗂", () => new K7ListViewModel()),
             new("Inventaire", "📦", () => new InventoryListViewModel()),
@@ -139,7 +161,7 @@ public partial class MainViewModel : ObservableObject
         {
             foreach (var item in _filtreItems)
             {
-                if (SelectedItem == item || _dynamicFiltersMenu.Children.Contains(SelectedItem!)) SelectedItem = null;
+                if (SelectedItem == item || (SelectedItem is not null && _expandableMenus.Any(m => m.Item.Children.Contains(SelectedItem)))) SelectedItem = null;
                 NavigationItems.Remove(item);
             }
         }
@@ -206,10 +228,13 @@ public partial class MainViewModel : ObservableObject
     /// <see cref="OnSelectedItemChanged"/>).</summary>
     public void RefreshAfterEditModeChange()
     {
-        if (!App.Settings.AllowFilterVarietyCreation && SelectedItem == _dynamicFiltersMenu && _dynamicFiltersMenu.Children.Count > 0)
+        foreach (var menu in _expandableMenus)
         {
-            _dynamicFiltersMenu.IsExpanded = true;
-            SelectedItem = _dynamicFiltersMenu.Children[0];
+            if (!menu.AllowManagement() && SelectedItem == menu.Item && menu.Item.Children.Count > 0)
+            {
+                menu.Item.IsExpanded = true;
+                SelectedItem = menu.Item.Children[0];
+            }
         }
     }
 
@@ -227,8 +252,96 @@ public partial class MainViewModel : ObservableObject
         SelectedItem = _dynamicFiltersMenu;
     }
 
+    /// <summary>Même chose pour le menu « Changement filtre périodique » (bouton « Gérer les vues » d'une vue).</summary>
+    public void NavigateToPeriodicViewManagement()
+    {
+        App.Settings.AllowPeriodicViewCreation = true;
+        _periodicMenu.IsExpanded = true;
+        SelectedItem = _periodicMenu;
+    }
+
+    // ---- Titres, icônes et état par défaut des menus (voir MenuEntry, Paramètres du module Filtre) ----
+
+    private static MenuEntry LoadMenuEntry(string key) =>
+        App.Db.MenuEntries.AsNoTracking().FirstOrDefault(m => m.Key == key) ?? MenuEntry.DefaultFor(key);
+
+    /// <summary>Relit titres et icônes des deux menus dépliants (après modification dans les paramètres du module)
+    /// sans toucher à leur état plié / déplié courant, et oublie leur écran déjà ouvert pour que son titre soit
+    /// relu.</summary>
+    public void RefreshMenuEntries()
+    {
+        var periodic = LoadMenuEntry(MenuEntry.PeriodicMenuKey);
+        var fouling = LoadMenuEntry(MenuEntry.FoulingMenuKey);
+        _periodicMenu.Title = periodic.Title;
+
+        _dynamicFiltersMenu.Title = fouling.Title;
+
+        _periodicMenu.Reset();
+        _dynamicFiltersMenu.Reset();
+        OnPropertyChanged(nameof(PeriodicMenuTitle));
+        OnPropertyChanged(nameof(FoulingMenuTitle));
+    }
+
+    // ---- Vues du menu « Changement filtre périodique » ----
+
+    private static PeriodicView LoadPeriodicView(int id) =>
+        App.Db.PeriodicViews.AsNoTracking().First(v => v.Id == id);
+
+    private NavigationItem CreatePeriodicViewItem(PeriodicView view)
+    {
+        var id = view.Id;
+        // Relit la vue à la création de l'écran : un titre ou un libellé modifié est ainsi toujours pris en compte.
+        return new NavigationItem(view.Nom, view.Icon, () => new PeriodicFilterListViewModel(LoadPeriodicView(id), this), id);
+    }
+
+    /// <summary>Appelé par <see cref="PeriodicViewListViewModel"/> après la création d'une vue : ajoute le
+    /// sous-menu et le sélectionne.</summary>
+    public void AddPeriodicViewNavigationItem(PeriodicView view)
+    {
+        var item = CreatePeriodicViewItem(view);
+        _periodicMenu.Children.Add(item);
+        ResortPeriodicViewNavigationItems();
+        _periodicMenu.IsExpanded = true;
+        SelectedItem = item;
+    }
+
+    /// <summary>Met à jour titre et icône du sous-menu d'une vue et oublie son écran (relu à la prochaine
+    /// ouverture) ; l'ordre d'affichage ayant pu changer, les sous-menus sont reclassés.</summary>
+    public void UpdatePeriodicViewNavigationItem(PeriodicView view)
+    {
+        var item = _periodicMenu.Children.FirstOrDefault(c => c.VarietyId == view.Id);
+        if (item is not null)
+        {
+            item.Title = view.Nom;
+            item.Icon = view.Icon;
+            item.Reset();
+            if (SelectedItem == item) CurrentViewModel = item.GetOrCreateViewModel();
+        }
+        ResortPeriodicViewNavigationItems();
+    }
+
+    public void ResortPeriodicViewNavigationItems()
+    {
+        var order = App.Db.PeriodicViews.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).Select(v => v.Id).ToList();
+        for (var target = 0; target < order.Count; target++)
+        {
+            var item = _periodicMenu.Children.FirstOrDefault(c => c.VarietyId == order[target]);
+            if (item is null) continue;
+            var current = _periodicMenu.Children.IndexOf(item);
+            if (current != target) _periodicMenu.Children.Move(current, target);
+        }
+    }
+
+    public void RemovePeriodicViewNavigationItem(int viewId)
+    {
+        var item = _periodicMenu.Children.FirstOrDefault(c => c.VarietyId == viewId);
+        if (item is null) return;
+        _periodicMenu.Children.Remove(item);
+        if (SelectedItem == item) SelectedItem = _periodicMenu;
+    }
+
     private NavigationItem CreateVarietyItem(FilterVariety variety) =>
-        new(variety.Nom, "▫", () => new DynamicFilterListViewModel(variety, this), variety.Id);
+        new(variety.Nom, variety.Icon, () => new DynamicFilterListViewModel(variety, this), variety.Id);
 
     /// <summary>Appelé par <see cref="FilterVarietyListViewModel.AddVariety"/> juste après la création en
     /// base : ajoute le sous-menu correspondant et le sélectionne.</summary>
@@ -249,6 +362,18 @@ public partial class MainViewModel : ObservableObject
         var item = _dynamicFiltersMenu.Children.FirstOrDefault(c => c.VarietyId == varietyId);
         if (item is not null) item.Title = newName;
         ResortVarietyNavigationItems();
+    }
+
+    /// <summary>Met à jour titre et icône du sous-menu d'une variété après modification dans « Paramètres du
+    /// module Filtre » et oublie son écran (relu à la prochaine ouverture, avec le nouveau titre).</summary>
+    public void RefreshVarietyNavigationItem(FilterVariety variety)
+    {
+        var item = _dynamicFiltersMenu.Children.FirstOrDefault(c => c.VarietyId == variety.Id);
+        if (item is null) return;
+        item.Title = variety.Nom;
+        item.Icon = variety.Icon;
+        item.Reset();
+        if (SelectedItem == item) CurrentViewModel = item.GetOrCreateViewModel();
     }
 
     /// <summary>Réordonne les sous-menus de variété selon leur <see cref="FilterVariety.Ordre"/> actuel en
@@ -295,34 +420,39 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnSelectedItemChanged(NavigationItem? value)
     {
-        // Tant que la création de variétés est désactivée (Paramètres), le menu "Filtres F7 à H14"
-        // lui-même n'a plus de page de gestion à afficher : ouvrir directement la première variété.
-        if (value == _dynamicFiltersMenu && !App.Settings.AllowFilterVarietyCreation && _dynamicFiltersMenu.Children.Count > 0)
+        // Tant que la gestion des vues / variétés est désactivée (mode édition), un menu dépliant n'a plus de
+        // page de gestion à afficher : ouvrir directement son premier sous-menu (« Changement filtre
+        // périodique » comme « Changement sur encrassement »).
+        foreach (var menu in _expandableMenus)
         {
-            // Si on est déjà sur une variété (ou déjà "sur" le menu), on ignore : sans ce garde-fou, le
+            if (value != menu.Item || menu.AllowManagement() || menu.Item.Children.Count == 0) continue;
+
+            // Si on est déjà dans la section (ou déjà "sur" le menu), on ignore : sans ce garde-fou, le
             // simple fait de replier le menu (clic sur le chevron) redéclencherait cette redirection, qui
             // forcerait IsExpanded à true et rouvrirait le menu immédiatement - le rendant impossible à
             // replier. Le menu reste repliable à tout moment, la redirection ne joue qu'à l'entrée dans la
             // section depuis un autre écran.
-            var alreadyInSection = _lastDisplayedItem == _dynamicFiltersMenu || (_lastDisplayedItem is not null && _dynamicFiltersMenu.Children.Contains(_lastDisplayedItem));
+            var alreadyInSection = _lastDisplayedItem == menu.Item || (_lastDisplayedItem is not null && menu.Item.Children.Contains(_lastDisplayedItem));
             if (alreadyInSection)
             {
                 SelectedItem = _lastDisplayedItem;
                 return;
             }
 
-            _dynamicFiltersMenu.IsExpanded = true;
-            SelectedItem = _dynamicFiltersMenu.Children[0];
+            menu.Item.IsExpanded = true;
+            SelectedItem = menu.Item.Children[0];
             return;
         }
 
-        // Sélectionner le menu lui-même (création de variétés autorisée) le déplie aussi : sans ce
-        // garde-fou, il ne se déplierait qu'au clic sur le chevron.
-        if (value == _dynamicFiltersMenu) _dynamicFiltersMenu.IsExpanded = true;
+        // Sélectionner le menu lui-même (gestion autorisée) le déplie aussi : sans ce garde-fou, il ne se
+        // déplierait qu'au clic sur le chevron.
+        foreach (var menu in _expandableMenus)
+            if (value == menu.Item) menu.Item.IsExpanded = true;
 
         _lastDisplayedItem = value;
         foreach (var item in NavigationItems) item.IsSelected = item == value;
-        foreach (var child in _dynamicFiltersMenu.Children) child.IsSelected = child == value;
+        foreach (var menu in _expandableMenus)
+            foreach (var child in menu.Item.Children) child.IsSelected = child == value;
         HelpItem.IsSelected = value == HelpItem;
         SettingsItem.IsSelected = value == SettingsItem;
 

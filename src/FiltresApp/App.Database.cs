@@ -75,6 +75,7 @@ public partial class App
         DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
         DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
+        PeriodicViewRegistry.Load(Db);
         LoadCompanyLogo();
     }
 

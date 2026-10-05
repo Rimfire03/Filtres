@@ -1,0 +1,53 @@
+<UserControl x:Class="FiltresApp.Views.Filtres.PeriodicViewListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels.Filtres"
+             xmlns:app="clr-namespace:FiltresApp"
+             d:DataContext="{d:DesignInstance vm:PeriodicViewListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+
+            <!-- Mode édition : rouge tant que désactivé (par défaut à chaque lancement), vert une fois
+                 activé ; c'est lui qui fait apparaître les boutons de gestion des vues. -->
+            <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
+                    Style="{StaticResource EditModeButtonStyle}"/>
+        </Grid>
+
+        <Border Grid.Row="1" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+            <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap"
+                       Text="Les vues d'origine (G4 plissés, G4 plan, G3, Charbon) ne peuvent pas être supprimées ; vous pouvez en créer d'autres, qui fonctionnent comme une vue G4 (suivi mensuel, besoin calculé dans Commande). Le titre, l'icône et la position de chaque vue sont modifiables."/>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12" Visibility="{Binding CanManageViews, Converter={StaticResource BoolToVis}}">
+            <Button Content="+ Nouvelle vue" Style="{StaticResource PrimaryButton}" Command="{Binding AddViewCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditViewCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteViewCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+        </StackPanel>
+
+        <ListBox Grid.Row="3" ItemsSource="{Binding Views}" SelectedItem="{Binding SelectedView}"
+                 Visibility="{Binding CanManageViews, Converter={StaticResource BoolToVis}}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Icon}" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding Nom}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

@@ -201,6 +201,9 @@
             <DataTrigger Binding="{Binding CanManageVarieties}" Value="True">
                 <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
             </DataTrigger>
+            <DataTrigger Binding="{Binding CanManageViews}" Value="True">
+                <Setter Property="Background" Value="{StaticResource BrushSuccess}"/>
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 

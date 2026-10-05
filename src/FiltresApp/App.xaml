@@ -43,6 +43,9 @@
             <DataTemplate DataType="{x:Type vmf:FilterVarietyListViewModel}">
                 <viewsf:FilterVarietyListView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vmf:PeriodicViewListViewModel}">
+                <viewsf:PeriodicViewListView/>
+            </DataTemplate>
             <DataTemplate DataType="{x:Type vmf:DynamicFilterListViewModel}">
                 <viewsf:DynamicFilterView/>
             </DataTemplate>

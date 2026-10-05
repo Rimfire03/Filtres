@@ -12,7 +12,9 @@ namespace FiltresApp.ViewModels.Filtres;
 public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 {
     private readonly FilterCategory _category;
+    private readonly int _viewId;
     private readonly string _locationColumnLabel;
+    private readonly MainViewModel _main;
 
     public string Title { get; }
     public bool ShowHourCounter => _category == FilterCategory.Charbon;
@@ -51,12 +53,18 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         OnPropertyChanged(nameof(ShowMoveButton));
     }
 
-    /// <summary>Écrans entre lesquels une ligne peut être déplacée (bouton "Déplacer vers...", voir
-    /// <see cref="MoveFilter"/>) : G4 plissés, G4 plan et G3 - pas Charbon.</summary>
-    private static readonly FilterCategory[] MovableCategories = { FilterCategory.G4Plisse, FilterCategory.G4Plan, FilterCategory.G3 };
+    /// <summary>Vues entre lesquelles une ligne peut être déplacée (bouton "Déplacer vers...", voir
+    /// <see cref="MoveFilter"/>) : toutes celles dont le besoin est calculé (G4 plissés, G4 plan, G3 et les vues
+    /// créées), pas Charbon (compteur d'heures).</summary>
+    private static List<PeriodicViewRegistry.Entry> MovableViews() => PeriodicViewRegistry.Entries.Where(e => e.ComputesNeed).ToList();
 
-    /// <summary>Bouton "Déplacer vers..." : en mode édition, sur les écrans de <see cref="MovableCategories"/>.</summary>
-    public bool ShowMoveButton => IsEditMode && MovableCategories.Contains(_category);
+    /// <summary>Bouton "Déplacer vers..." : en mode édition, sur les écrans dont le besoin est calculé.</summary>
+    public bool ShowMoveButton => IsEditMode && _category != FilterCategory.Charbon;
+
+    /// <summary>Bouton "Gérer les vues" (mode édition) : ouvre la page de gestion du menu « Changement filtre
+    /// périodique » (créer / renommer / supprimer des vues), voir MainViewModel.NavigateToPeriodicViewManagement.</summary>
+    [RelayCommand]
+    private void ManageViews() => _main.NavigateToPeriodicViewManagement();
 
     [RelayCommand]
     private void ToggleEditMode() => IsEditMode = !IsEditMode;
@@ -106,11 +114,13 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             .Concat(ConsultedMonthOption.MonthLabels.Select((label, i) => new KeyValuePair<int?, string>(i + 1, label)))
             .ToList();
 
-    public PeriodicFilterListViewModel(FilterCategory category, string title, string locationColumnLabel)
+    public PeriodicFilterListViewModel(PeriodicView view, MainViewModel main)
     {
-        _category = category;
-        Title = title;
-        _locationColumnLabel = locationColumnLabel;
+        _category = view.Category ?? FilterCategory.Custom;
+        _viewId = view.Id;
+        _main = main;
+        Title = view.Nom;
+        _locationColumnLabel = view.LocationLabel;
         HeaderFilter = new NameDimensionFilter(ApplyFilters);
         RefreshConsultedMonthOptions();
         App.YearContext.PropertyChanged += (_, e) =>
@@ -175,11 +185,11 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private void Load()
     {
         // Ligne de Commande / Inventaire à laquelle chaque filtre est rattaché (un filtre = une ligne au plus).
-        _linkedLines = FilterLinkService.PeriodicLinkedLines(App.Db, _category);
+        _linkedLines = FilterLinkService.PeriodicLinkedLines(App.Db, _viewId);
 
         _allFilters = App.Db.PeriodicFilters
             .Include(f => f.Replacements)
-            .Where(f => f.Category == _category)
+            .Where(f => f.PeriodicViewId == _viewId)
             .AsNoTracking()
             .OrderBy(f => f.Location)
             .ToList();
@@ -199,7 +209,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     private void AddFilter()
     {
         if (!App.GuardWritable()) return;
-        var entity = new PeriodicFilter { Category = _category };
+        var entity = new PeriodicFilter { Category = _category, PeriodicViewId = _viewId };
         if (!EditEntity(entity, isNew: true)) return;
 
         App.Db.PeriodicFilters.Add(entity);
@@ -232,6 +242,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         var copy = new PeriodicFilter
         {
             Category = source.Category,
+            PeriodicViewId = source.PeriodicViewId,
             Location = source.Location,
             Dimension = source.Dimension,
             MediaType = source.MediaType,
@@ -259,8 +270,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         if (!App.GuardWritable()) return;
         if (SelectedFilter is null) return;
 
-        var targets = MovableCategories.Where(c => c != _category).ToList();
-        var labels = targets.Select(OrderLine.FamilyLabelFor).ToList();
+        var targets = MovableViews().Where(e => e.Id != _viewId).ToList();
+        var labels = targets.Select(e => e.Title).ToList();
         var targetIndex = 0;
         var fields = new List<EditField>
         {
@@ -271,8 +282,9 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
         var target = targets[targetIndex];
         var tracked = App.Db.PeriodicFilters.First(f => f.Id == SelectedFilter.Id);
-        tracked.Category = target;
-        if (target != FilterCategory.G4Plisse) tracked.ChangedEvery15Days = false;
+        tracked.Category = target.Category ?? FilterCategory.Custom;
+        tracked.PeriodicViewId = target.Id;
+        if (target.Category != FilterCategory.G4Plisse) tracked.ChangedEvery15Days = false;
         App.Db.SaveChanges();
         Load();
         App.Dialogs.ShowMessage("Déplacer", $"« {location} » a été déplacé vers « {labels[targetIndex]} ».");

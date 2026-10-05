@@ -8,7 +8,7 @@ namespace FiltresApp.ViewModels;
 public partial class NavigationItem : ObservableObject
 {
     [ObservableProperty] private string _title;
-    public string Icon { get; }
+    [ObservableProperty] private string _icon;
     private readonly Func<object>? _factory;
     private object? _viewModel;
 
@@ -34,7 +34,7 @@ public partial class NavigationItem : ObservableObject
     public NavigationItem(string title, string icon, Func<object>? factory, int? varietyId = null, bool isSeparator = false)
     {
         _title = title;
-        Icon = icon;
+        _icon = icon;
         _factory = factory;
         VarietyId = varietyId;
         IsSeparator = isSeparator;

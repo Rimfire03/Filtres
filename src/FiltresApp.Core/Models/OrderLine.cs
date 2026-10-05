@@ -38,14 +38,10 @@ public class OrderLine
     public const string NoFamilyLabel = "Sans famille";
     public const string MultipleFamiliesLabel = "Plusieurs familles";
 
-    public static string FamilyLabelFor(FilterCategory category) => category switch
-    {
-        FilterCategory.G4Plisse => "Filtres G4 plissés",
-        FilterCategory.G4Plan => "Filtres G4 plan",
-        FilterCategory.G3 => "Filtres G3",
-        FilterCategory.Charbon => "Charbon",
-        _ => category.ToString()
-    };
+    public static string FamilyLabelFor(FilterCategory category) => PeriodicViewRegistry.TitleFor(category);
+
+    /// <summary>Famille d'un filtre périodique : titre de sa vue (modifiable, voir <see cref="PeriodicViewRegistry"/>).</summary>
+    public static string FamilyLabelFor(PeriodicFilter filter) => PeriodicViewRegistry.LabelFor(filter);
 
     /// <summary>Valeur de <see cref="FamilyOverride"/> qui force "Sans famille".</summary>
     public const int NoFamilyOverride = -1;
@@ -81,6 +77,7 @@ public class OrderLine
         null => AutomaticFamilyLabel,
         NoFamilyOverride => NoFamilyLabel,
         DynamicTypeOverride => string.IsNullOrWhiteSpace(FamilyOverrideType) ? AutomaticFamilyLabel : FamilyOverrideType.Trim(),
+        >= PeriodicViewRegistry.ViewOverrideBase => PeriodicViewRegistry.TitleForView(FamilyOverride - PeriodicViewRegistry.ViewOverrideBase) ?? AutomaticFamilyLabel,
         int category => FamilyLabelFor((FilterCategory)category)
     };
 
@@ -94,7 +91,7 @@ public class OrderLine
     {
         get
         {
-            var families = LinkedFilters.Select(f => FamilyLabelFor(f.Category))
+            var families = LinkedFilters.Select(f => FamilyLabelFor(f))
                 .Concat(DynamicLinks
                     .Select(l => l.DynamicFilter?.Variety?.Nom)
                     .Where(t => !string.IsNullOrEmpty(t))
@@ -142,14 +139,11 @@ public class OrderLine
     [NotMapped]
     public IEnumerable<PeriodicFilter> LinkedFilters => FilterLinks.Where(l => l.PeriodicFilter != null).Select(l => l.PeriodicFilter!);
 
-    /// <summary>Familles dont le besoin est calculé (mars / septembre) à partir des filtres rattachés.</summary>
-    public static readonly FilterCategory[] ComputedNeedCategories = { FilterCategory.G4Plisse, FilterCategory.G4Plan, FilterCategory.G3 };
-
     /// <summary>Besoin saisi directement dans l'écran Commande, pour les lignes des autres familles.</summary>
     public int? ManualNeed { get; set; }
 
     [NotMapped]
-    public bool UsesComputedNeed => ComputedNeedCategories.Any(c => FamilyGroupLabel == FamilyLabelFor(c));
+    public bool UsesComputedNeed => PeriodicViewRegistry.IsComputedTitle(FamilyGroupLabel);
 
     /// <summary>Cellule "Besoin" de l'écran Commande saisissable (familles hors G4 plissé, G4 plan, G3).</summary>
     [NotMapped]

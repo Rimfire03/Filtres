@@ -38,13 +38,15 @@ public partial class OrderListViewModel
         var linkedDynamic = line.DynamicLinks.Select(l => l.DynamicFilterId).ToHashSet();
 
         var candidates = new List<LinkCandidate>();
-        foreach (var f in App.Db.PeriodicFilters.AsNoTracking().OrderBy(f => f.Category).ThenBy(f => f.Location).ToList())
+        foreach (var f in App.Db.PeriodicFilters.AsNoTracking().ToList()
+            .OrderBy(f => PeriodicViewRegistry.Entries.ToList().FindIndex(e => e.Id == f.PeriodicViewId || (e.Category == f.Category && f.PeriodicViewId is null)))
+            .ThenBy(f => f.Location, NaturalStringComparer.Instance))
         {
             // Filtres lavables ("à laver", G3) : jamais rattachables, exclus des candidats (voir
             // PeriodicFilterRowViewModel.IsWashable, qui masque aussi leur puce "Lié").
             if (f.IsWashable) continue;
 
-            var category = OrderLine.FamilyLabelFor(f.Category);
+            var category = OrderLine.FamilyLabelFor(f);
             var isLinked = linkedPeriodic.Contains(f.Id);
             var elsewhere = periodicElsewhere.GetValueOrDefault(f.Id);
             var matches = DimensionMatchService.Matches(line, f);

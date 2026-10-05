@@ -24,6 +24,8 @@ public class FiltresDbContext : DbContext
     public DbSet<OrderLinePeriodicFilter> OrderLinePeriodicFilters => Set<OrderLinePeriodicFilter>();
     public DbSet<SharedAsset> SharedAssets => Set<SharedAsset>();
     public DbSet<FilterVariety> FilterVarieties => Set<FilterVariety>();
+    public DbSet<PeriodicView> PeriodicViews => Set<PeriodicView>();
+    public DbSet<MenuEntry> MenuEntries => Set<MenuEntry>();
     public DbSet<DynamicFilter> DynamicFilters => Set<DynamicFilter>();
     public DbSet<DynamicFilterReplacement> DynamicFilterReplacements => Set<DynamicFilterReplacement>();
     public DbSet<DynamicFilterFamily> DynamicFilterFamilies => Set<DynamicFilterFamily>();
@@ -104,6 +106,14 @@ public class FiltresDbContext : DbContext
             .WithMany(o => o.FilterLinks)
             .HasForeignKey(l => l.OrderLineId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MenuEntry>().HasKey(m => m.Key);
+
+        modelBuilder.Entity<PeriodicFilter>()
+            .HasOne(f => f.PeriodicView)
+            .WithMany()
+            .HasForeignKey(f => f.PeriodicViewId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<OrderLinePeriodicFilter>()
             .HasOne(l => l.PeriodicFilter)

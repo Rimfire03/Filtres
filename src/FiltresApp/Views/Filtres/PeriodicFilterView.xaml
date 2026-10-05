@@ -45,10 +45,14 @@
             <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
-            <!-- G4 plissés / G4 plan / G3 uniquement (voir PeriodicFilterListViewModel.MoveFilter). -->
+            <!-- Vues dont le besoin est calculé (toutes sauf Charbon, voir PeriodicFilterListViewModel.MoveFilter). -->
             <Button Content="Déplacer vers..." Style="{StaticResource SecondaryButton}" Command="{Binding MoveFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding ShowMoveButton, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+            <!-- Distinct du bouton « Mode édition » (qui ne concerne que les filtres de cette vue) : ouvre la page
+                 de gestion des vues elles-mêmes (créer / modifier / supprimer), sinon inatteignable. -->
+            <Button Content="Gérer les vues" Style="{StaticResource SecondaryButton}" Command="{Binding ManageViewsCommand}" Margin="24,0,0,0"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
         <Border Grid.Row="2" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,14">

@@ -9,6 +9,9 @@ public class FilterVariety
     public int Id { get; set; }
     public string Nom { get; set; } = string.Empty;
 
+    /// <summary>Icône affichée devant le titre dans le menu (modifiable dans « Paramètres du module Filtre »).</summary>
+    public string Icon { get; set; } = "▫";
+
     /// <summary>Ordre d'affichage dans le menu dépliant.</summary>
     public int Ordre { get; set; }
 }

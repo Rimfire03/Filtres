@@ -17,11 +17,44 @@
                        Visibility="{Binding IsOther, Converter={StaticResource BoolToVis}}"/>
 
             <StackPanel Visibility="{Binding IsFiltre, Converter={StaticResource BoolToVis}}">
+                <!-- Titres, icônes et état plié / déplié par défaut des menus dépliants, des vues « Changement
+                     filtre périodique » et des variétés « Changement sur encrassement » (SettingsViewModel.Menus.cs). -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Titres et icônes des menus" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Modifiez le titre (et l'icône d'une vue ou d'une variété : un caractère ou un emoji) affichés dans la barre latérale. Pour les deux menus dépliants, cochez « Déplié au lancement » pour qu'ils s'ouvrent au démarrage. Les titres sont communs à tous les postes ; un titre ne peut pas être utilisé deux fois." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                        <ItemsControl ItemsSource="{Binding Settings.MenuEdits}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding KindLabel}" VerticalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}"/>
+                                        <!-- Pas d'icône pour les menus dépliants (seules les vues et variétés en ont une). -->
+                                        <TextBox Grid.Column="1" Text="{Binding Icon, UpdateSourceTrigger=PropertyChanged}" MaxLength="4" HorizontalContentAlignment="Center" Margin="0,0,8,0" Padding="4,6"
+                                                 ToolTip="Icône affichée devant le titre" Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}"/>
+                                        <TextBox Grid.Column="2" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" ToolTip="Titre affiché dans le menu"/>
+                                        <CheckBox Grid.Column="3" Content="Déplié au lancement" IsChecked="{Binding DefaultExpanded}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                                  Visibility="{Binding IsParentMenu, Converter={StaticResource BoolToVis}}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Enregistrer les titres" Style="{StaticResource PrimaryButton}" Command="{Binding Settings.SaveMenuEditsCommand}" HorizontalAlignment="Left" Margin="0,4,0,0"
+                                IsEnabled="{x:Static app:App.IsWritable}"/>
+                        <TextBlock Text="{Binding Settings.MenuEditStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Réglages de comportement propres au module Filtres (G4/G3/Charbon, F7 à H14, K7, Commande, Inventaire). -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,16,0,16">
                     <StackPanel>
                         <TextBlock Text="Comportement" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock Text="Le mode édition (variétés « Filtres F7 à H14 ») se trouve désormais sur l'écran « Filtres F7 à H14 » lui-même : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                        <TextBlock Text="Le mode édition (création de vues et de variétés) se trouve sur la page de chaque menu dépliant (« Changement filtre périodique », « Changement sur encrassement ») : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                         <CheckBox Content="Rattacher des filtres... : n'afficher par défaut que les dimensions correspondantes (±5 mm)"
                                   IsChecked="{Binding Settings.LinkDimensionFilterEnabled}"/>
                     </StackPanel>
@@ -31,7 +64,7 @@
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="Export Excel de l'année" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text="Un classeur .xlsx dans le dossier d'export PDF : une feuille par onglet de filtres (G4 plissés, G4 plan, G3, Charbon, et chaque variété « F7 à H14 »). Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                        <TextBlock Text="Un classeur .xlsx dans le dossier d'export PDF : une feuille par vue de filtres (G4 plissés, G4 plan, G3, Charbon et les vues créées) et par variété « sur encrassement ». Liste K7, Inventaire et Commande ne sont pas exportés." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                         <DockPanel Margin="0,0,0,8">
                             <TextBlock DockPanel.Dock="Left" Text="Année à exporter :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox ItemsSource="{Binding Settings.YearContext.AvailableYears}" SelectedItem="{Binding Settings.SelectedExportYear}" HorizontalAlignment="Left" Width="120"/>

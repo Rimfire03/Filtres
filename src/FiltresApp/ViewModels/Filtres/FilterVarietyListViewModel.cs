@@ -15,7 +15,7 @@ namespace FiltresApp.ViewModels.Filtres;
 /// écran unique "Filtres F7 à H13" (voir <see cref="DynamicFilterListViewModel"/>).</summary>
 public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
 {
-    public string Title => "Filtres F7 à H14";
+    public string Title => _main.FoulingMenuTitle;
 
     private readonly MainViewModel _main;
 
@@ -49,6 +49,7 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
     {
         Varieties = new ObservableCollection<FilterVariety>(
             App.Db.FilterVarieties.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList());
+        OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(CanManageVarieties));
         OnPropertyChanged(nameof(CannotManageVarieties));
         OnPropertyChanged(nameof(EditModeButtonLabel));
@@ -91,7 +92,9 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
     {
         if (!App.GuardWritable() || SelectedVariety is null) return;
         var tracked = App.Db.FilterVarieties.First(v => v.Id == SelectedVariety.Id);
+        var oldName = tracked.Nom;
         if (!EditVarietyFields(tracked, "Modifier la variété")) return;
+        if (!string.Equals(oldName, tracked.Nom, StringComparison.Ordinal)) SettingsViewModel.RenameVarietyInOrderLines(oldName, tracked.Nom);
         App.Db.SaveChanges();
         Load();
         _main.UpdateVarietyNavigationItem(tracked.Id, tracked.Nom);
@@ -154,7 +157,7 @@ public partial class FilterVarietyListViewModel : ObservableObject, IReloadable
         if (!App.Dialogs.EditFields(title, fields)) return false;
 
         var name = variety.Nom;
-        if (App.Db.FilterVarieties.AsNoTracking().Any(v => v.Id != variety.Id && v.Nom.ToLower() == name.ToLower()))
+        if (MenuNames.IsTaken(name, excludedVarietyId: variety.Id))
         {
             App.Dialogs.ShowMessage("Variété", $"Une variété « {name} » existe déjà.");
             if (variety.Id != 0) App.Db.Entry(variety).Reload();

@@ -60,11 +60,11 @@ public static class FilterLinkService
     }
 
     /// <summary>Pour chaque filtre à périodicité rattaché, la dimension (Designation) de sa ligne de
-    /// Commande / Inventaire. Optionnel : limité à une catégorie, ou hors d'une ligne donnée.</summary>
-    public static Dictionary<int, string> PeriodicLinkedLines(FiltresDbContext db, FilterCategory? category = null, int? excludedLineId = null)
+    /// Commande / Inventaire. Optionnel : limité à une vue, ou hors d'une ligne donnée.</summary>
+    public static Dictionary<int, string> PeriodicLinkedLines(FiltresDbContext db, int? viewId = null, int? excludedLineId = null)
     {
         var links = db.OrderLinePeriodicFilters.AsNoTracking();
-        if (category is FilterCategory c) links = links.Where(l => l.PeriodicFilter!.Category == c);
+        if (viewId is int v) links = links.Where(l => l.PeriodicFilter!.PeriodicViewId == v);
         if (excludedLineId is int id) links = links.Where(l => l.OrderLineId != id);
         return links.Select(l => new { l.PeriodicFilterId, l.OrderLine!.Designation })
             .ToList()
