@@ -149,7 +149,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         // pas l'ordre des groupes dans la grille) : rang de famille (Filtres à remplacer avant Filtres à
         // laver avant Sans dimension, écran G3 uniquement, voir DimensionFamilyRank), puis emplacement.
         Filters = new ObservableCollection<PeriodicFilterRowViewModel>(
-            filtered.OrderBy(f => f.DimensionFamilyRank).ThenBy(f => f.Location, StringComparer.CurrentCultureIgnoreCase)
+            filtered.OrderBy(f => f.DimensionFamilyRank).ThenBy(f => f.Location, NaturalStringComparer.Instance)
                 .Select(f => new PeriodicFilterRowViewModel(f, this, _linkedLines.GetValueOrDefault(f.Id))));
     }
 

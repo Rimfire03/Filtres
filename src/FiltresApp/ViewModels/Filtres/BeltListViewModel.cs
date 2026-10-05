@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,8 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
         var query = App.Db.Belts.Include(b => b.Replacements).Include(b => b.Family).AsNoTracking();
         if (family.IsNoFamily) query = query.Where(b => b.BeltFamilyId == null);
         else if (family.FamilyId is int familyId) query = query.Where(b => b.BeltFamilyId == familyId);
-        return query.OrderBy(b => b.BeltFamilyId == null).ThenBy(b => b.Family!.Nom).ThenBy(b => b.Location).ToList();
+        // Tri en mémoire, « naturel » (CTA2 avant CTA10) : le tri SQL est alphabétique simple.
+        return query.AsEnumerable().OrderBy(b => b.BeltFamilyId == null).ThenBy(b => b.Family?.Nom, NaturalStringComparer.Instance).ThenBy(b => b.Location, NaturalStringComparer.Instance).ToList();
     }
 
     protected override BeltRowViewModel CreateRow(Belt belt) => new(belt, YearContext.Year, this);
@@ -156,7 +158,7 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
 
     // ---- Familles (partie commune : TrackedItemListViewModel.Families.cs) ----
 
-    protected override List<BeltFamily> LoadFamilies() => App.Db.BeltFamilies.AsNoTracking().OrderBy(f => f.Nom).ToList();
+    protected override List<BeltFamily> LoadFamilies() => App.Db.BeltFamilies.AsNoTracking().AsEnumerable().OrderBy(f => f.Nom, NaturalStringComparer.Instance).ToList();
 
     protected override BeltFamily CreateFamily() => new();
 

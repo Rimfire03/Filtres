@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +23,8 @@ public partial class BearingListViewModel : TrackedItemListViewModel<BearingUnit
         var query = App.Db.BearingUnits.Include(b => b.Replacements).Include(b => b.Family).AsNoTracking();
         if (family.IsNoFamily) query = query.Where(b => b.BearingFamilyId == null);
         else if (family.FamilyId is int familyId) query = query.Where(b => b.BearingFamilyId == familyId);
-        return query.OrderBy(b => b.BearingFamilyId == null).ThenBy(b => b.Family!.Nom).ThenBy(b => b.Location).ToList();
+        // Tri en mémoire, « naturel » (CTA2 avant CTA10) : le tri SQL est alphabétique simple.
+        return query.AsEnumerable().OrderBy(b => b.BearingFamilyId == null).ThenBy(b => b.Family?.Nom, NaturalStringComparer.Instance).ThenBy(b => b.Location, NaturalStringComparer.Instance).ToList();
     }
 
     protected override BearingRowViewModel CreateRow(BearingUnit bearing) => new(bearing, YearContext.Year, this);
@@ -143,7 +145,7 @@ public partial class BearingListViewModel : TrackedItemListViewModel<BearingUnit
 
     // ---- Familles (partie commune : TrackedItemListViewModel.Families.cs) ----
 
-    protected override List<BearingFamily> LoadFamilies() => App.Db.BearingFamilies.AsNoTracking().OrderBy(f => f.Nom).ToList();
+    protected override List<BearingFamily> LoadFamilies() => App.Db.BearingFamilies.AsNoTracking().AsEnumerable().OrderBy(f => f.Nom, NaturalStringComparer.Instance).ToList();
 
     protected override BearingFamily CreateFamily() => new();
 

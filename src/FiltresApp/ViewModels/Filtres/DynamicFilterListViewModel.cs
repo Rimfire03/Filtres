@@ -73,7 +73,8 @@ public partial class DynamicFilterListViewModel : TrackedItemListViewModel<Dynam
             .Where(f => f.VarietyId == Variety.Id);
         if (family.IsNoFamily) query = query.Where(f => f.DynamicFilterFamilyId == null);
         else if (family.FamilyId is int familyId) query = query.Where(f => f.DynamicFilterFamilyId == familyId);
-        return query.OrderBy(f => f.DynamicFilterFamilyId == null).ThenBy(f => f.Family!.Nom).ThenBy(f => f.Location).ToList();
+        // Tri en mémoire, « naturel » (CTA2 avant CTA10) : le tri SQL est alphabétique simple.
+        return query.AsEnumerable().OrderBy(f => f.DynamicFilterFamilyId == null).ThenBy(f => f.Family?.Nom, NaturalStringComparer.Instance).ThenBy(f => f.Location, NaturalStringComparer.Instance).ToList();
     }
 
     protected override DynamicFilterRowViewModel CreateRow(DynamicFilter filter) =>
@@ -195,7 +196,7 @@ public partial class DynamicFilterListViewModel : TrackedItemListViewModel<Dynam
     // ---- Familles de la variété (partie commune : TrackedItemListViewModel.Families.cs) ----
 
     protected override List<DynamicFilterFamily> LoadFamilies() =>
-        App.Db.DynamicFilterFamilies.AsNoTracking().Where(f => f.VarietyId == Variety.Id).OrderBy(f => f.Nom).ToList();
+        App.Db.DynamicFilterFamilies.AsNoTracking().Where(f => f.VarietyId == Variety.Id).AsEnumerable().OrderBy(f => f.Nom, NaturalStringComparer.Instance).ToList();
 
     protected override DynamicFilterFamily CreateFamily() => new() { VarietyId = Variety.Id };
 

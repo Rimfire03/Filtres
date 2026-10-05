@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using FiltresApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
 
     private void Load()
     {
-        Families = new ObservableCollection<K7Family>(App.Db.K7Families.AsNoTracking().OrderBy(f => f.Nom).ToList());
+        Families = new ObservableCollection<K7Family>(App.Db.K7Families.AsNoTracking().AsEnumerable().OrderBy(f => f.Nom, NaturalStringComparer.Instance).ToList());
 
         // Les lignes marquées IsFamilyHeader sont les anciennes lignes "titre de famille" du classeur
         // Excel d'origine (ex. "AP RDC periodicités 1/4/7/10") : elles ne sont pas supprimées (voir
@@ -44,7 +45,7 @@ public partial class K7ListViewModel : ObservableObject, IReloadable
                 .Where(l => !l.IsFamilyHeader)
                 .AsEnumerable()
                 .OrderBy(l => l.FamilyGroupLabel)
-                .ThenBy(l => l.Lieu)
+                .ThenBy(l => l.Lieu, NaturalStringComparer.Instance)
                 .ToList());
     }
 
