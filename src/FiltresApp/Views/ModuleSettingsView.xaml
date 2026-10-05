@@ -20,8 +20,9 @@
                 <!-- Titres, icônes et état plié / déplié par défaut des menus dépliants, des vues « Changement
                      filtre périodique » et des variétés « Changement sur encrassement » (SettingsViewModel.Menus.cs). -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">
-                    <StackPanel>
-                        <TextBlock Text="Titres et icônes des menus" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <!-- Repliée par défaut : en-tête cliquable, contenu déplié à la demande. -->
+                    <Expander Header="Titres et icônes des menus" FontWeight="SemiBold" IsExpanded="False">
+                    <StackPanel Margin="0,10,0,0" TextElement.FontWeight="Normal">
                         <TextBlock Text="Modifiez le titre (et l'icône d'une vue ou d'une variété, à choisir dans la liste) affichés dans la barre latérale. Pour les deux menus dépliants, cochez « Déplié au lancement » pour qu'ils s'ouvrent au démarrage. Les titres sont communs à tous les postes ; un titre ne peut pas être utilisé deux fois." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding Settings.MenuEdits}">
                             <ItemsControl.ItemTemplate>
@@ -54,6 +55,7 @@
                                 IsEnabled="{x:Static app:App.IsWritable}"/>
                         <TextBlock Text="{Binding Settings.MenuEditStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                     </StackPanel>
+                    </Expander>
                 </Border>
 
                 <!-- Réglages de comportement propres au module Filtres (G4/G3/Charbon, F7 à H14, K7, Commande, Inventaire). -->
@@ -162,8 +164,9 @@
                 <!-- Page de garde du bon de commande PDF (Commande / Inventaire, propres au module Filtre) : textes
                      modifiables, une ligne vide n'est pas imprimée. En dernière position de la page. -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Page de garde du bon de commande" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <!-- Repliée par défaut. -->
+                    <Expander Header="Page de garde du bon de commande" FontWeight="SemiBold" IsExpanded="False">
+                    <StackPanel Margin="0,10,0,0" TextElement.FontWeight="Normal">
                         <TextBlock Text="Textes de la première page des exports PDF Commande et Inventaire. Une ligne laissée vide n'est pas imprimée." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                         <TextBlock Text="Service (en-tête) :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding Settings.CoverOrganisation, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
@@ -183,6 +186,7 @@
                         </StackPanel>
                         <TextBlock Text="{Binding Settings.CoverStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                     </StackPanel>
+                    </Expander>
                 </Border>
             </StackPanel>
         </StackPanel>
