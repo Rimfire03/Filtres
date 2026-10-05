@@ -39,6 +39,10 @@ public partial class MenuTitleEdit : ObservableObject
 
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _icon = string.Empty;
+
+    /// <summary>Icônes proposées par la liste déroulante (les choix habituels, plus l'icône actuelle si elle n'en
+    /// fait pas partie).</summary>
+    public List<string> IconChoices => MenuIcons.WithCurrent(OriginalIcon);
     [ObservableProperty] private bool _defaultExpanded;
 }
 

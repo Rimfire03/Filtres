@@ -135,10 +135,12 @@ public partial class PeriodicViewListViewModel : ObservableObject, IReloadable
         var currentPositionIndex = currentAfterId is int afterId ? others.FindIndex(o => o.Id == afterId) + 1 : 0;
 
         int? chosenAfterId = currentAfterId;
+        var iconChoices = MenuIcons.WithCurrent(view.Icon);
         var fields = new List<EditField>
         {
             EditField.Text("Titre de la vue", () => view.Nom, v => view.Nom = v.Trim(), required: true),
-            EditField.Text("Icône devant le titre", () => view.Icon, v => view.Icon = string.IsNullOrWhiteSpace(v) ? PeriodicView.DefaultIcon : v.Trim()),
+            EditField.ComboField("Icône devant le titre", iconChoices, () => Math.Max(0, iconChoices.IndexOf(view.Icon)),
+                v => view.Icon = v >= 0 && v < iconChoices.Count ? iconChoices[v] : PeriodicView.DefaultIcon),
             EditField.Text("Libellé de la première colonne", () => view.LocationLabel, v => view.LocationLabel = string.IsNullOrWhiteSpace(v) ? PeriodicView.DefaultLocationLabel : v.Trim()),
             EditField.ComboField("Placer après", positionLabels, () => currentPositionIndex,
                 v => chosenAfterId = v >= 1 && v <= others.Count ? others[v - 1].Id : null)

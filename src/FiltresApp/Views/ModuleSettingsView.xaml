@@ -22,7 +22,7 @@
                 <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">
                     <StackPanel>
                         <TextBlock Text="Titres et icônes des menus" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Text="Modifiez le titre (et l'icône d'une vue ou d'une variété : un caractère ou un emoji) affichés dans la barre latérale. Pour les deux menus dépliants, cochez « Déplié au lancement » pour qu'ils s'ouvrent au démarrage. Les titres sont communs à tous les postes ; un titre ne peut pas être utilisé deux fois." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                        <TextBlock Text="Modifiez le titre (et l'icône d'une vue ou d'une variété, à choisir dans la liste) affichés dans la barre latérale. Pour les deux menus dépliants, cochez « Déplié au lancement » pour qu'ils s'ouvrent au démarrage. Les titres sont communs à tous les postes ; un titre ne peut pas être utilisé deux fois." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding Settings.MenuEdits}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -35,8 +35,14 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding KindLabel}" VerticalAlignment="Center" Foreground="{StaticResource BrushTextSecondary}"/>
                                         <!-- Pas d'icône pour les menus dépliants (seules les vues et variétés en ont une). -->
-                                        <TextBox Grid.Column="1" Text="{Binding Icon, UpdateSourceTrigger=PropertyChanged}" MaxLength="4" HorizontalContentAlignment="Center" Margin="0,0,8,0" Padding="4,6"
-                                                 ToolTip="Icône affichée devant le titre" Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}"/>
+                                        <ComboBox Grid.Column="1" ItemsSource="{Binding IconChoices}" SelectedItem="{Binding Icon}" Margin="0,0,8,0"
+                                                  ToolTip="Icône affichée devant le titre" Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" FontSize="16" HorizontalAlignment="Center"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                         <TextBox Grid.Column="2" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" ToolTip="Titre affiché dans le menu"/>
                                         <CheckBox Grid.Column="3" Content="Déplié au lancement" IsChecked="{Binding DefaultExpanded}" VerticalAlignment="Center" Margin="12,0,0,0"
                                                   Visibility="{Binding IsParentMenu, Converter={StaticResource BoolToVis}}"/>

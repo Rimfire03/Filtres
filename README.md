@@ -106,7 +106,8 @@ une roue dentée à côté de chaque case ouvre ses réglages spécifiques.
     famille de Commande avec besoin calculé automatiquement ; Charbon, lui, n'a pas de besoin calculé).
     Chaque filtre périodique appartient à une vue (`PeriodicFilters.PeriodicViewId`) ; les titres de vues sont
     relus par `PeriodicViewRegistry` (jamais codés en dur : une vue renommée garde ses familles de Commande).
-    Titres, icônes (vues et variétés) et état plié / déplié au lancement des deux menus se règlent dans
+    Titres, icônes (vues et variétés, à choisir dans une liste déroulante, voir `MenuIcons`) et état plié / déplié
+    au lancement des deux menus se règlent dans
     « Paramètres du module Filtre » (tables `MenuEntries`, `PeriodicViews.Icon`, `FilterVarieties.Icon`,
     communs à tous les postes) ; les menus dépliants n'ont pas d'icône devant leur titre. Un titre est unique
     parmi les menus, vues et variétés. Le renommage d'une variété suit les lignes de Commande qui l'ont
