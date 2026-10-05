@@ -13,6 +13,14 @@ public partial class BeltView : UserControl
         InitializeComponent();
     }
 
+    /// <summary>Colonne "Famille" : le choix dans la liste est enregistré tout de suite.</summary>
+    private void FamilyCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox { IsLoaded: true, SelectedItem: string choice } combo
+            || combo.DataContext is not BeltRowViewModel row || DataContext is not BeltListViewModel vm) return;
+        vm.SetFamilyChoice(row.Entity, choice);
+    }
+
     /// <summary>Menu contextuel de la grille sur le point d'ouvrir : reconstruit le sous-menu "Couleur" à
     /// partir de la palette réglée dans Paramètres (même pattern que les autres écrans de filtres).</summary>
     private void Grid_ContextMenuOpening(object sender, ContextMenuEventArgs e)

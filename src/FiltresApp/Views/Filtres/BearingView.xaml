@@ -1,6 +1,7 @@
 <UserControl x:Class="FiltresApp.Views.Filtres.BearingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels.Filtres"
              xmlns:app="clr-namespace:FiltresApp"
              d:DataContext="{d:DesignInstance vm:BearingListViewModel}"
@@ -59,7 +60,7 @@
         </Border>
 
         <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedBearings}}"
-                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" SelectedItem="{Binding SelectedRow}" IsReadOnly="True"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedRow}" IsReadOnly="True"
                   AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" CellStyle="{StaticResource FlashingCellStyle}" ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
                 <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
@@ -93,6 +94,18 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="1.3*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+                <!-- Changement rapide de famille : masquée par défaut (clic droit sur un en-tête pour l'afficher). -->
+                <DataGridTemplateColumn Header="Famille" Width="1.3*" SortMemberPath="FamilyGroupLabel" svc:ColumnChooser.HiddenByDefault="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox Margin="2" VerticalAlignment="Center"
+                                      ItemsSource="{Binding DataContext.FamilyQuickChoices, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      SelectedItem="{Binding FamilyChoiceLabel, Mode=OneWay}"
+                                      IsEnabled="{x:Static app:App.IsWritable}"
+                                      SelectionChanged="FamilyCombo_SelectionChanged"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>
                 <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>

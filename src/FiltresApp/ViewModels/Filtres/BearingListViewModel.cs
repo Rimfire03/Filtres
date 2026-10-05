@@ -64,6 +64,15 @@ public partial class BearingListViewModel : TrackedItemListViewModel<BearingUnit
         return true;
     }
 
+    protected override void SaveEntityFamily(int entityId, int? familyId) =>
+        App.Db.BearingUnits.Where(b => b.Id == entityId).ExecuteUpdate(s => s.SetProperty(b => b.BearingFamilyId, familyId));
+
+    protected override void ApplyFamilyInMemory(BearingUnit bearing, BearingFamily? family)
+    {
+        bearing.BearingFamilyId = family?.Id;
+        bearing.Family = family;
+    }
+
     protected override BearingUnit CreateEntity(int? familyId) => new() { BearingFamilyId = familyId };
 
     protected override BearingUnit CopyEntity(BearingUnit source) => new()

@@ -66,10 +66,53 @@ public abstract partial class TrackedItemListViewModel<TEntity, TFamily, TRow>
             v => setFamilyId(v >= 1 && v <= families.Count ? families[v - 1].Id : null));
     }
 
+    /// <summary>Choix de la colonne "Famille" de la grille : "Sans famille" puis chaque famille (relus à chaque
+    /// rechargement des familles).</summary>
+    public List<string> FamilyQuickChoices => new List<string> { INamedFamily.NoFamilyLabel }.Concat(Families.Select(f => f.Nom)).ToList();
+
+    /// <summary>Enregistre en base la famille de l'élément (null = sans famille). À fournir par les modules qui
+    /// proposent la colonne "Famille" (Courroies, Roulements).</summary>
+    protected virtual void SaveEntityFamily(int entityId, int? familyId) => throw new NotSupportedException();
+
+    /// <summary>Reporte la famille sur l'élément affiché (chargé sans suivi) sans recharger la grille.</summary>
+    protected virtual void ApplyFamilyInMemory(TEntity entity, TFamily? family) => throw new NotSupportedException();
+
+    /// <summary>Colonne "Famille" : change la famille de la ligne en un clic, sans ouvrir "Modifier". Ne recharge
+    /// jamais toute la liste (la grille sauterait tout en haut) : la ligne est retirée puis réinsérée au même
+    /// index pour que le regroupement la range dans sa nouvelle famille, ou simplement retirée si elle sort du
+    /// filtre "Famille" affiché (même technique que la colonne Famille de Commande).</summary>
+    public void SetFamilyChoice(TEntity entity, string choice)
+    {
+        if (choice == entity.FamilyGroupLabel || !App.GuardWritable()) return;
+        var family = choice == INamedFamily.NoFamilyLabel ? null : Families.FirstOrDefault(f => f.Nom == choice);
+        if (family is null && choice != INamedFamily.NoFamilyLabel) return;
+
+        SaveEntityFamily(entity.Id, family?.Id);
+        ApplyFamilyInMemory(entity, family);
+
+        var row = _allRows.FirstOrDefault(r => ReferenceEquals(r.Entity, entity));
+        if (row is null) return;
+
+        var selected = SelectedFamily ?? AllFamilies;
+        var stillShown = selected.IsAll || (selected.IsNoFamily ? family is null : selected.FamilyId == family?.Id);
+        var index = Rows.IndexOf(row);
+        if (!stillShown)
+        {
+            _allRows.Remove(row);
+            if (index >= 0) Rows.RemoveAt(index);
+            return;
+        }
+        if (index < 0) return;
+        Rows.RemoveAt(index);
+        Rows.Insert(index, row);
+        SelectedRow = row;
+    }
+
     /// <summary>Relit les familles en conservant le filtre choisi s'il existe toujours.</summary>
     private void RefreshFamilies(int? selectFamilyId = null)
     {
         Families = LoadFamilies();
+        OnPropertyChanged(nameof(FamilyQuickChoices));
         var options = new List<FamilyOption> { AllFamilies, NoFamily };
         options.AddRange(Families.Select(f => new FamilyOption(f.Id, false, f.Nom)));
 

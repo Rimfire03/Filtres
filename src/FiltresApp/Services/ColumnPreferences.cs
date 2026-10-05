@@ -16,6 +16,10 @@ public class GridPreferences
 
     public Dictionary<string, ColumnWidth> Widths { get; set; } = new();
 
+    /// <summary>Ordre des colonnes choisi à la souris (clés de colonne, de gauche à droite) ; vide = ordre
+    /// d'origine du XAML.</summary>
+    public List<string> Order { get; set; } = new();
+
     /// <summary>Colonnes exclues de l'impression (Paramètres, "Colonnes imprimées") : indépendant de
     /// <see cref="Hidden"/>, qui ne concerne que l'affichage à l'écran.</summary>
     public HashSet<string> PrintHidden { get; set; } = new();
@@ -82,6 +86,16 @@ public static class ColumnPreferences
         var prefs = For(gridKey);
         if (hidden) prefs.PrintHidden.Add(columnKey);
         else prefs.PrintHidden.Remove(columnKey);
+        Save();
+    }
+
+    public static IReadOnlyList<string> GetOrder(string gridKey) =>
+        Grids.TryGetValue(gridKey, out var prefs) ? prefs.Order : Array.Empty<string>();
+
+    /// <summary>Mémorise l'ordre des colonnes de la grille (liste vide = ordre d'origine).</summary>
+    public static void SetOrder(string gridKey, List<string> order)
+    {
+        For(gridKey).Order = order;
         Save();
     }
 

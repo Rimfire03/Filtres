@@ -52,6 +52,9 @@ public abstract partial class TrackedItemRowViewModel<TEntity> : LinkedFilterRow
 
     public int Id => Entity.Id;
     public string FamilyGroupLabel => Entity.FamilyGroupLabel;
+
+    /// <summary>Valeur affichée par la colonne "Famille" (liste déroulante de la grille).</summary>
+    public string FamilyChoiceLabel => Entity.FamilyGroupLabel;
     public string Location => Entity.Location;
     public string? Commentaire => Entity.Commentaire;
 

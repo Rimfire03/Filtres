@@ -71,6 +71,15 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
         return true;
     }
 
+    protected override void SaveEntityFamily(int entityId, int? familyId) =>
+        App.Db.Belts.Where(b => b.Id == entityId).ExecuteUpdate(s => s.SetProperty(b => b.BeltFamilyId, familyId));
+
+    protected override void ApplyFamilyInMemory(Belt belt, BeltFamily? family)
+    {
+        belt.BeltFamilyId = family?.Id;
+        belt.Family = family;
+    }
+
     protected override Belt CreateEntity(int? familyId) => new() { BeltFamilyId = familyId };
 
     protected override Belt CopyEntity(Belt source) => new()

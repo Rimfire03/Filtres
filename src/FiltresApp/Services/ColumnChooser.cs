@@ -43,6 +43,8 @@ public static class ColumnChooser
         grid.Loaded += OnLoaded;
         grid.PreviewMouseRightButtonUp -= OnPreviewRightClick;
         grid.PreviewMouseRightButtonUp += OnPreviewRightClick;
+        grid.ColumnReordered -= OnColumnReordered;
+        grid.ColumnReordered += OnColumnReordered;
         grid.RemoveHandler(Thumb.DragCompletedEvent, (DragCompletedEventHandler)OnResizeCompleted);
         grid.AddHandler(Thumb.DragCompletedEvent, (DragCompletedEventHandler)OnResizeCompleted, handledEventsToo: true);
         if (grid.IsLoaded) Apply(grid);
@@ -65,8 +67,34 @@ public static class ColumnChooser
             column.Width = saved is null ? original : new DataGridLength(saved.Value, saved.Star ? DataGridLengthUnitType.Star : DataGridLengthUnitType.Pixel);
         }
 
+        ApplySavedOrder(grid, key);
+
         if (grid.Columns.Count > 0 && grid.Columns.All(c => c.Visibility != Visibility.Visible))
             grid.Columns[0].Visibility = Visibility.Visible;
+    }
+
+    /// <summary>Vrai pendant que l'ordre mémorisé est appliqué : les réaffectations de DisplayIndex ne doivent
+    /// pas être mémorisées comme un réordonnancement fait par l'utilisateur.</summary>
+    private static bool _applyingOrder;
+
+    private static void ApplySavedOrder(DataGrid grid, string key)
+    {
+        var saved = ColumnPreferences.GetOrder(key);
+        if (saved.Count == 0) return;
+
+        var ordered = saved.Select(k => grid.Columns.FirstOrDefault(c => ColumnKey(grid, c) == k)).OfType<DataGridColumn>().ToList();
+        ordered.AddRange(grid.Columns.Where(c => !ordered.Contains(c)));
+
+        _applyingOrder = true;
+        try { for (var i = 0; i < ordered.Count; i++) ordered[i].DisplayIndex = i; }
+        finally { _applyingOrder = false; }
+    }
+
+    /// <summary>Colonne déplacée à la souris : mémorise l'ordre complet de la grille sur cet ordinateur.</summary>
+    private static void OnColumnReordered(object? sender, DataGridColumnEventArgs e)
+    {
+        if (_applyingOrder || sender is not DataGrid grid || GetKey(grid) is not { Length: > 0 } key) return;
+        ColumnPreferences.SetOrder(key, grid.Columns.OrderBy(c => c.DisplayIndex).Select(c => ColumnKey(grid, c)).ToList());
     }
 
     private static void OnPreviewRightClick(object sender, MouseButtonEventArgs e)
@@ -118,6 +146,16 @@ public static class ColumnChooser
                 if (OriginalWidths.TryGetValue(column, out var original)) column.Width = original.Width;
         };
         menu.Items.Add(resetWidths);
+
+        var resetOrder = new MenuItem { Header = "Réinitialiser l'ordre des colonnes" };
+        resetOrder.Click += (_, _) =>
+        {
+            ColumnPreferences.SetOrder(key, new List<string>());
+            _applyingOrder = true;
+            try { foreach (var column in grid.Columns) column.DisplayIndex = grid.Columns.IndexOf(column); }
+            finally { _applyingOrder = false; }
+        };
+        menu.Items.Add(resetOrder);
 
         menu.PlacementTarget = grid;
         menu.Placement = PlacementMode.MousePoint;
