@@ -49,7 +49,33 @@ internal static class DatabaseMigrations
         (23, "Modules activables « Courroies » et « Roulements » (menu Paramètres)", AddBeltAndBearingSchema),
         (24, "Colonnes Type, Type de courroies et Réf. roulement en majuscules", UppercaseTypeAndReferenceColumns),
         (25, "Courroies : quantités soufflage / extraction et choix de la fonction changée", AddBeltFunctionColumns),
+        (26, "Courroies : type (référence) distinct pour le soufflage et l'extraction", AddBeltFunctionTypeColumns),
     };
+
+    /// <summary>Courroies : un type (référence) par fonction. L'ancien type unique ("BeltType", colonne conservée
+    /// mais plus lue) est repris pour chaque fonction qui a une quantité ; s'il contient « 1400 SPA / 1550 SPA »
+    /// (fusion soufflage / extraction faite à la main), il est coupé : avant le " / " = soufflage, après =
+    /// extraction. Idempotent.</summary>
+    private static void AddBeltFunctionTypeColumns(FiltresDbContext ctx)
+    {
+        var belts = SchemaInspector.GetColumns(ctx, "Belts");
+        if (belts.Contains("BeltTypeSoufflage")) return;
+
+        ctx.Database.ExecuteSqlRaw("""ALTER TABLE "Belts" ADD COLUMN "BeltTypeSoufflage" TEXT NULL;""");
+        ctx.Database.ExecuteSqlRaw("""ALTER TABLE "Belts" ADD COLUMN "BeltTypeExtraction" TEXT NULL;""");
+        if (!belts.Contains("BeltType")) return;
+
+        ctx.Database.ExecuteSqlRaw(
+            """
+            UPDATE "Belts" SET
+                "BeltTypeSoufflage" = CASE
+                    WHEN "QuantitySoufflage" > 0 AND "QuantityExtraction" > 0 AND instr("BeltType", ' / ') > 0 THEN trim(substr("BeltType", 1, instr("BeltType", ' / ') - 1))
+                    WHEN "QuantitySoufflage" > 0 THEN "BeltType" END,
+                "BeltTypeExtraction" = CASE
+                    WHEN "QuantitySoufflage" > 0 AND "QuantityExtraction" > 0 AND instr("BeltType", ' / ') > 0 THEN trim(substr("BeltType", instr("BeltType", ' / ') + 3))
+                    WHEN "QuantityExtraction" > 0 THEN "BeltType" END;
+            """);
+    }
 
     /// <summary>Courroies : chaque centrale a une quantité de courroies de soufflage et une d'extraction, et un
     /// remplacement précise quelles fonctions ont été changées (comme les roulements). L'ancienne quantité unique

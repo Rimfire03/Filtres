@@ -34,9 +34,9 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
     {
         if (!App.GuardWritable()) return false;
 
-        var functions = new List<(string Label, int Quantity)>();
-        if (belt.QuantitySoufflage > 0) functions.Add(("Soufflage", belt.QuantitySoufflage));
-        if (belt.QuantityExtraction > 0) functions.Add(("Extraction", belt.QuantityExtraction));
+        var functions = new List<(string Label, int Quantity, string? Type)>();
+        if (belt.QuantitySoufflage > 0) functions.Add(("Soufflage", belt.QuantitySoufflage, belt.BeltTypeSoufflage));
+        if (belt.QuantityExtraction > 0) functions.Add(("Extraction", belt.QuantityExtraction, belt.BeltTypeExtraction));
         if (functions.Count == 0)
         {
             App.Dialogs.ShowMessage("Changement de courroies",
@@ -47,7 +47,7 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
         var selected = new List<int>();
         var fields = new List<EditField>
         {
-            EditField.ChecklistField("Courroies changées", functions.Select(f => $"{f.Label} ({f.Quantity})").ToList(), () => selected, v => selected = v)
+            EditField.ChecklistField("Courroies changées", functions.Select(f => string.IsNullOrWhiteSpace(f.Type) ? $"{f.Label} ({f.Quantity})" : $"{f.Label} ({f.Quantity}) - {f.Type}").ToList(), () => selected, v => selected = v)
         };
         if (!App.Dialogs.EditFields($"Changement du {date:dd/MM/yyyy} - « {belt.Location} »", fields)) return false;
         if (selected.Count == 0) return false;
@@ -76,7 +76,8 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
     protected override Belt CopyEntity(Belt source) => new()
     {
         Location = source.Location,
-        BeltType = source.BeltType,
+        BeltTypeSoufflage = source.BeltTypeSoufflage,
+        BeltTypeExtraction = source.BeltTypeExtraction,
         QuantitySoufflage = source.QuantitySoufflage,
         QuantityExtraction = source.QuantityExtraction,
         Commentaire = source.Commentaire,
@@ -90,8 +91,9 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
         {
             FamilyField(entity.BeltFamilyId, id => entity.BeltFamilyId = id),
             EditField.Multiline("Nom de la centrale", () => entity.Location, v => entity.Location = v, required: true),
-            EditField.NullableText("Type de courroies", () => entity.BeltType, v => entity.BeltType = v, uppercase: true),
+            EditField.NullableText("Type de courroies soufflage", () => entity.BeltTypeSoufflage, v => entity.BeltTypeSoufflage = v, uppercase: true),
             EditField.IntField("Nombre de courroies soufflage (0 = aucune)", () => entity.QuantitySoufflage, v => entity.QuantitySoufflage = v),
+            EditField.NullableText("Type de courroies extraction", () => entity.BeltTypeExtraction, v => entity.BeltTypeExtraction = v, uppercase: true),
             EditField.IntField("Nombre de courroies extraction (0 = aucune)", () => entity.QuantityExtraction, v => entity.QuantityExtraction = v),
             EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v)
         };
@@ -103,10 +105,10 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
     [RelayCommand]
     private void Print()
     {
-        var headers = new[] { "Nom de la centrale", "Type de courroies", "Soufflage", "Extraction", $"Dernier changement ({YearContext.Year})", $"Nb remplacements ({YearContext.Year})", "Commentaire" };
+        var headers = new[] { "Nom de la centrale", "Type soufflage", "Nb soufflage", "Type extraction", "Nb extraction", $"Dernier changement ({YearContext.Year})", $"Nb remplacements ({YearContext.Year})", "Commentaire" };
         var rows = PrintService.BuildGroupedRows(Rows, b => b.FamilyGroupLabel, b => new[]
         {
-            b.Location, b.BeltType ?? "", Qty(b.QuantitySoufflage), Qty(b.QuantityExtraction),
+            b.Location, b.BeltTypeSoufflage ?? "", Qty(b.QuantitySoufflage), b.BeltTypeExtraction ?? "", Qty(b.QuantityExtraction),
             b.LastChangedDateInYear?.ToString("dd/MM/yyyy") ?? "-", b.ReplacementCountInYear.ToString(), b.Commentaire ?? ""
         }, headers.Length);
         var rowColors = PrintService.BuildGroupedRowColors(Rows, b => b.FamilyGroupLabel, b => RowColorPalette.ColorFor(b.RowColorId));

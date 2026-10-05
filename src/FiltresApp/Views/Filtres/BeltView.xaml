@@ -73,9 +73,10 @@
             </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nom de la centrale" Binding="{Binding Location}" SortMemberPath="Location" Width="2.3*" ElementStyle="{StaticResource BoldWrappingCellStyle}"/>
-                <DataGridTextColumn Header="Type de courroies" Binding="{Binding BeltType}" Width="1.1*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Soufflage" Binding="{Binding QuantitySoufflage, StringFormat='{}{0:0;-0;\-}'}" Width="0.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Extraction" Binding="{Binding QuantityExtraction, StringFormat='{}{0:0;-0;\-}'}" Width="0.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type soufflage" Binding="{Binding BeltTypeSoufflage}" Width="0.9*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Nb soufflage" Binding="{Binding QuantitySoufflage, StringFormat='{}{0:0;-0;\-}'}" Width="0.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Type extraction" Binding="{Binding BeltTypeExtraction}" Width="0.9*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Nb extraction" Binding="{Binding QuantityExtraction, StringFormat='{}{0:0;-0;\-}'}" Width="0.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement (année)" Binding="{Binding LastChangedDateInYear, StringFormat='dd/MM/yyyy'}" Width="97" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Nb remplacements (année)" Binding="{Binding ReplacementCountInYear}" Width="1.05*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <!-- Pas de mois à cocher : choisir une date ici enregistre directement un nouveau

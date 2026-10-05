@@ -10,7 +10,11 @@ public class Belt : IFamilyTrackedItem
     public int Id { get; set; }
 
     public string Location { get; set; } = string.Empty;
-    public string? BeltType { get; set; }
+    /// <summary>Type (référence) des courroies de soufflage et d'extraction : peuvent différer (voir migration 26,
+    /// qui remplace l'ancienne colonne unique "BeltType", conservée en base mais plus lue).</summary>
+    public string? BeltTypeSoufflage { get; set; }
+    public string? BeltTypeExtraction { get; set; }
+
     /// <summary>Courroies de la fonction soufflage de la centrale (0 = pas de soufflage).</summary>
     public int QuantitySoufflage { get; set; }
 

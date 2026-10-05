@@ -115,7 +115,9 @@ une roue dentée à côté de chaque case ouvre ses réglages spécifiques.
   remplacements par date — même disposition que "Filtres F7 à H14". À la saisie de la date du
   changement, une petite fenêtre demande quelles fonctions ont été changées (comme les roulements) ;
   la quantité enregistrée est la somme des fonctions cochées. Migration 25 : l'ancien nombre unique
-  est repris comme quantité de soufflage (à ajuster dans « Modifier »).
+  est repris comme quantité de soufflage (à ajuster dans « Modifier »). Chaque fonction a son propre type
+  (référence) de courroies (migration 26 : l'ancien type unique est repris pour chaque fonction qui a une
+  quantité ; un « A / B » issu d'une fusion manuelle est coupé en soufflage / extraction).
 - **Module "Roulements"** : nom de la centrale, type de centrale (courroies / entraînement
   direct), références des roulements avant/arrière/volute (pas de volute en entraînement
   direct), historique précisant lesquels des trois roulements ont été changés à chaque date.
