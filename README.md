@@ -117,7 +117,8 @@ une roue dentée à côté de chaque case ouvre ses réglages spécifiques.
   la quantité enregistrée est la somme des fonctions cochées. Migration 25 : l'ancien nombre unique
   est repris comme quantité de soufflage (à ajuster dans « Modifier »). Chaque fonction a son propre type
   (référence) de courroies (migration 26 : l'ancien type unique est repris pour chaque fonction qui a une
-  quantité ; un « A / B » issu d'une fusion manuelle est coupé en soufflage / extraction).
+  quantité ; un « A / B » issu d'une fusion manuelle est coupé en soufflage / extraction). Règle à la saisie
+  (« Modifier ») : un type renseigné impose au moins 1 courroie pour la fonction, l'absence de type impose 0.
 - **Module "Roulements"** : nom de la centrale, type de centrale (courroies / entraînement
   direct), références des roulements avant/arrière/volute (pas de volute en entraînement
   direct), historique précisant lesquels des trois roulements ont été changés à chaque date.

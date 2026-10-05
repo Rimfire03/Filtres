@@ -97,7 +97,26 @@ public partial class BeltListViewModel : TrackedItemListViewModel<Belt, BeltFami
             EditField.IntField("Nombre de courroies extraction (0 = aucune)", () => entity.QuantityExtraction, v => entity.QuantityExtraction = v),
             EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v)
         };
-        return App.Dialogs.EditFields(isNew ? "Ajouter une courroie" : "Modifier la courroie", fields);
+        if (!App.Dialogs.EditFields(isNew ? "Ajouter une courroie" : "Modifier la courroie", fields)) return false;
+
+        // Règle : un type renseigné impose au moins 1 courroie, pas de type = forcément 0 courroie.
+        var adjustments = new List<string>();
+        (entity.QuantitySoufflage, var s) = ApplyTypeQuantityRule("soufflage", entity.BeltTypeSoufflage, entity.QuantitySoufflage);
+        (entity.QuantityExtraction, var e) = ApplyTypeQuantityRule("extraction", entity.BeltTypeExtraction, entity.QuantityExtraction);
+        if (s is not null) adjustments.Add(s);
+        if (e is not null) adjustments.Add(e);
+        if (adjustments.Count > 0)
+            App.Dialogs.ShowMessage("Courroies", "Quantités ajustées selon le type renseigné :\n- " + string.Join("\n- ", adjustments));
+        return true;
+    }
+
+    /// <summary>Règle type / quantité d'une fonction : un type renseigné impose une quantité d'au moins 1, l'absence
+    /// de type impose 0. Retourne la quantité corrigée et, si elle a changé, la phrase qui l'explique.</summary>
+    internal static (int Quantity, string? Message) ApplyTypeQuantityRule(string function, string? type, int quantity)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+            return quantity == 0 ? (0, null) : (0, $"{function} : pas de type, donc 0 courroie (au lieu de {quantity}).");
+        return quantity >= 1 ? (quantity, null) : (1, $"{function} : type « {type.Trim()} » renseigné, donc au moins 1 courroie.");
     }
 
     private static string Qty(int quantity) => quantity > 0 ? quantity.ToString() : "-";
