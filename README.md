@@ -110,8 +110,12 @@ une roue dentée à côté de chaque case ouvre ses réglages spécifiques.
   - **Inventaire / Commande** : deux vues d'un même jeu de données (`OrderLine`) ; rattachement
     manuel de filtres à une ligne de commande pour calculer le besoin semestriel, familles
     automatiques (déduites des filtres rattachés) ou manuelles.
-- **Module "Courroies"** : nom de la centrale, type, nombre, historique de remplacements par
-  date — même disposition que "Filtres F7 à H14".
+- **Module "Courroies"** : nom de la centrale, type, nombre de courroies de **soufflage** et
+  d'**extraction** (une quantité propre à chaque fonction, 0 = fonction absente), historique de
+  remplacements par date — même disposition que "Filtres F7 à H14". À la saisie de la date du
+  changement, une petite fenêtre demande quelles fonctions ont été changées (comme les roulements) ;
+  la quantité enregistrée est la somme des fonctions cochées. Migration 25 : l'ancien nombre unique
+  est repris comme quantité de soufflage (à ajuster dans « Modifier »).
 - **Module "Roulements"** : nom de la centrale, type de centrale (courroies / entraînement
   direct), références des roulements avant/arrière/volute (pas de volute en entraînement
   direct), historique précisant lesquels des trois roulements ont été changés à chaque date.

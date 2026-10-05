@@ -48,7 +48,31 @@ internal static class DatabaseMigrations
         (22, "Suppression du champ Référence Liste K7 (écran Filtres G3)", RemoveK7ReferenceColumn),
         (23, "Modules activables « Courroies » et « Roulements » (menu Paramètres)", AddBeltAndBearingSchema),
         (24, "Colonnes Type, Type de courroies et Réf. roulement en majuscules", UppercaseTypeAndReferenceColumns),
+        (25, "Courroies : quantités soufflage / extraction et choix de la fonction changée", AddBeltFunctionColumns),
     };
+
+    /// <summary>Courroies : chaque centrale a une quantité de courroies de soufflage et une d'extraction, et un
+    /// remplacement précise quelles fonctions ont été changées (comme les roulements). L'ancienne quantité unique
+    /// ("QuantityInPlace", colonne conservée mais plus lue) est reprise comme quantité de soufflage ; les
+    /// remplacements existants gardent leur quantité sans fonction cochée. Idempotent.</summary>
+    private static void AddBeltFunctionColumns(FiltresDbContext ctx)
+    {
+        var belts = SchemaInspector.GetColumns(ctx, "Belts");
+        if (!belts.Contains("QuantitySoufflage"))
+        {
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "Belts" ADD COLUMN "QuantitySoufflage" INTEGER NOT NULL DEFAULT 0;""");
+            if (belts.Contains("QuantityInPlace"))
+                ctx.Database.ExecuteSqlRaw("""UPDATE "Belts" SET "QuantitySoufflage" = "QuantityInPlace";""");
+        }
+        if (!belts.Contains("QuantityExtraction"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "Belts" ADD COLUMN "QuantityExtraction" INTEGER NOT NULL DEFAULT 0;""");
+
+        var replacements = SchemaInspector.GetColumns(ctx, "BeltReplacements");
+        if (!replacements.Contains("ChangedSoufflage"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "BeltReplacements" ADD COLUMN "ChangedSoufflage" INTEGER NOT NULL DEFAULT 0;""");
+        if (!replacements.Contains("ChangedExtraction"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "BeltReplacements" ADD COLUMN "ChangedExtraction" INTEGER NOT NULL DEFAULT 0;""");
+    }
 
     /// <summary>Le contenu des colonnes "Type" (filtres G4 / G3 / Charbon et F7 à H14), "Type de courroies"
     /// et "Réf. roulement" (avant / arrière / volute) est désormais toujours en majuscules (saisie convertie,

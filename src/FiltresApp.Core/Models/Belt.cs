@@ -11,7 +11,16 @@ public class Belt : IFamilyTrackedItem
 
     public string Location { get; set; } = string.Empty;
     public string? BeltType { get; set; }
-    public int QuantityInPlace { get; set; }
+    /// <summary>Courroies de la fonction soufflage de la centrale (0 = pas de soufflage).</summary>
+    public int QuantitySoufflage { get; set; }
+
+    /// <summary>Courroies de la fonction extraction de la centrale (0 = pas d'extraction).</summary>
+    public int QuantityExtraction { get; set; }
+
+    /// <summary>Total soufflage + extraction (non mappé : l'ancienne colonne "QuantityInPlace" reste en base
+    /// mais n'est plus lue, voir migration 25).</summary>
+    [NotMapped]
+    public int QuantityInPlace => QuantitySoufflage + QuantityExtraction;
 
     /// <summary>Commentaire libre, affiché en dernière colonne de la grille.</summary>
     public string? Commentaire { get; set; }
@@ -50,8 +59,27 @@ public class BeltReplacement : IDatedReplacement
     public int BeltId { get; set; }
     public Belt? Belt { get; set; }
 
+    /// <summary>Nombre de courroies changées (somme des quantités des fonctions cochées).</summary>
     public int QuantityChanged { get; set; }
     public DateOnly? DateChanged { get; set; }
+
+    /// <summary>Fonctions dont les courroies ont été changées ce jour-là (au moins une pour un enregistrement
+    /// récent, voir BeltListViewModel.AddReplacement ; aucune pour un ancien enregistrement, qui ne porte que
+    /// <see cref="QuantityChanged"/>).</summary>
+    public bool ChangedSoufflage { get; set; }
+    public bool ChangedExtraction { get; set; }
+
+    [NotMapped]
+    public string ChangedLabel
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (ChangedSoufflage) parts.Add("Soufflage");
+            if (ChangedExtraction) parts.Add("Extraction");
+            return parts.Count == 0 ? $"quantité {QuantityChanged}" : $"{string.Join(", ", parts)} - quantité {QuantityChanged}";
+        }
+    }
 }
 
 /// <summary>Famille de courroies, créée à la main et attribuée manuellement à chaque courroie.</summary>

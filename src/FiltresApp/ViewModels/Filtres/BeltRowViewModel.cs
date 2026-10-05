@@ -11,5 +11,6 @@ public class BeltRowViewModel : TrackedItemRowViewModel<Belt>
     public override bool ShowsLinkDot => false;
 
     public string? BeltType => Entity.BeltType;
-    public int QuantityInPlace => Entity.QuantityInPlace;
+    public int QuantitySoufflage => Entity.QuantitySoufflage;
+    public int QuantityExtraction => Entity.QuantityExtraction;
 }
