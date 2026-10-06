@@ -67,6 +67,7 @@ public partial class SettingsViewModel : ObservableObject
         InitializePrintColumns();
         InitializeCoverPage();
         InitializeMenus();
+        InitializeLastWrite();
         InitializeRowColors();
     }
 

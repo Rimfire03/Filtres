@@ -149,7 +149,12 @@ ligne reste à gauche).
 ## Paramètres
 
 - **Modules** : activer/désactiver chaque module, roue dentée vers ses réglages spécifiques.
-- **Général** : chemins (base de données, export PDF), logo de l'entreprise (stocké en base,
+- **Général** : carte « Base de données » avec versions, taille et **date de la dernière saisie
+  enregistrée** (« Dernière saisie enregistrée le jj/mm/aa à hh:mm » : relevée dans la base elle-même
+  — table `DbInfo`, clé `LastWriteAt`, tenue à jour par des déclencheurs SQLite posés sur chaque table de
+  données à l'ouverture par le poste rédacteur, donc valable pour tous les postes et tous les chemins
+  d'écriture ; relue toutes les 10 s ; aucune date tant qu'aucune saisie n'a été faite depuis la pose des
+  déclencheurs) ; chemins (base de données, export PDF), logo de l'entreprise (stocké en base,
   commun à tous les postes), mises à jour automatiques (vérifie les releases GitHub, sauvegarde
   la base avant d'installer), sauvegarde manuelle (export/import d'un fichier `.db`).
 - **Réglages du module Filtre** (via sa roue dentée) : rattachement filtre↔commande par

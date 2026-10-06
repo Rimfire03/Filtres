@@ -55,12 +55,17 @@ public class DbContextFactory
         {
             // Base neuve : EnsureCreated vient de créer directement le schéma le plus récent.
             WriteVersion(ctx, LatestVersion, appVersion);
+            DatabaseWriteTracking.EnsureTriggers(ctx);
             return;
         }
 
         var current = ReadVersion(ctx);
         var pending = DatabaseMigrations.All.Where(m => m.Version > current).ToList();
-        if (pending.Count == 0) return;
+        if (pending.Count == 0)
+        {
+            DatabaseWriteTracking.EnsureTriggers(ctx);
+            return;
+        }
 
         Backup(ctx, current);
         var reached = current;
@@ -82,6 +87,10 @@ public class DbContextFactory
             reached = migration.Version;
             ctx.ChangeTracker.Clear();
         }
+
+        // Déclencheurs du suivi de la dernière saisie (après les migrations, pour que leurs réécritures de données
+        // ne comptent pas comme une saisie).
+        DatabaseWriteTracking.EnsureTriggers(ctx);
     }
 
     private static int ReadVersion(FiltresDbContext ctx) =>
