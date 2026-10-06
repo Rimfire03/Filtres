@@ -54,6 +54,23 @@ lancement, où l'utilisateur choisit de créer une base vide ou d'en sélectionn
 Pour distribuer : copier tout le contenu du dossier `publish\` (l'exe a besoin de `FiltreData\`
 à côté de lui).
 
+**Signer l'exécutable** (à faire après `dotnet publish` et **avant** de créer le `.zip`) :
+```powershell
+.\tools\Sign-Release.ps1
+```
+Signature Authenticode SHA-256 + horodatage de l'exe publié, avec le **certificat global de l'éditeur**
+(auto-signé, sujet `TomLine prod&co`, valable jusqu'en 2031 — le même pour tous les projets TomLine),
+cherché dans le magasin `Cert:\CurrentUser\My` du poste de publication : la clé privée n'est jamais dans
+ce dépôt. Sauvegarde (clé privée protégée par mot de passe) dans le dépôt privé
+`Rimfire03/TomLine-signing-keys` et dans `%USERPROFILE%\.tomline-signing\` ; le mot de passe n'est que dans
+le gestionnaire de mots de passe du propriétaire. Sur un autre poste, restaurer avec `Import-PfxCertificate`
+(procédure dans le README de ce dépôt privé).
+
+Un certificat auto-signé garantit l'intégrité de l'exe (toute modification après signature est
+détectée) mais Windows/SmartScreen ne reconnaît l'éditeur que si `TomLine-signature.cer` est installé
+comme **éditeur approuvé** et **autorité racine approuvée** sur le poste utilisateur (une fois, par
+exemple par stratégie de groupe) ; sans cela, l'avertissement habituel s'affiche encore au lancement.
+
 ## Emplacement des données
 
 Seul l'exécutable reste à la racine du dossier publié : tout le reste (base de données, exports,
