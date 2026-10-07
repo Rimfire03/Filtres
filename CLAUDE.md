@@ -10,6 +10,11 @@
 
 ## Release
 
+- **Commande unique** : après avoir incrémenté `<Version>` dans `FiltresApp.csproj` et fait `git-commit.ps1 -Push`,
+  lancer `.\tools\Release.ps1` (options : `-NotesFile`, `-Notes`, `-NoPublish` pour tester sans publier). Il fait
+  publish, déplacement de `LatoFont\`, signature, zip `FiltresApp-v<version>-win-x64.zip`, notes (générées en local
+  depuis les commits si non fournies) et `gh release create`. Il refuse si l'arbre n'est pas propre, si des commits
+  ne sont pas poussés ou si le tag existe. Les étapes manuelles ci-dessous restent la référence.
 - L'exécutable publié doit être **signé** avant d'être zippé : après `dotnet publish` (et le
   déplacement de `LatoFont\` dans `FiltreData\`), lancer `.\tools\Sign-Release.ps1`, puis seulement
   `Compress-Archive`. Ne jamais zipper un exe non signé dans une release. Le certificat est le
