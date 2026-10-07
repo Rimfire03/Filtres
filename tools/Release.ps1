@@ -42,8 +42,13 @@ if (-not $NoPublish) {
     Git fetch --quiet | Out-Null
     $ahead = [int](Git rev-list --count "@{u}..HEAD")
     if ($ahead -gt 0) { throw "$ahead commit(s) non pousse(s) : pousser d'abord (git-sync.ps1)." }
-    & gh.exe release view $tag --repo $Repo *> $null
-    if ($LASTEXITCODE -eq 0) { throw "La release $tag existe deja sur $Repo : incrementer <Version>." }
+    # "release not found" sort sur stderr : sous $ErrorActionPreference = Stop (PowerShell 5.1), c'est une erreur
+    # terminante alors que c'est le cas normal ici. On ne se fie donc qu'au code de sortie.
+    $ErrorActionPreference = "Continue"
+    & gh.exe release view $tag --repo $Repo 2>&1 | Out-Null
+    $exists = ($LASTEXITCODE -eq 0)
+    $ErrorActionPreference = "Stop"
+    if ($exists) { throw "La release $tag existe deja sur $Repo : incrementer <Version>." }
 }
 
 # --- Publish
