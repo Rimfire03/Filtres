@@ -54,6 +54,12 @@ lancement, où l'utilisateur choisit de créer une base vide ou d'en sélectionn
 Pour distribuer : copier tout le contenu du dossier `publish\` (l'exe a besoin de `FiltreData\`
 à côté de lui).
 
+**Version installable (MSI)** : chaque release publie aussi `FiltresApp-v<version>-win-x64.msi`
+(installation par machine dans `Program Files\FiltresApp`, données dans `FiltreData\` à côté de l'exe,
+mise à jour automatique via le MSI). Généré et signé par `.\tools\Build-Installer.ps1`, appelé par
+`.\tools\Release.ps1`. Prérequis sur le poste de publication : `dotnet tool install --global wix --version 4.0.6`
+puis `wix extension add -g WixToolset.Util.wixext/4.0.6`. Source : `installer\Product.wxs`.
+
 **Signer l'exécutable** (à faire après `dotnet publish` et **avant** de créer le `.zip`) :
 ```powershell
 .\tools\Sign-Release.ps1

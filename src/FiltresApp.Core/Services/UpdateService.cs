@@ -59,6 +59,8 @@ public class UpdateService
         var versionText = tag.TrimStart('v', 'V');
         if (!IsNewer(versionText, currentVersion)) return null;
 
+        // Version installée (MSI) : on récupère le .msi ; version portable : le .zip.
+        var ext = InstallMode.IsInstalled ? ".msi" : ".zip";
         string? assetUrl = null;
         string? assetName = null;
         if (root.TryGetProperty("assets", out var assets))
@@ -66,14 +68,14 @@ public class UpdateService
             foreach (var asset in assets.EnumerateArray())
             {
                 var name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
-                if (!name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) continue;
                 assetUrl = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() : null;
                 assetName = name;
                 break;
             }
         }
         if (assetUrl == null || assetName == null)
-            throw new InvalidOperationException($"La release {tag} sur GitHub n'a pas de fichier .zip en pièce jointe.");
+            throw new InvalidOperationException($"La release {tag} sur GitHub n'a pas de fichier {ext} en pièce jointe.");
 
         var notes = root.TryGetProperty("body", out var bodyEl) ? bodyEl.GetString() ?? "" : "";
         var htmlUrl = root.TryGetProperty("html_url", out var urlEl) ? urlEl.GetString() ?? "" : "";
@@ -118,11 +120,20 @@ public class UpdateService
             }
         }
 
+        var currentExePath = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Impossible de déterminer l'exécutable en cours d'exécution.");
+
+        // Version installée : le paquet MSI se charge du remplacement (élévation UAC demandée par msiexec) ;
+        // les données (FiltreData\filtres.db, réglages) et la licence (registre) ne sont pas touchées.
+        if (zipPath.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
+        {
+            RunDetachedMsi(Environment.ProcessId, zipPath, currentExePath, tempDir);
+            return;
+        }
+
         var extractDir = Path.Combine(tempDir, "extracted");
         ZipFile.ExtractToDirectory(zipPath, extractDir);
 
-        var currentExePath = Environment.ProcessPath
-            ?? throw new InvalidOperationException("Impossible de déterminer l'exécutable en cours d'exécution.");
         var exeName = Path.GetFileName(currentExePath);
         var installDir = Path.GetDirectoryName(currentExePath)
             ?? throw new InvalidOperationException("Impossible de déterminer le dossier d'installation.");
@@ -142,6 +153,30 @@ public class UpdateService
     /// <summary>Échappe une chaîne pour une chaîne PowerShell entre apostrophes (seul caractère spécial à
     /// doubler dans ce contexte).</summary>
     private static string EscapeSingleQuoted(string value) => value.Replace("'", "''");
+
+    /// <summary>Même principe que <see cref="RunDetachedReplace"/> : processus PowerShell détaché qui attend la
+    /// fermeture de l'application, lance <c>msiexec /i</c> élevé (mise à jour majeure du paquet), puis relance
+    /// l'application et nettoie.</summary>
+    private static void RunDetachedMsi(int pid, string msiPath, string targetExePath, string tempDir)
+    {
+        var script = $$"""
+            $ErrorActionPreference = 'SilentlyContinue'
+            while (Get-Process -Id {{pid}} -ErrorAction SilentlyContinue) { Start-Sleep -Milliseconds 500 }
+            Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i "{{EscapeSingleQuoted(msiPath)}}" /passive /norestart' -Verb RunAs -Wait
+            Start-Process -FilePath '{{EscapeSingleQuoted(targetExePath)}}'
+            Start-Sleep -Seconds 2
+            Remove-Item -Path '{{EscapeSingleQuoted(tempDir)}}' -Recurse -Force
+            """;
+
+        var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand {encoded}",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+    }
 
     private static void RunDetachedReplace(int pid, string extractDir, string installDir, string targetExePath, string tempDir)
     {

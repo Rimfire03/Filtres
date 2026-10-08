@@ -1,11 +1,11 @@
-﻿<#
+<#
 .SYNOPSIS
     Release complete de Filtres : publish, deplacement de LatoFont, signature, zip, release GitHub.
 
 .DESCRIPTION
     Version = <Version> de src\FiltresApp\FiltresApp.csproj (a incrementer et committer AVANT).
     Etapes : controles (arbre propre, commits pousses, tag libre) -> dotnet publish -> LatoFont dans
-    FiltreData\ -> tools\Sign-Release.ps1 -> zip FiltresApp-v<version>-win-x64.zip -> notes (fournies, ou
+    FiltreData\ -> tools\Sign-Release.ps1 -> zip FiltresApp-v<version>-win-x64.zip -> MSI FiltresApp-v<version>-win-x64.msi (Build-Installer.ps1) -> notes (fournies, ou
     generees en local par Ollama a partir des commits depuis le dernier tag) -> gh release create.
     Sortie volontairement courte. Les notes generees sont ecrites dans le dossier temporaire.
 
@@ -84,6 +84,12 @@ if (Test-Path $zip) { Remove-Item $zip -Force }
 Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zip -CompressionLevel Optimal
 Step ("zip {0} ({1:N0} Mo)" -f (Split-Path $zip -Leaf), ((Get-Item $zip).Length / 1MB))
 
+# --- Installateur MSI (par machine ; licence dans le registre) - exe deja signe, MSI signe a son tour
+Step "installateur MSI"
+$msi = Join-Path $work "FiltresApp-$tag-win-x64.msi"
+& (Join-Path $PSScriptRoot "Build-Installer.ps1") -Version $version -OutFile $msi -PublishDir $publishDir | Select-Object -Last 1 | ForEach-Object { Write-Host "  $_" }
+if (-not (Test-Path $msi)) { throw "MSI non genere." }
+
 # --- Notes
 $notesPath = Join-Path $work "notes.md"
 if ($NotesFile) { Copy-Item $NotesFile $notesPath -Force }
@@ -108,13 +114,13 @@ $log
 }
 
 if ($NoPublish) {
-    Write-Host "[release] -NoPublish : arret avant GitHub. Zip : $zip ; notes : $notesPath"
+    Write-Host "[release] -NoPublish : arret avant GitHub. Zip : $zip ; MSI : $msi ; notes : $notesPath"
     return
 }
 
 # --- Publication
 Step "gh release create $tag"
 $sha = (Git rev-parse HEAD | Select-Object -First 1).Trim()
-& gh.exe release create $tag $zip --repo $Repo --target $sha --title "Version $version" --notes-file $notesPath --latest
+& gh.exe release create $tag $zip $msi --repo $Repo --target $sha --title "Version $version" --notes-file $notesPath --latest
 if ($LASTEXITCODE -ne 0) { throw "gh release create a echoue (code $LASTEXITCODE)." }
 Write-Host "[release] OK : https://github.com/$Repo/releases/tag/$tag"
