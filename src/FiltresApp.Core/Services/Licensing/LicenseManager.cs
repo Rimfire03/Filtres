@@ -108,7 +108,7 @@ public static class LicenseManager
         if (key.Length == 0) return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Merci de saisir une clé de licence.");
 
         var ex = Nf8.L();
-        var d = !string.IsNullOrWhiteSpace(ex?.D) ? ex!.D : Guid.NewGuid().ToString("N");
+        var d = Dv();
 
         try
         {
@@ -142,7 +142,7 @@ public static class LicenseManager
         if (Mode == LicenseMode.Free) return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
 
         var ex = Nf8.L();
-        var d = !string.IsNullOrWhiteSpace(ex?.D) ? ex!.D : Guid.NewGuid().ToString("N");
+        var d = Dv();
 
         try
         {
@@ -170,7 +170,7 @@ public static class LicenseManager
     public static async Task DeactivateAsync()
     {
         var s = Cs ?? Nf8.L();
-        if (s is not null) await Rq.M3(s.K, Pz, s.D);
+        if (s is not null) await Rq.M3(s.K, Pz, Dv());
         Nf8.X();
         Cs = null;
         Mode = LicenseMode.Blocked;
@@ -187,10 +187,10 @@ public static class LicenseManager
         Qp6? r;
         try
         {
-            r = await Rq.M2(s.K, Pz, s.D);
+            r = await Rq.M2(s.K, Pz, Dv());
             // Licence prolongée après expiration : le serveur peut avoir oublié l'activation de ce poste.
             if (!r.Ok && r.R == "device_not_activated")
-                r = await Rq.M1(s.K, Pz, s.D, Environment.MachineName);
+                r = await Rq.M1(s.K, Pz, Dv(), Environment.MachineName);
         }
         catch
         {
@@ -201,6 +201,7 @@ public static class LicenseManager
         {
             // Remplace type, expiresAt, features et customerName par ceux du serveur (prolongation,
             // changement de modules) ; l'état des modules est recalculé par les abonnés de Changed.
+            s.D = Dv();
             s.L = r.L;
             s.V = DateTime.UtcNow;
             Nf8.S(s);
@@ -242,6 +243,26 @@ public static class LicenseManager
             return new LicenseCheckOutcome(LicenseMode.Expired, FooterText, "Licence expirée. Impossible de joindre le serveur de licences, vérifiez votre connexion.");
         return new LicenseCheckOutcome(LicenseMode.Grace, FooterText, IsOfflineGrace: true);
     }
+
+    private static string? _dv;
+
+    /// <summary>Identifiant du poste, identique à chaque appel au serveur (démo, activation, validation,
+    /// désactivation) : SHA-256 hexadécimal de HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid (vue 64 bits).
+    /// Jamais stocké, jamais aléatoire : survit à la suppression de la licence, à la réinstallation et au
+    /// changement de session Windows.</summary>
+#pragma warning disable CA1416 // application Windows uniquement
+    private static string Dv()
+    {
+        if (_dv is not null) return _dv;
+        using var b = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry64);
+        using var k = b.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography");
+        var g = k?.GetValue("MachineGuid") as string;
+        if (string.IsNullOrWhiteSpace(g)) throw new InvalidOperationException("Identifiant du poste indisponible.");
+        _dv = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(g))).ToLowerInvariant();
+        System.Diagnostics.Debug.WriteLine("[licence] deviceId " + _dv[..8]);
+        return _dv;
+    }
+#pragma warning restore CA1416
 
     // Date d'expiration dépassée (démo / expiring ; une licence perpétuelle n'en a pas).
     private static bool Ex1(Vw2 l) => l.Ex is { } e && e.ToUniversalTime() <= DateTime.UtcNow;
