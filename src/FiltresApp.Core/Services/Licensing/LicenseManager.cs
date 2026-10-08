@@ -279,7 +279,8 @@ public static class LicenseManager
 
     private static string Dm(string? r) => r switch
     {
-        "demo_already_used" => "Une démo a déjà été utilisée sur ce poste. Saisissez une clé de licence.",
+        "license_expired" => "La démo de ce poste est terminée. Saisissez une clé de licence.",
+        "license_revoked" => "Cette démo a été désactivée. Saisissez une clé de licence.",
         "product_not_found" => "Produit introuvable sur le serveur de licences.",
         _ => "La démo n'a pas pu être activée."
     };
