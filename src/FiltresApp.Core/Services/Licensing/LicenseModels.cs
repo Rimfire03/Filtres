@@ -21,6 +21,6 @@ internal class Tu5
 
 internal record Qp6(bool Ok, Vw2? L, string? R);
 
-public enum LicenseMode { Free, Active, Grace, Blocked }
+public enum LicenseMode { Free, Active, Grace, Blocked, Expired }
 
-public record LicenseCheckOutcome(LicenseMode Mode, string StatusText, string? BlockedMessage = null, bool IsOfflineGrace = false);
+public record LicenseCheckOutcome(LicenseMode Mode, string StatusText, string? BlockedMessage = null, bool IsOfflineGrace = false, string? InfoMessage = null);

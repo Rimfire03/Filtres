@@ -21,7 +21,7 @@
                 </StackPanel>
                 <TextBlock Text="© TomLine prod&amp;co by Thomas Guidez  ·  Suivi de maintenance Filtres" FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"/>
                 <!-- État de la licence, aligné à gauche (voir App.Licensing.cs / LicenseManager). -->
-                <TextBlock Text="{Binding Source={x:Static app:App.LicenseFooterText}}" FontSize="11" Foreground="#64748B" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding LicenseFooter}" FontSize="11" Foreground="{Binding LicenseFooterBrush}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </Grid>
         </Border>
 

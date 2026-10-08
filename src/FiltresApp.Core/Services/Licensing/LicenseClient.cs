@@ -11,6 +11,8 @@ internal class Rc3
     private static readonly string U2 = Yx4.Z("dSxrdSw7NjM+Oy4/");
     private static readonly string U3 = Yx4.Z("dSxrdT4/OzkuMyw7Lj8=");
 
+    private static readonly string U4 = Yx4.Z("dSxrdSg/Ky8/KS53Pj83NQ==");
+
     private static readonly HttpClient H = N();
 
     private static HttpClient N()
@@ -24,6 +26,13 @@ internal class Rc3
 
     public Task<Qp6> M2(string k, string p, string d) => M4(U2, new { licenseKey = k, productSlug = p, deviceId = d });
 
+    // Démo automatique : timeout court (5 s), la démo exige une connexion.
+    public async Task<Qp6> M5(string p, string d, string? n)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        return await M4(U4, new { productSlug = p, deviceId = d, deviceName = n }, cts.Token);
+    }
+
     public async Task M3(string k, string p, string d)
     {
         try
@@ -36,11 +45,11 @@ internal class Rc3
 
     private static StringContent J(object b) => new(JsonSerializer.Serialize(b), Encoding.UTF8, "application/json");
 
-    private static async Task<Qp6> M4(string path, object body)
+    private static async Task<Qp6> M4(string path, object body, CancellationToken ct = default)
     {
         using var c = J(body);
-        using var r = await H.PostAsync(U0 + path, c);
-        var t = await r.Content.ReadAsStringAsync();
+        using var r = await H.PostAsync(U0 + path, c, ct);
+        var t = await r.Content.ReadAsStringAsync(ct);
 
         using var doc = JsonDocument.Parse(t);
         var root = doc.RootElement;

@@ -91,6 +91,7 @@ public partial class App : Application
         MainWindow = mainWindow;
         mainWindow.Show();
         ShutdownMode = ShutdownMode.OnLastWindowClose;
+        StartLicenseRevalidation();
 
         if (IsReadOnly)
             MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);

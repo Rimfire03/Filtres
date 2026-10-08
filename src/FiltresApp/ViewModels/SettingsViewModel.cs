@@ -69,6 +69,13 @@ public partial class SettingsViewModel : ObservableObject
         InitializeMenus();
         InitializeLastWrite();
         InitializeRowColors();
+        LicenseManager.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            OnPropertyChanged(nameof(LicenseStatusText));
+            OnPropertyChanged(nameof(CanToggleFiltresModule));
+            OnPropertyChanged(nameof(CanToggleBeltsModule));
+            OnPropertyChanged(nameof(CanToggleBearingsModule));
+        });
     }
 
     /// <summary>La case à cocher se sauvegarde immédiatement : contrairement aux autres champs, il n'y
@@ -128,6 +135,12 @@ public partial class SettingsViewModel : ObservableObject
     /// afficher ni à déconnecter dans ce cas.</summary>
     public bool ShowLicenseCard => !LicenseManager.IsFreeLicense;
     public string LicenseStatusText => LicenseManager.FooterText;
+
+    /// <summary>"Changer de licence" (par exemple passer d'une démo à une vraie licence) : la nouvelle clé est
+    /// activée d'abord, l'ancienne désactivée ensuite ; en cas d'échec ou d'annulation, l'ancienne reste en
+    /// place. Les modules sont recalculés tout de suite (voir LicenseManager.Changed).</summary>
+    [RelayCommand]
+    private void ChangeLicense() => App.ChangeLicense();
 
     /// <summary>"Se déconnecter / changer de licence" : libère l'activation côté serveur puis efface la
     /// licence stockée localement (jamais licence.ini) et referme l'application - l'écran de saisie de

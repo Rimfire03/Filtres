@@ -119,6 +119,24 @@ public partial class MainViewModel : ObservableObject
         RefreshModuleVisibility();
         App.ModuleVisibilityChanged += RefreshModuleVisibility;
         App.CompanyLogoChanged += () => OnPropertyChanged(nameof(LogoImage));
+        LicenseManager.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(OnLicenseChanged);
+    }
+
+    /// <summary>Pied de page (à gauche) : statut de la licence, en couleur d'alerte pour une licence expirée
+    /// ou une démo à 2 jours de la fin ou moins. Mis à jour à chaque changement d'état de la licence.</summary>
+    public string LicenseFooter => LicenseManager.FooterText;
+
+    public System.Windows.Media.Brush LicenseFooterBrush => LicenseManager.FooterIsAlert
+        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF8, 0x71, 0x71))
+        : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x64, 0x74, 0x8B));
+
+    /// <summary>Licence mise à jour (validation, prolongation, expiration, démo...) : recalcule les modules
+    /// autorisés dans le menu sans redémarrer l'application.</summary>
+    private void OnLicenseChanged()
+    {
+        OnPropertyChanged(nameof(LicenseFooter));
+        OnPropertyChanged(nameof(LicenseFooterBrush));
+        RefreshModuleVisibility();
     }
 
     /// <summary>Premier élément sélectionnable du menu défilant (ignore les séparateurs) - sert de repli
@@ -219,6 +237,10 @@ public partial class MainViewModel : ObservableObject
 
         _beltsItem.IsLicensed = LicenseManager.HasFeature("courroies");
         _bearingsItem.IsLicensed = LicenseManager.HasFeature("roulements");
+
+        // Écran d'un module qui vient de devenir non autorisé (expiration, modules retirés) : repli sur
+        // Paramètres, où se trouve la carte Licence.
+        if (SelectedItem is { IsLicensed: false }) SelectedItem = SettingsItem;
     }
 
     /// <summary>Appelé par <see cref="FilterVarietyListViewModel.ToggleEditMode"/> (bouton rouge/vert

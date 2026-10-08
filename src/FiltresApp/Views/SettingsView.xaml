@@ -39,8 +39,12 @@
                 <StackPanel>
                     <TextBlock Text="Licence" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <TextBlock Text="{Binding LicenseStatusText}" Style="{StaticResource SectionText}" Margin="0,0,0,10"/>
-                    <Button Content="Se déconnecter / changer de licence" Style="{StaticResource DangerButton}"
-                            Command="{Binding DisconnectLicenseCommand}" HorizontalAlignment="Left"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Changer de licence" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding ChangeLicenseCommand}" HorizontalAlignment="Left"/>
+                        <Button Content="Se déconnecter" Style="{StaticResource DangerButton}"
+                                Command="{Binding DisconnectLicenseCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 

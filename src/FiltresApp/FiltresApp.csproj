@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -9,9 +9,9 @@
     <AssemblyName>FiltresApp</AssemblyName>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <Version>1.8.3</Version>
+    <Version>1.9.0</Version>
     <Company>TomLine prod&amp;co</Company>
-    <Copyright>© TomLine prod&amp;co by Thomas Guidez</Copyright>
+    <Copyright>Â© TomLine prod&amp;co by Thomas Guidez</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,16 +25,16 @@
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app-logo-white.png" />
-    <!-- Uniquement en Debug (confort de développement local) : le fichier .db ne doit jamais être
-         inclus dans une release publiée (voir Configuration Release / dotnet publish), ni donc dans le
-         .zip distribué. Copiée dans FiltreData\ (et non à la racine) : seul l'exécutable doit rester à
-         la racine du dossier publié, voir AppSettings.DataDirectory. -->
+    <!-- Uniquement en Debug (confort de dÃ©veloppement local) : le fichier .db ne doit jamais Ãªtre
+         inclus dans une release publiÃ©e (voir Configuration Release / dotnet publish), ni donc dans le
+         .zip distribuÃ©. CopiÃ©e dans FiltreData\ (et non Ã  la racine) : seul l'exÃ©cutable doit rester Ã 
+         la racine du dossier publiÃ©, voir AppSettings.DataDirectory. -->
     <None Include="data\filtres.db" CopyToOutputDirectory="PreserveNewest" TargetPath="FiltreData\filtres.db" Condition="'$(Configuration)' != 'Release' AND Exists('data\filtres.db')" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Contrat de licence utilisateur final, intégré à l'exécutable : volontairement PAS copié dans
-         FiltreData\, puisque FiltreData\CLUF.txt n'y est écrit qu'à l'acceptation du contrat au premier
+    <!-- Contrat de licence utilisateur final, intÃ©grÃ© Ã  l'exÃ©cutable : volontairement PAS copiÃ© dans
+         FiltreData\, puisque FiltreData\CLUF.txt n'y est Ã©crit qu'Ã  l'acceptation du contrat au premier
          lancement (voir App.Eula.cs). -->
     <EmbeddedResource Include="Legal\CLUF.txt" LogicalName="FiltresApp.CLUF.txt" />
   </ItemGroup>
