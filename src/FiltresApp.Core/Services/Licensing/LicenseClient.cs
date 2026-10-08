@@ -13,6 +13,9 @@ internal class Rc3
 
     private static readonly string U4 = Yx4.Z("dSxrdSg/Ky8/KS53Pj83NQ==");
 
+    private static readonly string U5 = Yx4.Z("dSxrdTgjKjspKXUqMzQ9");
+    private static readonly string U6 = Yx4.Z("dSxrdTgjKjspKXUoPzc1LD8+");
+
     private static readonly HttpClient H = N();
 
     private static HttpClient N()
@@ -74,7 +77,36 @@ internal class Rc3
             };
         }
 
-        return new Qp6(ok, lic, reason);
+        // Ordre serveur "install_bypass" (réponse de /v1/validate) et nom du client associé.
+        var ib = root.TryGetProperty("commands", out var ce) && ce.ValueKind == JsonValueKind.Array
+                 && ce.EnumerateArray().Any(x => x.ValueKind == JsonValueKind.String && x.GetString() == "install_bypass");
+        var bn = ib ? G1(root, "bypassName") : null;
+
+        return new Qp6(ok, lic, reason, ib, bn);
+    }
+
+    // Ping du mode bypass : renvoie l'éventuel ordre du serveur ("remove_bypass"). Timeout 5 s, erreurs à l'appelant.
+    // customerName omis quand aucun nom n'est lu dans licence.ini.
+    public async Task<string?> M6(string p, string d, string? n, string? cn)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var b = new Dictionary<string, string?> { ["productSlug"] = p, ["deviceId"] = d, ["deviceName"] = n };
+        if (!string.IsNullOrWhiteSpace(cn)) b["customerName"] = cn;
+        using var c = J(b);
+        using var r = await H.PostAsync(U0 + U5, c, cts.Token);
+        var t = await r.Content.ReadAsStringAsync(cts.Token);
+        using var doc = JsonDocument.Parse(t);
+        var root = doc.RootElement;
+        var ok = root.TryGetProperty("ok", out var oe) && oe.ValueKind == JsonValueKind.True;
+        return ok ? G1(root, "command") : null;
+    }
+
+    // Accusé de suppression de licence.ini (après un ordre "remove_bypass").
+    public async Task M7(string p, string d)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var c = J(new { productSlug = p, deviceId = d });
+        using var r = await H.PostAsync(U0 + U6, c, cts.Token);
     }
 
     private static string? G1(JsonElement e, string p) => e.TryGetProperty(p, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;

@@ -5,8 +5,27 @@ namespace FiltresApp;
 
 public partial class App
 {
+    /// <summary>Ordre serveur "remove_bypass" exécuté (licence.ini supprimé) : le flux normal de licence reprend
+    /// sans fermer l'application. Licence stockée valide = on continue ; sinon message, puis fenêtre de saisie
+    /// (qui, annulée, referme l'application comme au démarrage).</summary>
+    private static async void OnBypassRemoved()
+    {
+        try
+        {
+            var o = await LicenseManager.CheckAtStartupAsync();
+            if (o.Mode is not (LicenseMode.Blocked or LicenseMode.Expired)) return;
+
+            System.Windows.MessageBox.Show("Le mode licence gratuite a été désactivé par l'administrateur.",
+                "Licence", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            var w = new LicenseActivationWindow(o.BlockedMessage, o.Mode);
+            if (w.ShowDialog() != true || !w.ActivationSucceeded) Current.Shutdown();
+        }
+        catch { }
+    }
+
     private static bool Qw9()
     {
+        LicenseManager.BypassRemoved += () => Current?.Dispatcher.BeginInvoke(OnBypassRemoved);
         // Task.Run (pas un .GetAwaiter().GetResult() direct) : CheckAtStartupAsync peut faire un vrai
         // appel réseau (voir LicenseManager.Vs) dont la suite voudrait reprendre sur le thread
         // d'interface via son SynchronizationContext - ici bloqué en attente synchrone, avant même que
@@ -33,7 +52,8 @@ public partial class App
     /// sans relancer l'application (les abonnés de LicenseManager.Changed recalculent l'état des modules).</summary>
     public static void StartLicenseRevalidation()
     {
-        if (_licenseTimer is not null || LicenseManager.IsFreeLicense) return;
+        // Le minuteur tourne aussi en mode bypass (licence.ini) : il y sert au ping toutes les 24 h.
+        if (_licenseTimer is not null || LicenseManager.IsGlobalFree) return;
         _licenseTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMinutes(15) };
         _licenseTimer.Tick += async (_, _) =>
         {

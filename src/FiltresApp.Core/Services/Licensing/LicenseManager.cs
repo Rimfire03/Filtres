@@ -25,6 +25,61 @@ public static class LicenseManager
 
     private static void Ch() { try { Changed?.Invoke(); } catch { } }
 
+    /// <summary>Interrupteur global de build : aucun contrôle de licence ni aucun appel réseau.</summary>
+    public static bool IsGlobalFree => Zq1.K2;
+
+    /// <summary>Nom du client lu dans licence.ini (ou reçu du serveur), pour l'affichage "Licence gratuite — nom".</summary>
+    private static volatile string? BypassName;
+
+    /// <summary>Déclenché (thread quelconque) après suppression de licence.ini sur ordre du serveur.</summary>
+    public static event Action? BypassRemoved;
+
+    private static DateTime _lastPing = DateTime.MinValue;
+    private static int _pingBusy;
+    private static bool _installTried;
+
+    /// <summary>Mode bypass (licence.ini présent) : ping best-effort au démarrage puis toutes les 24 h, en arrière-plan,
+    /// timeout 5 s, toute erreur ignorée. Le nom du client est relu dans licence.ini avant chaque ping. Jamais de
+    /// clé de licence dans l'appel. Ordre "remove_bypass" : suppression du fichier, accusé, puis événement
+    /// <see cref="BypassRemoved"/> (l'application relance le flux normal de licence).</summary>
+    public static async Task BypassPingAsync()
+    {
+        if (Zq1.K2 || !Nf8.F1()) return;
+        if (System.Threading.Interlocked.Exchange(ref _pingBusy, 1) == 1) return;
+        try
+        {
+            _lastPing = DateTime.UtcNow;
+            var name = await Task.Run(Nf8.F2);
+            if (name != BypassName) { BypassName = name; Ch(); }
+
+            var d = Dv();
+            var cmd = await Rq.M6(Pz, d, Environment.MachineName, name);
+            if (cmd == "remove_bypass" && Nf8.Rm1())
+            {
+                try { await Rq.M7(Pz, d); } catch { }
+                BypassName = null;
+                try { BypassRemoved?.Invoke(); } catch { }
+            }
+        }
+        catch { }
+        finally { System.Threading.Interlocked.Exchange(ref _pingBusy, 0); }
+    }
+
+    // Ordre "install_bypass" reçu d'un /v1/validate réussi : une seule tentative d'écriture par lancement ;
+    // échec (droits) = licence normale conservée, aucun message. Réussite : ping, puis licence gratuite
+    // immédiatement (la licence stockée n'est pas effacée : ignorée tant que licence.ini existe).
+    private static bool Ib1(Qp6 r)
+    {
+        if (!r.Ib || _installTried || Zq1.K2) return false;
+        _installTried = true;
+        if (!Nf8.W(r.Bn)) return false;
+        BypassName = Nf8.F2();
+        Mode = LicenseMode.Free;
+        Ch();
+        _ = BypassPingAsync();
+        return true;
+    }
+
     public static bool IsFreeLicense => Mode == LicenseMode.Free;
     public static bool IsBlocked => Mode == LicenseMode.Blocked;
     public static bool IsExpired => Mode == LicenseMode.Expired;
@@ -36,7 +91,7 @@ public static class LicenseManager
 
     public static string FooterText => Mode switch
     {
-        LicenseMode.Free => Nf8.F2() is { } n ? $"Licence gratuite — licence accordée à {n}" : "Licence gratuite",
+        LicenseMode.Free => BypassName is { } n ? $"Licence gratuite — {n}" : "Licence gratuite",
         LicenseMode.Active => Bt(Cs?.L),
         LicenseMode.Grace => Bt(Cs?.L) + " (mode hors ligne)",
         LicenseMode.Expired => "Licence expirée",
@@ -68,7 +123,12 @@ public static class LicenseManager
     public static async Task<LicenseCheckOutcome> CheckAtStartupAsync()
     {
         if (Zq1.K2) { Mode = LicenseMode.Free; return new LicenseCheckOutcome(LicenseMode.Free, FooterText); }
-        if (Nf8.F1()) { Mode = LicenseMode.Free; return new LicenseCheckOutcome(LicenseMode.Free, FooterText); }
+        if (Nf8.F1())
+        {
+            Mode = LicenseMode.Free;
+            _ = BypassPingAsync(); // arrière-plan, ne retarde jamais le démarrage
+            return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
+        }
 
         var s = Nf8.L();
         if (s is null || string.IsNullOrWhiteSpace(s.K))
@@ -85,7 +145,11 @@ public static class LicenseManager
     /// Sans effet en licence gratuite (aucun appel réseau).</summary>
     public static async Task<LicenseCheckOutcome> RevalidateAsync()
     {
-        if (Mode == LicenseMode.Free) return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
+        if (Mode == LicenseMode.Free)
+        {
+            if (DateTime.UtcNow - _lastPing >= TimeSpan.FromHours(24)) _ = BypassPingAsync();
+            return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
+        }
 
         var s = Nf8.L();
         if (s is null || string.IsNullOrWhiteSpace(s.K))
@@ -208,6 +272,7 @@ public static class LicenseManager
             Cs = s;
             Mode = LicenseMode.Active;
             Ch();
+            if (Ib1(r)) return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
             return new LicenseCheckOutcome(LicenseMode.Active, FooterText);
         }
 

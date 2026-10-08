@@ -19,7 +19,7 @@ internal class Tu5
     public Vw2? L { get; set; }
 }
 
-internal record Qp6(bool Ok, Vw2? L, string? R);
+internal record Qp6(bool Ok, Vw2? L, string? R, bool Ib = false, string? Bn = null);
 
 public enum LicenseMode { Free, Active, Grace, Blocked, Expired }
 

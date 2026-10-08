@@ -72,6 +72,7 @@ public partial class SettingsViewModel : ObservableObject
         LicenseManager.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             OnPropertyChanged(nameof(LicenseStatusText));
+            OnPropertyChanged(nameof(ShowLicenseButtons));
             OnPropertyChanged(nameof(CanToggleFiltresModule));
             OnPropertyChanged(nameof(CanToggleBeltsModule));
             OnPropertyChanged(nameof(CanToggleBearingsModule));
@@ -133,7 +134,9 @@ public partial class SettingsViewModel : ObservableObject
 
     /// <summary>Carte "Licence" masquée en licence gratuite (flag de build ou licence.ini) : rien à
     /// afficher ni à déconnecter dans ce cas.</summary>
-    public bool ShowLicenseCard => !LicenseManager.IsFreeLicense;
+    public bool ShowLicenseCard => true;
+    /// <summary>Boutons "Changer de licence" / "Se déconnecter" : jamais en licence gratuite (bypass).</summary>
+    public bool ShowLicenseButtons => !LicenseManager.IsFreeLicense;
     public string LicenseStatusText => LicenseManager.FooterText;
 
     /// <summary>"Changer de licence" (par exemple passer d'une démo à une vraie licence) : la nouvelle clé est
