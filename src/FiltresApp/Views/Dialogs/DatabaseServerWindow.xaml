@@ -1,4 +1,4 @@
-<Window x:Class="FiltresApp.Views.Dialogs.DatabaseServerWindow"
+﻿<Window x:Class="FiltresApp.Views.Dialogs.DatabaseServerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Réglages avancés de la base de données"
@@ -91,11 +91,15 @@
                 <!-- Outil de migration -->
                 <Border x:Name="MigrationPanel" Style="{StaticResource CardBorder}" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock Text="Migrer la base actuelle vers le serveur" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Migration entre fichier SQLite et serveur" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
-                                   Text="Copie toutes les données de la base actuellement ouverte vers le serveur ci-dessus. La base actuelle n'est pas modifiée ni supprimée. Si la copie échoue, rien n'est écrit sur le serveur. Demandez aux autres postes de fermer le logiciel pendant la copie."/>
-                        <Button x:Name="MigrateButton" Content="Migrer la base actuelle vers ce serveur..." Style="{StaticResource PrimaryButton}"
-                                HorizontalAlignment="Left" Click="OnMigrateClick"/>
+                                   Text="Copie toutes les données de la base actuellement ouverte vers le serveur ci-dessus. La base actuelle n'est pas modifiée ni supprimée. Si la copie échoue, rien n'est écrit sur le serveur. Demandez aux autres postes de fermer le logiciel pendant la copie. Dans l'autre sens, « Migrer ce serveur vers un fichier SQLite » copie toute la base du serveur ci-dessus dans le fichier SQLite du logiciel (une sauvegarde du fichier existant est faite avant remplacement)."/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="MigrateButton" Content="Migrer la base actuelle vers ce serveur..." Style="{StaticResource PrimaryButton}"
+                                    HorizontalAlignment="Left" Click="OnMigrateClick"/>
+                            <Button x:Name="MigrateToFileButton" Content="Migrer ce serveur vers un fichier SQLite..." Style="{StaticResource SecondaryButton}"
+                                    Margin="8,0,0,0" HorizontalAlignment="Left" Click="OnMigrateToFileClick"/>
+                        </StackPanel>
                         <ProgressBar x:Name="MigrationProgress" IsIndeterminate="True" Height="6" Margin="0,10,0,0" Visibility="Collapsed"/>
                         <TextBlock x:Name="MigrationStatusText" TextWrapping="Wrap" Margin="0,8,0,0"/>
                     </StackPanel>

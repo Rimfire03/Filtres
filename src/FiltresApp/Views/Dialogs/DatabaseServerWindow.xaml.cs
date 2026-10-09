@@ -335,7 +335,67 @@ public partial class DatabaseServerWindow : Window
         }
     }
 
-    private void ShowReport(CopyReport report)
+    /// <summary>Copie toute la base du serveur saisi ci-dessus vers le fichier SQLite du logiciel (chemin des
+    /// Paramètres). Le serveur n'est pas modifié ; un fichier existant est sauvegardé (Save DB) avant remplacement.</summary>
+    private async void OnMigrateToFileClick(object sender, RoutedEventArgs e)
+    {
+        var info = ReadForm();
+        if (info is null) return;
+
+        var source = DbTarget.ForServer(info);
+        var filePath = App.Settings.ResolvedDatabasePath;
+        var destination = DbTarget.ForFile(filePath);
+
+        if (!App.Dialogs.ShowConfirm("Migrer vers un fichier SQLite",
+                $"Toutes les données du serveur :\n{info.Describe()}\n\nvont être copiées dans le fichier SQLite :\n{filePath}\n\n" +
+                "Le serveur reste intact. Continuer ?"))
+            return;
+
+        var progress = new Progress<string>(text => MigrationStatusText.Text = text);
+        var replace = false;
+
+        while (true)
+        {
+            SetBusy(true, "Migration en cours...");
+            try
+            {
+                var report = await Task.Run(() => DatabaseCopier.Copy(source, destination, App.CurrentVersion, replace, progress));
+                SetBusy(false);
+                ShowReport(report, toFile: true);
+                return;
+            }
+            catch (DatabaseCopier.DestinationNotEmptyException ex)
+            {
+                SetBusy(false, "");
+                if (!App.Dialogs.ShowConfirm("Le fichier contient déjà des données",
+                        ex.Message + "\n\nREMPLACER ces données par celles du serveur ? Une sauvegarde du fichier actuel est faite dans le dossier Save DB avant remplacement."))
+                {
+                    MigrationStatusText.Foreground = (Brush)FindResource("BrushDanger");
+                    MigrationStatusText.Text = "Migration annulée : le fichier SQLite n'a pas été modifié.";
+                    return;
+                }
+                try
+                {
+                    await Task.Run(() => new DbContextFactory(destination).CreateBackup("avant-migration-depuis-serveur"));
+                }
+                catch (Exception bex)
+                {
+                    MigrationStatusText.Foreground = (Brush)FindResource("BrushDanger");
+                    MigrationStatusText.Text = "Sauvegarde du fichier actuel impossible, migration annulée : " + Describe(bex);
+                    return;
+                }
+                replace = true;
+            }
+            catch (Exception ex)
+            {
+                SetBusy(false);
+                MigrationStatusText.Foreground = (Brush)FindResource("BrushDanger");
+                MigrationStatusText.Text = "Échec de la migration : " + Describe(ex) + "\nLe serveur n'a pas été modifié.";
+                return;
+            }
+        }
+    }
+    private void ShowReport(CopyReport report, bool toFile = false)
     {
         var lines = report.Tables.Where(t => t.SourceRows > 0 || t.DestinationRows > 0)
             .Select(t => $"{t.Table} : {t.DestinationRows}" + (t.SourceRows == t.DestinationRows ? "" : $" (attendu {t.SourceRows})"));
@@ -345,6 +405,16 @@ public partial class DatabaseServerWindow : Window
             : "Migration terminée MAIS des écarts ont été constatés :\n") + string.Join("\n", lines);
 
         if (!report.IsComplete) return;
+        if (toFile)
+        {
+            if (App.Dialogs.ShowConfirm("Migration terminée",
+                    $"{report.TotalRows} lignes copiées dans le fichier SQLite.{"\n\n"}Utiliser le fichier SQLite dès maintenant ? Le logiciel va redémarrer."))
+            {
+                FileModeRadio.IsChecked = true;
+                SaveSettings(null);
+            }
+            return;
+        }
         if (App.Dialogs.ShowConfirm("Migration terminée",
                 $"{report.TotalRows} lignes copiées vers le serveur.\n\nUtiliser le serveur dès maintenant ? Le logiciel va redémarrer."))
         {
