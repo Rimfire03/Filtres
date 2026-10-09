@@ -15,6 +15,9 @@ public partial class App
     /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
     public static int DatabaseVersion { get; private set; }
 
+    /// <summary>État de l'accès à la base (puce du pied de page), contrôlé régulièrement.</summary>
+    public static DatabaseHealthMonitor DatabaseHealth { get; } = new();
+
     /// <summary>Type de base utilisé, pour le pied de page : « Locale (SQLite) » ou « Serveur PostgreSQL ».</summary>
     public static string DatabaseModeLabel => DbFactory is { IsServer: true }
         ? "Serveur " + DatabaseProviderInfo.DisplayName(DbFactory.Target.Provider)

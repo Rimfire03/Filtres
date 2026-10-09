@@ -19,6 +19,27 @@
                     <TextBlock Text="{Binding Source={x:Static app:App.CurrentVersion}, StringFormat='Core v{0}'}" FontSize="11" Foreground="#64748B"/>
                     <TextBlock Text="{Binding Source={x:Static app:App.DatabaseVersion}, StringFormat='DB: V{0}'}" FontSize="11" Foreground="#64748B" Margin="12,0,0,0"/>
                     <TextBlock Text="{Binding Source={x:Static app:App.DatabaseModeLabel}, StringFormat='· {0}'}" FontSize="11" Foreground="#64748B" Margin="6,0,0,0"/>
+                    <!-- Puce d'état de la base : grise (vérification en cours), verte (accessible), rouge (connexion perdue). -->
+                    <Ellipse Width="9" Height="9" Margin="6,1,0,0" VerticalAlignment="Center"
+                             DataContext="{x:Static app:App.DatabaseHealth}" ToolTip="{Binding Tooltip}"
+                             ToolTipService.ShowDuration="20000">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#94A3B8"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOk}" Value="True">
+                                        <Setter Property="Fill" Value="#16A34A"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsDown}" Value="True">
+                                        <Setter Property="Fill" Value="#DC2626"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="Connexion à la base perdue" FontSize="11" Foreground="#DC2626" FontWeight="SemiBold" Margin="6,0,0,0"
+                               DataContext="{x:Static app:App.DatabaseHealth}"
+                               Visibility="{Binding IsDown, Converter={StaticResource BoolToVis}}"/>
                 </StackPanel>
                 <TextBlock Text="© TomLine prod&amp;co by Thomas Guidez  ·  Suivi de maintenance Filtres" FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"/>
                 <!-- État de la licence, aligné à gauche (voir App.Licensing.cs / LicenseManager). -->

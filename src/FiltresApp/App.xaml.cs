@@ -94,6 +94,7 @@ public partial class App : Application
         mainWindow.Show();
         ShutdownMode = ShutdownMode.OnLastWindowClose;
         StartLicenseRevalidation();
+        DatabaseHealth.Start();
 
         if (IsReadOnly)
             MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);
