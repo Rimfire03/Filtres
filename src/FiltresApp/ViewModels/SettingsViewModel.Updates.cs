@@ -26,6 +26,7 @@ public partial class SettingsViewModel
         UpdateAvailable = false;
         _pendingUpdate = null;
         UpdateStatusMessage = string.Empty;
+        _ = CheckForUpdatesCommand.ExecuteAsync(null);   // vérification immédiate sur le nouveau canal
     }
 
     [RelayCommand]
