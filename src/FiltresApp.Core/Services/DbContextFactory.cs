@@ -1,4 +1,4 @@
-using FiltresApp.Core.Data;
+﻿using FiltresApp.Core.Data;
 using FiltresApp.Core.Data.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -201,7 +201,7 @@ public class DbContextFactory
             {
                 throw new InvalidOperationException(
                     $"Échec de la mise à jour de la base vers la version {migration.Version} ({migration.Description}) : {ex.Message}\n" +
-                    $"La base est restée en version {reached} ; une sauvegarde faite juste avant la mise à jour se trouve à côté du fichier.", ex);
+                    $"La base est restée en version {reached} ; une sauvegarde faite juste avant la mise à jour se trouve dans le dossier « Save DB » de FiltreData.", ex);
             }
             reached = migration.Version;
             ctx.ChangeTracker.Clear();
@@ -297,16 +297,20 @@ public class DbContextFactory
         ctx.Database.ExecuteSqlRaw("""INSERT OR REPLACE INTO "DbInfo" ("Key", "Value") VALUES ('AppVersion', {0});""", appVersion);
     }
 
-    /// <summary>Copie cohérente de la base (VACUUM INTO) avant toute migration, à côté du fichier.</summary>
+    /// <summary>Copie cohérente de la base (VACUUM INTO) avant toute migration, dans le dossier Save DB.</summary>
     private void Backup(FiltresDbContext ctx, int fromVersion) => BackupTo(ctx, $"avant-maj-v{fromVersion}");
 
+    /// <summary>Dossier des sauvegardes automatiques : FiltreData\Save DB (créé au besoin).</summary>
+    public static string BackupDirectory => Path.Combine(AppSettings.DataDirectoryPath, "Save DB");
+
     /// <summary>Copie cohérente de la base avant une opération destructive ; retourne le chemin de la copie.
-    /// Fichier SQLite : à côté de la base. Serveur : fichier SQLite complet dans le dossier des données.</summary>
+    /// Toujours dans FiltreData\Save DB : copie du fichier SQLite, ou fichier SQLite complet pour un serveur.</summary>
     public string CreateBackup(string reason)
     {
+        Directory.CreateDirectory(BackupDirectory);
         if (IsServer)
         {
-            var path = Path.Combine(AppSettings.DataDirectoryPath, $"serveur.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak");
+            var path = Path.Combine(BackupDirectory, $"serveur.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak");
             ExportTo(path);
             return path;
         }
@@ -316,7 +320,9 @@ public class DbContextFactory
 
     private string BackupTo(FiltresDbContext ctx, string reason)
     {
-        var backupPath = $"{_target.FilePath}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
+        Directory.CreateDirectory(BackupDirectory);
+        var backupPath = Path.Combine(BackupDirectory,
+            $"{Path.GetFileName(_target.FilePath)}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak");
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
         return backupPath;
     }

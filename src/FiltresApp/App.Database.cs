@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using FiltresApp.Core.Services;
@@ -129,11 +129,31 @@ public partial class App
 
         DbFactory = new DbContextFactory(target, IsReadOnly);
         CheckDatabaseVersion();
+        BackupOnVersionChange();
         DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
         DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
         PeriodicViewRegistry.Load(Db);
         LoadCompanyLogo();
+    }
+
+    /// <summary>Quand le logiciel a changé de version depuis le dernier démarrage (mise à jour par l'application, MSI ou
+    /// copie manuelle), sauvegarde la base dans FiltreData\Save DB avant qu'elle ne soit ouverte et migrée. Un échec de
+    /// sauvegarde ne bloque pas le démarrage.</summary>
+    private static void BackupOnVersionChange()
+    {
+        if (IsReadOnly || Settings.LastRunVersion == CurrentVersion) return;
+        try
+        {
+            if (!DbFactory.IsNewDatabase())
+                DbFactory.CreateBackup($"avant-version-{CurrentVersion}");
+            Settings.LastRunVersion = CurrentVersion;
+            Settings.Save();
+        }
+        catch
+        {
+            // Réessayé au prochain démarrage.
+        }
     }
 
     /// <summary>Bloque l'ouverture si ce logiciel et la base ne sont pas à la même version : logiciel trop

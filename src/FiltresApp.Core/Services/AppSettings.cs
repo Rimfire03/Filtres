@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FiltresApp.Core.Services;
@@ -18,6 +18,9 @@ public class AppSettings
     /// <summary>Canal de mise à jour : "Main" (dernière release stable) ou "Dev" (dernière release, pré-versions
     /// comprises).</summary>
     public string UpdateChannel { get; set; } = UpdateChannels.Main;
+
+    /// <summary>Version du logiciel au dernier démarrage : si elle change, la base est sauvegardée (Save DB) avant\r\n    /// d'être ouverte par la nouvelle version.</summary>
+    public string? LastRunVersion { get; set; }
 
     /// <summary>Fenêtre "Rattacher des filtres..." : n'afficher par défaut que les filtres dont la dimension
     /// correspond (approximativement) à celle de la ligne. Désactivé : tous les filtres sont affichés.</summary>
