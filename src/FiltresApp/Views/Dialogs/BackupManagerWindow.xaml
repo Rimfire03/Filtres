@@ -33,11 +33,11 @@
                     <ComboBox x:Name="WeekDayCombo" Width="120" SelectionChanged="OnSettingChanged"/>
                     <ComboBox x:Name="MonthDayCombo" Width="70" SelectionChanged="OnSettingChanged"/>
                     <TextBlock Text="À :" VerticalAlignment="Center" Margin="16,0,8,0"/>
-                    <TextBox x:Name="TimeBox" Width="60" TextChanged="OnSettingChanged" ToolTip="Heure au format HH:mm (ex. 02:00)"/>
+                    <TextBox x:Name="TimeBox" Width="90" HorizontalContentAlignment="Center" TextChanged="OnSettingChanged" ToolTip="Heure au format HH:mm (ex. 02:00)"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBlock Text="Nombre de sauvegardes à conserver :" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <TextBox x:Name="KeepBox" Width="60" TextChanged="OnSettingChanged"/>
+                    <TextBox x:Name="KeepBox" Width="90" HorizontalContentAlignment="Center" TextChanged="OnSettingChanged"/>
                     <TextBlock Text="  (0 = illimité ; les plus anciennes sont supprimées, sauf celles cochées « Protégée », qui ne comptent pas dans ce nombre)"
                                Style="{StaticResource SectionText}" VerticalAlignment="Center"/>
                 </StackPanel>
