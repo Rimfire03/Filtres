@@ -58,7 +58,7 @@ Step "dotnet publish"
 if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
 & dotnet publish (Join-Path $root "src\FiltresApp\FiltresApp.csproj") -c Release -r win-x64 `
     --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-    -p:PublishReadyToRun=false -p:EnableCompressionInSingleFile=true -p:DebugType=None `
+    -p:PublishReadyToRun=false -p:EnableCompressionInSingleFile=true -p:DebugType=None $(if ($dev) { "-p:ReleaseChannel=dev" }) `
     --nologo -v quiet | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish a echoue (code $LASTEXITCODE)." }
 

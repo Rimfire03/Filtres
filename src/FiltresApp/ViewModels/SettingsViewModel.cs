@@ -33,7 +33,7 @@ public partial class SettingsViewModel : ObservableObject
     public bool CanToggleBeltsModule => LicenseManager.HasFeature("courroies");
     public bool CanToggleBearingsModule => LicenseManager.HasFeature("roulements");
 
-    public string CurrentVersion => App.CurrentVersion;
+    public string CurrentVersion => App.DisplayVersion;
     public int DatabaseVersion => App.DatabaseVersion;
 
     /// <summary>Taille du fichier de base de données, affichée en Ko ou Mo. Recalculée après tout ce qui

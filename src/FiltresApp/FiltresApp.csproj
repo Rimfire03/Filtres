@@ -14,6 +14,15 @@
     <Copyright>Â© TomLine prod&amp;co by Thomas Guidez</Copyright>
   </PropertyGroup>
 
+  <!-- Canal de publication ("dev" pour les releases de la branche dev, passé par tools\Release.ps1 :
+       -p:ReleaseChannel=dev) : lu par App.DisplayVersion pour afficher la version avec son suffixe. -->
+  <ItemGroup Condition="'$(ReleaseChannel)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ReleaseChannel</_Parameter1>
+      <_Parameter2>$(ReleaseChannel)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
   </ItemGroup>

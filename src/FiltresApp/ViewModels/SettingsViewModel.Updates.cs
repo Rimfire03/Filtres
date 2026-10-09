@@ -41,13 +41,13 @@ public partial class SettingsViewModel
             var info = await App.Updater.CheckForUpdateAsync(App.CurrentVersion, App.Settings.UpdateChannel);
             if (info is null)
             {
-                UpdateStatusMessage = $"Vous utilisez la dernière version ({App.CurrentVersion}).";
+                UpdateStatusMessage = $"Vous utilisez la dernière version ({App.DisplayVersion}).";
             }
             else
             {
                 _pendingUpdate = info;
                 UpdateAvailable = true;
-                UpdateStatusMessage = $"Nouvelle version disponible : {info.Version} (actuelle : {App.CurrentVersion}).";
+                UpdateStatusMessage = $"Nouvelle version disponible : {info.Version} (actuelle : {App.DisplayVersion}).";
             }
         }
         catch (Exception ex)

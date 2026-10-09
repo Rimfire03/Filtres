@@ -16,7 +16,7 @@
             <Grid>
                 <!-- Version de l'application et de la base, tout à droite. -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Source={x:Static app:App.CurrentVersion}, StringFormat='Core v{0}'}" FontSize="11" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding Source={x:Static app:App.DisplayVersion}, StringFormat='Core v{0}'}" FontSize="11" Foreground="#64748B"/>
                     <TextBlock Text="{Binding Source={x:Static app:App.DatabaseVersion}, StringFormat='DB: V{0}'}" FontSize="11" Foreground="#64748B" Margin="12,0,0,0"/>
                     <TextBlock Text="{Binding Source={x:Static app:App.DatabaseModeLabel}, StringFormat='· {0}'}" FontSize="11" Foreground="#64748B" Margin="6,0,0,0"/>
                     <!-- Puce d'état de la base : grise (vérification en cours), verte (accessible), rouge (connexion perdue). -->
@@ -30,6 +30,14 @@
                                     <DataTrigger Binding="{Binding IsOk}" Value="True">
                                         <Setter Property="Fill" Value="#16A34A"/>
                                     </DataTrigger>
+                                    <!-- Accessible mais poste en lecture seule : orange. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsOk}" Value="True"/>
+                                            <Condition Binding="{Binding IsReadOnlyMode}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Fill" Value="#F59E0B"/>
+                                    </MultiDataTrigger>
                                     <DataTrigger Binding="{Binding IsDown}" Value="True">
                                         <Setter Property="Fill" Value="#DC2626"/>
                                     </DataTrigger>

@@ -19,6 +19,20 @@ public partial class App
         }
     }
 
+    /// <summary>Version affichée à l'utilisateur : <see cref="CurrentVersion"/> suivie de « -dev » pour une build
+    /// publiée sur le canal Dev (métadonnée ReleaseChannel posée par tools\Release.ps1).</summary>
+    public static string DisplayVersion
+    {
+        get
+        {
+            var channel = System.Reflection.Assembly.GetExecutingAssembly()
+                .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
+                .OfType<System.Reflection.AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == "ReleaseChannel")?.Value;
+            return string.IsNullOrWhiteSpace(channel) ? CurrentVersion : $"{CurrentVersion}-{channel}";
+        }
+    }
+
     /// <summary>Base de données plus récente que ce logiciel : cherche la dernière version et propose de
     /// l'installer (la base n'est pas touchée, donc pas de sauvegarde). Renvoie true si l'installation a été
     /// lancée (l'appelant quitte alors sans message d'erreur), false s'il faut afficher l'erreur habituelle
@@ -75,7 +89,7 @@ public partial class App
         if (info is null) return;
 
         var proceed = Dialogs.ShowConfirm("Mise à jour disponible",
-            $"Une nouvelle version {info.Version} est disponible (version actuelle : {CurrentVersion}).\n\n" +
+            $"Une nouvelle version {info.Version} est disponible (version actuelle : {DisplayVersion}).\n\n" +
             "Voulez-vous la télécharger et l'installer maintenant ? Une copie de sauvegarde de la base de données sera faite avant toute chose. L'application va se fermer puis redémarrer automatiquement.\n\n" +
             "Vous pouvez désactiver cette vérification automatique dans Paramètres.");
         if (!proceed) return;

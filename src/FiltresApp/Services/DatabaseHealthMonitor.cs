@@ -29,6 +29,9 @@ public partial class DatabaseHealthMonitor : ObservableObject
     /// <summary>Dernier contrôle : base inaccessible (perte de connexion).</summary>
     [ObservableProperty] private bool _isDown;
 
+    /// <summary>Poste en lecture seule (un autre poste écrit dans le fichier) : puce orange quand la base répond.</summary>
+    [ObservableProperty] private bool _isReadOnlyMode;
+
     [ObservableProperty] private string _tooltip = "Vérification de la base en cours...";
 
     public DatabaseHealthMonitor()
@@ -68,7 +71,10 @@ public partial class DatabaseHealthMonitor : ObservableObject
             _downSince = null;
             IsOk = true;
             IsDown = false;
-            Tooltip = $"{(target.IsServer ? "Serveur" : "Base")} accessible - {target.Describe()}\nDernier contrôle : {now:HH:mm:ss}";
+            IsReadOnlyMode = App.IsReadOnly;
+            Tooltip = $"{(target.IsServer ? "Serveur" : "Base")} accessible - {target.Describe()}" +
+                      (App.IsReadOnly ? "\nPoste en LECTURE SEULE : aucune modification n'est enregistrée." : "") +
+                      $"\nDernier contrôle : {now:HH:mm:ss}";
         }
         else
         {
