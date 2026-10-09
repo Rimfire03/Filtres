@@ -1,4 +1,4 @@
-<UserControl x:Class="FiltresApp.Views.HelpView"
+﻿<UserControl x:Class="FiltresApp.Views.HelpView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
@@ -84,13 +84,9 @@
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="Modules activables (Courroies, Roulements)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Modules activables (Courroies, Roulements, MultiSite)" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
-                        Masqués par défaut : à activer dans Paramètres → "Modules". Une fois activés, ils
-                        apparaissent dans le menu défilant avec exactement la même disposition que "Filtres F7
-                        à H14" (familles, historique, clic droit...). Pour un jeu de roulements en
-                        "Entraînement direct", il n'y a pas de roulement volute : le champ correspondant est
-                        grisé à l'édition et affiché en case noire dans le tableau.
+                        Masqués par défaut : à activer dans Paramètres → "Modules" (la roue crantée à côté de chaque module ouvre ses réglages). Courroies et Roulements apparaissent dans le menu défilant avec la même disposition que "Filtres F7 à H14" (familles, historique, clic droit...). Pour un jeu de roulements en "Entraînement direct", il n'y a pas de roulement volute : le champ correspondant est grisé à l'édition et affiché en case noire dans le tableau. Le module MultiSite est décrit plus bas.
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -111,20 +107,45 @@
                 <StackPanel>
                     <TextBlock Text="Lecture seule" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
-                        Un seul poste peut modifier la base à la fois (le premier à l'ouvrir). Les autres
-                        postes s'ouvrent en lecture seule, avec un bandeau jaune de rappel : fermez puis
-                        relancez l'application une fois le premier poste sorti pour reprendre la main.
+                        Avec un fichier SQLite, un seul poste peut modifier la base à la fois (le premier à l'ouvrir). Les autres postes s'ouvrent en lecture seule, avec un bandeau jaune de rappel et une puce orange dans le pied de page : fermez puis relancez l'application une fois le premier poste sorti pour reprendre la main. Avec un serveur de base de données, plusieurs postes peuvent écrire en même temps : il n'y a pas de lecture seule. Une sauvegarde automatique n'est jamais lancée depuis un poste en lecture seule.
                     </TextBlock>
                 </StackPanel>
             </Border>
 
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="Mise à jour" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Mise à jour et canal (Main / Dev)" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
-                        Vérifiée automatiquement au démarrage (désactivable dans Paramètres), ou manuellement
-                        via "Vérifier maintenant". Une copie de sauvegarde de la base de données est faite
-                        avant toute installation.
+                        Vérifiée automatiquement au démarrage (désactivable dans Paramètres), ou manuellement via "Vérifier maintenant". Le sélecteur "Canal" choisit la branche suivie : Main = versions stables, Dev = versions de test (numéro suivi de "-dev"). Changer de canal lance aussitôt une vérification. En repassant de Dev à Main, la dernière version Main n'est proposée que si elle utilise la même version de base de données que votre version actuelle ; sinon un message explique pourquoi. Une copie de sauvegarde de la base est faite avant toute installation.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Serveur de base de données" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Par défaut la base est un fichier SQLite. Paramètres → "Réglages BDD avancés..." permet d'utiliser à la place un serveur (PostgreSQL recommandé, MariaDB / MySQL ou SQL Server) : plusieurs postes écrivent alors en même temps. "Tester la connexion" devient vert si le serveur répond, rouge sinon ; la base est créée sur le serveur si elle n'existe pas et si l'utilisateur en a le droit. Le bloc "Migration" copie toute la base du fichier vers le serveur, ou du serveur vers le fichier SQLite ; la source n'est jamais modifiée et la copie est vérifiée. Le bloc "Dump complet" télécharge toute la base dans un fichier (utilisable comme sauvegarde) et peut le recharger, y compris sur un autre moteur.
+                    </TextBlock>
+                </StackPanel>
+            </Border>            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Puce d'état de la base (pied de page)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Le pied de page indique le type de base (fichier SQLite local ou type de serveur) suivi d'une puce, contrôlée toutes les 15 secondes : grise pendant la vérification, verte si la base répond, orange si elle répond mais que le poste est en lecture seule, rouge si la connexion est perdue (le texte "Connexion à la base perdue" apparaît). Survolez la puce pour le détail.
+                    </TextBlock>
+                </StackPanel>
+            </Border>            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="MultiSite" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Le module MultiSite (Paramètres → "Modules", sous licence) permet de suivre plusieurs sites dans la même base. Chaque site a ses propres données : changements périodiques, encrassement, K7, inventaire, commandes, courroies et roulements. Seuls les Paramètres sont communs. Au démarrage l'application demande le site à ouvrir (ou ouvre directement le site par défaut défini dans les réglages du module, case "Toujours ouvrir ce site"). Avec plusieurs sites, un sélecteur au-dessus de l'année dans le menu de gauche change de site sans redémarrer. Les réglages du module permettent de créer, renommer et supprimer un site ; supprimer un site efface toutes ses données, après confirmation. L'export Excel concerne l'année choisie dans les réglages du module Filtres, pour le site en cours seulement.
+                    </TextBlock>
+                </StackPanel>
+            </Border>            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Sauvegardes automatiques" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Toutes les sauvegardes sont rangées dans le dossier "Save DB" de FiltreData. Paramètres → "Gestion des sauvegardes automatiques..." affiche le tableau des sauvegardes (de la plus récente à la plus ancienne : date, type, source, taille, versions) avec "Sauvegarder maintenant", "Restaurer la sélection...", "Supprimer la sélection" et "Ouvrir le dossier". On y règle une sauvegarde chaque jour, semaine ou mois à l'heure choisie : si l'application était fermée à ce moment, elle la fait à l'ouverture suivante. Le nombre de sauvegardes conservées est réglable (0 = illimité) ; la case "Protégée" met une sauvegarde à l'abri de la suppression automatique. L'application sauvegarde aussi la base à chaque changement de version du logiciel et avant les opérations destructives (suppression de site ou d'historique, vidage de l'inventaire...). Cela fonctionne en mode fichier comme en mode serveur.
                     </TextBlock>
                 </StackPanel>
             </Border>
