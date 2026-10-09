@@ -232,7 +232,7 @@ public partial class App
         var exePath = Environment.ProcessPath;
         if (exePath is not null)
             Process.Start(new ProcessStartInfo { FileName = exePath, UseShellExecute = true });
-        Current.Shutdown();
+        Current.Dispatcher.Invoke(() => Current.Shutdown()); // peut être appelé depuis un thread d'arrière-plan
     }
 
     /// <summary>Construit le contexte d'année partagé par les écrans de suivi : année courante par
