@@ -23,6 +23,10 @@ public class FiltresDbContext : DbContext
 
     public DatabaseProvider Provider => _target.Provider;
 
+    /// <summary>Site affiché (module MultiSite) : toutes les lectures, modifications et suppressions des tables propres à un site sont limitées à ce site (filtre de requête global), et les lignes ajoutées lui sont rattachées. Modifiable à tout moment ; 1 = site principal.</summary>
+    public int CurrentSiteId { get; set; } = 1;
+
+    public DbSet<Site> Sites => Set<Site>();
     public DbSet<PeriodicFilter> PeriodicFilters => Set<PeriodicFilter>();
     public DbSet<FilterReplacement> FilterReplacements => Set<FilterReplacement>();
     public DbSet<K7Location> K7Locations => Set<K7Location>();
@@ -84,6 +88,9 @@ public class FiltresDbContext : DbContext
     // Suivi de la dernière saisie sur serveur (pas de déclencheurs SQLite) : voir DatabaseWriteTracking.
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        foreach (var entry in ChangeTracker.Entries<ISiteScoped>())
+            if (entry.State == EntityState.Added && entry.Entity.SiteId == 0) entry.Entity.SiteId = CurrentSiteId;
+
         var changed = Provider != DatabaseProvider.Sqlite && ChangeTracker.HasChanges();
         var result = base.SaveChanges(acceptAllChangesOnSuccess);
         if (changed && result > 0) DatabaseWriteTracking.StampServer(this);
@@ -188,5 +195,17 @@ public class FiltresDbContext : DbContext
             .WithOne(r => r.BearingUnit)
             .HasForeignKey(r => r.BearingUnitId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // MultiSite : chaque table propre à un site est limitée au site courant du contexte.
+        foreach (var type in modelBuilder.Model.GetEntityTypes().Select(e => e.ClrType).Where(t => typeof(ISiteScoped).IsAssignableFrom(t)).ToList())
+        {
+            var e = System.Linq.Expressions.Expression.Parameter(type, "e");
+            var filter = System.Linq.Expressions.Expression.Lambda(
+                System.Linq.Expressions.Expression.Equal(
+                    System.Linq.Expressions.Expression.Property(e, nameof(ISiteScoped.SiteId)),
+                    System.Linq.Expressions.Expression.Property(System.Linq.Expressions.Expression.Constant(this), nameof(CurrentSiteId))),
+                e);
+            modelBuilder.Entity(type).HasQueryFilter(filter);
+        }
     }
 }

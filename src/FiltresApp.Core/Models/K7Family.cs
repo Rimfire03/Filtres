@@ -1,4 +1,4 @@
-namespace FiltresApp.Core.Models;
+﻿namespace FiltresApp.Core.Models;
 
 /// <summary>Famille de lieux de la "Liste K7" (ex. "Urgences", "AP RDC", "LITS PORTES"...), avec sa
 /// propre périodicité de remplacement. Dans le classeur Excel d'origine, la feuille "Liste K7" n'avait
@@ -6,8 +6,11 @@ namespace FiltresApp.Core.Models;
 /// concaténés dans une ligne de la colonne LIEU (ex. "AP  RDC periodicités  1/4/7/10"), qui servait à la
 /// fois de titre de section et de ligne de décompte. Voir le README, section "Familles K7 et migration"
 /// pour le détail de la reconstitution de ces familles à partir des données déjà importées.</summary>
-public class K7Family
+public class K7Family : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
 
     public string Nom { get; set; } = string.Empty;

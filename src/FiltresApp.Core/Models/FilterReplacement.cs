@@ -1,9 +1,12 @@
-namespace FiltresApp.Core.Models;
+﻿namespace FiltresApp.Core.Models;
 
 /// <summary>Un remplacement réalisé pour un PeriodicFilter, correspondant aux colonnes
 /// "changement réalisé en [mois]" / "Date de changement en [mois]" de la feuille Excel.</summary>
-public class FilterReplacement
+public class FilterReplacement : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public int PeriodicFilterId { get; set; }
     public PeriodicFilter? PeriodicFilter { get; set; }

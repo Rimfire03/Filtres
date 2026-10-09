@@ -77,6 +77,18 @@
                             </StackPanel>
                         </StackPanel>
 
+                        <!-- Sélecteur de site (module MultiSite) : seulement si plusieurs sites existent et que le module est utilisable. -->
+                        <Border Background="#152138" CornerRadius="6" Padding="10,6" Margin="0,16,0,0"
+                                BorderBrush="{StaticResource BrushSidebarBorder}" BorderThickness="1"
+                                Visibility="{Binding ShowSiteSelector, Converter={StaticResource BoolToVis}}">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Left" Text="Site :" Foreground="#94A3B8" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding Sites}" SelectedItem="{Binding SelectedSite}" DisplayMemberPath="Nom"
+                                          Style="{StaticResource SidebarComboBoxStyle}"/>
+                            </DockPanel>
+                        </Border>
+
                         <!-- Sélecteur d'année stylé -->
                         <Border Background="#152138" CornerRadius="6" Padding="10,6" Margin="0,16,0,6"
                                 BorderBrush="{StaticResource BrushSidebarBorder}" BorderThickness="1">

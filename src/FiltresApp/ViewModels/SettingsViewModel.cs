@@ -76,6 +76,8 @@ public partial class SettingsViewModel : ObservableObject
         _showBeltsModule = App.Settings.ShowBeltsModule;
         _showBearingsModule = App.Settings.ShowBearingsModule;
         _showFiltresModule = App.Settings.ShowFiltresModule;
+        _showMultiSiteModule = App.Settings.MultiSiteEnabled;
+        LoadSites();
         LoadHistoryYears();
         InitializePrintColumns();
         InitializeCoverPage();
@@ -89,6 +91,9 @@ public partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(CanToggleFiltresModule));
             OnPropertyChanged(nameof(CanToggleBeltsModule));
             OnPropertyChanged(nameof(CanToggleBearingsModule));
+            OnPropertyChanged(nameof(CanToggleMultiSiteModule));
+            OnPropertyChanged(nameof(MultiSiteToolTip));
+            OnPropertyChanged(nameof(ShowMultiSiteNotLicensed));
         });
     }
 
@@ -182,7 +187,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             var year = SelectedExportYear;
-            var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, year);
+            var path = App.ExcelExport.ExportYear(App.Db, App.Settings.ResolvedPdfExportPath, year, App.Sites.Count > 1 ? App.CurrentSite.Nom : null);
             ExportStatusMessage = $"Export Excel de l'année {year} généré : {path}";
         }
         catch (Exception ex)

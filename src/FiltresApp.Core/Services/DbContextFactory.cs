@@ -28,7 +28,19 @@ public class DbContextFactory
     public DbTarget Target => _target;
     public bool IsServer => _target.IsServer;
 
-    public FiltresDbContext Create() => new(_target, _readOnly);
+    /// <summary>Site affiché par les contextes créés (module MultiSite).</summary>
+    public int SiteId { get; set; } = 1;
+
+    public FiltresDbContext Create() => new(_target, _readOnly) { CurrentSiteId = SiteId };
+
+    /// <summary>Crée le site principal si la table des sites est vide (base neuve).</summary>
+    private static void EnsureDefaultSite(FiltresDbContext ctx)
+    {
+        if (ctx.Sites.Any()) return;
+        ctx.Sites.Add(new Models.Site { Nom = Models.Site.DefaultName });
+        ctx.SaveChanges();
+        ctx.ChangeTracker.Clear();
+    }
 
     // Migrations du schéma : voir Data/Migrations/DatabaseMigrations.cs (règles de rédaction incluses).
 
@@ -160,6 +172,7 @@ public class DbContextFactory
         {
             // Base neuve : EnsureCreated vient de créer directement le schéma le plus récent.
             WriteVersion(ctx, LatestVersion, appVersion);
+            EnsureDefaultSite(ctx);
             DatabaseWriteTracking.EnsureTriggers(ctx);
             return;
         }
@@ -168,6 +181,7 @@ public class DbContextFactory
         var pending = DatabaseMigrations.All.Where(m => m.Version > current).ToList();
         if (pending.Count == 0)
         {
+            EnsureDefaultSite(ctx);
             DatabaseWriteTracking.EnsureTriggers(ctx);
             return;
         }
@@ -192,6 +206,8 @@ public class DbContextFactory
             reached = migration.Version;
             ctx.ChangeTracker.Clear();
         }
+
+        EnsureDefaultSite(ctx);
 
         // Déclencheurs du suivi de la dernière saisie (après les migrations, pour que leurs réécritures de données
         // ne comptent pas comme une saisie).
@@ -222,6 +238,7 @@ public class DbContextFactory
             creator.CreateTables();
             ServerSql.EnsureDbInfo(ctx);
             WriteVersion(ctx, LatestVersion, appVersion);
+            EnsureDefaultSite(ctx);
             return;
         }
 
@@ -245,6 +262,7 @@ public class DbContextFactory
             ctx.ChangeTracker.Clear();
         }
         if (reached < LatestVersion) WriteVersion(ctx, LatestVersion, appVersion);
+        EnsureDefaultSite(ctx);
     }
 
     private int ReadVersion(FiltresDbContext ctx)

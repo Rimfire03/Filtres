@@ -1,12 +1,15 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FiltresApp.Core.Models;
 
 /// <summary>Feuille "Liste K7" : table de référence des lieux pour les filtres G3 type K7.
 /// Chaque lieu est rattaché à une <see cref="K7Family"/> (famille + périodicité), voir README, section
 /// "Familles K7 et migration".</summary>
-public class K7Location
+public class K7Location : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public string Lieu { get; set; } = string.Empty;
     public string? NumeroPorte { get; set; }

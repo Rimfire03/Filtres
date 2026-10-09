@@ -1,12 +1,15 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FiltresApp.Core.Models;
 
 /// <summary>Courroie d'une centrale (menu "Paramètres", module activable "Courroies") : pas de périodicité
 /// mensuelle fixe, juste un historique de remplacements successifs (nombre changé + date) - même principe
 /// que <see cref="DynamicFilter"/> (menu "Filtres F7 à H14"), sans notion de variété (un seul module).</summary>
-public class Belt : IFamilyTrackedItem
+public class Belt : IFamilyTrackedItem, ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
 
     public string Location { get; set; } = string.Empty;
@@ -57,8 +60,11 @@ public class Belt : IFamilyTrackedItem
     IEnumerable<IDatedReplacement> IFamilyTrackedItem.DatedReplacements => Replacements;
 }
 
-public class BeltReplacement : IDatedReplacement
+public class BeltReplacement : IDatedReplacement, ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public int BeltId { get; set; }
     public Belt? Belt { get; set; }
@@ -87,8 +93,11 @@ public class BeltReplacement : IDatedReplacement
 }
 
 /// <summary>Famille de courroies, créée à la main et attribuée manuellement à chaque courroie.</summary>
-public class BeltFamily : INamedFamily
+public class BeltFamily : INamedFamily, ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public string Nom { get; set; } = string.Empty;
 }

@@ -1,12 +1,15 @@
-namespace FiltresApp.Core.Models;
+﻿namespace FiltresApp.Core.Models;
 
 /// <summary>Une vue du menu dépliant « Changement filtre périodique » (barre latérale) : G4 plissés, G4 plan, G3
 /// et Charbon sont les quatre vues d'origine (<see cref="Category"/> renseignée), l'utilisateur peut en créer
 /// d'autres (<see cref="Category"/> nulle) qui fonctionnent comme une vue G4 (suivi mensuel, familles de
 /// Commande avec besoin calculé). Chaque vue a son titre, son icône et son ordre modifiables. Même principe que
 /// <see cref="FilterVariety"/> pour le menu « Changement sur encrassement ».</summary>
-public class PeriodicView
+public class PeriodicView : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public string Nom { get; set; } = string.Empty;
 

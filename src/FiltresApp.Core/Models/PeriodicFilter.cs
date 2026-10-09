@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using FiltresApp.Core.Services;
 
 namespace FiltresApp.Core.Models;
@@ -7,8 +7,11 @@ namespace FiltresApp.Core.Models;
 /// Filtre à périodicité mensuelle fixe : G4 plissé, G4 plan, G3, Charbon.
 /// Correspond aux feuilles Excel "Filtres G4 plissés", "Filtres G4 plan", "Filtres G3", "Charbon".
 /// </summary>
-public class PeriodicFilter
+public class PeriodicFilter : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public FilterCategory Category { get; set; }
 

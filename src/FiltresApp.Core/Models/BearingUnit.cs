@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FiltresApp.Core.Models;
 
@@ -6,8 +6,11 @@ namespace FiltresApp.Core.Models;
 /// périodicité mensuelle fixe, un historique de remplacements où chaque enregistrement précise lesquels
 /// des trois roulements (avant / arrière / volute) ont été changés à cette date - même principe que
 /// <see cref="DynamicFilter"/> (menu "Filtres F7 à H14"), sans notion de variété (un seul module).</summary>
-public class BearingUnit : IFamilyTrackedItem
+public class BearingUnit : IFamilyTrackedItem, ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
 
     public string Location { get; set; } = string.Empty;
@@ -54,8 +57,11 @@ public class BearingUnit : IFamilyTrackedItem
 
 /// <summary>Un enregistrement de changement : la date, et lesquels des trois roulements ont été changés ce
 /// jour-là (au moins un, choisi à la saisie - voir BearingListViewModel.AddReplacement).</summary>
-public class BearingReplacement : IDatedReplacement
+public class BearingReplacement : IDatedReplacement, ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public int BearingUnitId { get; set; }
     public BearingUnit? BearingUnit { get; set; }
@@ -80,8 +86,11 @@ public class BearingReplacement : IDatedReplacement
 }
 
 /// <summary>Famille de jeux de roulements, créée à la main et attribuée manuellement à chaque ligne.</summary>
-public class BearingFamily : INamedFamily
+public class BearingFamily : INamedFamily, ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public string Nom { get; set; } = string.Empty;
 }

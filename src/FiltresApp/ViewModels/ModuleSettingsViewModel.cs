@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace FiltresApp.ViewModels;
 
-public enum ModuleSettingsScope { Filtre, Belts, Bearings }
+public enum ModuleSettingsScope { Filtre, Belts, Bearings, MultiSite }
 
 /// <summary>Écran "Paramètres du module..." atteint via la roue dentée à côté de chaque case "Activer le
 /// module..." de l'écran Paramètres (voir SettingsView.xaml, carte "Modules") : regroupe les réglages
@@ -28,13 +28,15 @@ public partial class ModuleSettingsViewModel : ObservableObject
         ModuleSettingsScope.Filtre => "Paramètres du module « Filtre »",
         ModuleSettingsScope.Belts => "Paramètres du module « Courroies »",
         ModuleSettingsScope.Bearings => "Paramètres du module « Roulements »",
+        ModuleSettingsScope.MultiSite => "Paramètres du module « MultiSite »",
         _ => "Paramètres du module"
     };
 
     /// <summary>Seul le module "Filtre" a des réglages propres pour l'instant (Courroies / Roulements
     /// affichent un message d'attente) - voir ModuleSettingsView.xaml.</summary>
     public bool IsFiltre => Scope == ModuleSettingsScope.Filtre;
-    public bool IsOther => !IsFiltre;
+    public bool IsMultiSite => Scope == ModuleSettingsScope.MultiSite;
+    public bool IsOther => Scope is ModuleSettingsScope.Belts or ModuleSettingsScope.Bearings;
 
     /// <summary>"← Retour aux Paramètres" (en haut de l'écran).</summary>
     [RelayCommand]

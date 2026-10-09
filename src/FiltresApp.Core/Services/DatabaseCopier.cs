@@ -45,7 +45,10 @@ public static class DatabaseCopier
             .Where(e => !e.IsOwned() && e.GetTableName() is not null).ToList());
 
         // Destination déjà remplie ?
-        var existing = ordered.Sum(e => Invoke<int>(nameof(CountRows), e, dst));
+        // Le site principal créé d'office dans une base neuve ne compte pas comme des données (il est remplacé par
+        // les sites de la source).
+        var existing = ordered.Where(e => e.ClrType != typeof(Models.Site)).Sum(e => Invoke<int>(nameof(CountRows), e, dst));
+        var hasAnyRow = existing > 0 || ordered.Sum(e => Invoke<int>(nameof(CountRows), e, dst)) > 0;
         if (existing > 0 && !replaceDestination)
             throw new DestinationNotEmptyException(
                 $"La base de destination contient déjà des données ({existing} lignes). Elle doit être vide pour recevoir la copie.");
@@ -55,7 +58,7 @@ public static class DatabaseCopier
         {
             try
             {
-                if (existing > 0)
+                if (hasAnyRow)
                 {
                     progress?.Report("Vidage de la base de destination...");
                     foreach (var e in Enumerable.Reverse(ordered)) Invoke<int>(nameof(DeleteAll), e, dst);
@@ -115,14 +118,14 @@ public static class DatabaseCopier
     }
 
     private static int CountRows<T>(FiltresDbContext ctx, IEntityType _) where T : class =>
-        ctx.Set<T>().AsNoTracking().Count();
+        ctx.Set<T>().IgnoreQueryFilters().AsNoTracking().Count();
 
     private static int DeleteAll<T>(FiltresDbContext ctx, IEntityType _) where T : class =>
-        ctx.Set<T>().ExecuteDelete();
+        ctx.Set<T>().IgnoreQueryFilters().ExecuteDelete();
 
     private static int CopyTable<T>(FiltresDbContext src, FiltresDbContext dst, IEntityType entity) where T : class
     {
-        var rows = src.Set<T>().AsNoTracking().ToList();
+        var rows = src.Set<T>().IgnoreQueryFilters().AsNoTracking().ToList();
         if (rows.Count == 0) return 0;
 
         var table = entity.GetTableName()!;
@@ -157,6 +160,8 @@ public static class DatabaseCopier
     }
 
     /// <summary>Tables dans un ordre où chaque table passe après celles qu'elle référence (clés étrangères).</summary>
+    internal static List<IEntityType> OrderForCopy(List<IEntityType> entities) => OrderByDependencies(entities);
+
     private static List<IEntityType> OrderByDependencies(List<IEntityType> entities)
     {
         var result = new List<IEntityType>();

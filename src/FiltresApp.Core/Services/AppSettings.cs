@@ -38,6 +38,15 @@ public class AppSettings
     public bool ShowBeltsModule { get; set; } = false;
     public bool ShowBearingsModule { get; set; } = false;
 
+    /// <summary>Module « MultiSite » (nécessite la fonctionnalité de licence « multisite ») : plusieurs sites aux données séparées, seuls les Paramètres sont communs.</summary>
+    public bool MultiSiteEnabled { get; set; } = false;
+
+    /// <summary>Site ouvert automatiquement au démarrage (null = demander le site à chaque ouverture).</summary>
+    public int? DefaultSiteId { get; set; }
+
+    /// <summary>Dernier site ouvert : sert de site actif quand le module n'est plus utilisable (désactivé ou hors licence).</summary>
+    public int? LastSiteId { get; set; }
+
     /// <summary>Module "Filtre" (G4 plissés, G4 plan, G3, Charbon, F7 à H14, Liste K7, Inventaire,
     /// Commande - considérés comme un seul module) : activé par défaut (fonctionnalité d'origine de
     /// l'application, contrairement aux modules Courroies / Roulements ci-dessus).</summary>

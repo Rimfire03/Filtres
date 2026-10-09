@@ -1,4 +1,4 @@
-namespace FiltresApp.Core.Models;
+﻿namespace FiltresApp.Core.Models;
 
 /// <summary>Table de liaison many-to-many entre une ligne de "Commande chmy" / "pour devis"
 /// (<see cref="OrderLine"/>) et un filtre à périodicité (<see cref="PeriodicFilter"/> : G4 plissé,
@@ -6,8 +6,11 @@ namespace FiltresApp.Core.Models;
 /// l'écran "Commande chmy"/"pour devis"), pas de matching automatique par dimension. Il sert à calculer
 /// automatiquement le besoin semestriel (<see cref="Services.OrderNeedCalculationService"/>) de la ligne
 /// de commande à partir des filtres qui lui sont rattachés.</summary>
-public class OrderLinePeriodicFilter
+public class OrderLinePeriodicFilter : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
 
     public int OrderLineId { get; set; }

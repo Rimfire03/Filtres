@@ -48,6 +48,19 @@ internal static class ServerSql
                 $"INSERT INTO {table} ({Q(p, "Key")}, {Q(p, "Value")}) VALUES ({{0}}, {{1}})", key, value);
     }
 
+    /// <summary>La colonne existe-t-elle dans la table (schéma courant) ?</summary>
+    public static bool ColumnExists(FiltresDbContext ctx, string table, string column)
+    {
+        var sql = ctx.Provider switch
+        {
+            DatabaseProvider.PostgreSql => """SELECT count(*)::int AS "Value" FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = {0} AND column_name = {1}""",
+            DatabaseProvider.MariaDb => "SELECT CAST(count(*) AS SIGNED) AS `Value` FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = {0} AND column_name = {1}",
+            DatabaseProvider.SqlServer => "SELECT CAST(count(*) AS int) AS [Value] FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = {0} AND COLUMN_NAME = {1}",
+            _ => throw new NotSupportedException()
+        };
+        return ctx.Database.SqlQueryRaw<int>(sql, table, column).AsEnumerable().First() > 0;
+    }
+
     /// <summary>La base du serveur contient-elle déjà les tables de l'application ?</summary>
     public static bool HasAppTables(FiltresDbContext ctx)
     {

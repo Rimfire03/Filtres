@@ -26,10 +26,15 @@
                                   ToolTip="Nécessite une licence couvrant ce module"/>
                         <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenBeltsModuleSettingsCommand}" ToolTip="Paramètres du module « Courroies »"/>
                     </DockPanel>
-                    <DockPanel LastChildFill="False">
+                    <DockPanel Margin="0,0,0,4" LastChildFill="False">
                         <CheckBox DockPanel.Dock="Left" Content="Activer le module « Roulements »" IsChecked="{Binding ShowBearingsModule}" IsEnabled="{Binding CanToggleBearingsModule}" VerticalAlignment="Center"
                                   ToolTip="Nécessite une licence couvrant ce module"/>
                         <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenBearingsModuleSettingsCommand}" ToolTip="Paramètres du module « Roulements »"/>
+                    </DockPanel>
+                    <DockPanel LastChildFill="False">
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « MultiSite » (plusieurs sites aux données séparées)" IsChecked="{Binding ShowMultiSiteModule}" IsEnabled="{Binding CanToggleMultiSiteModule}" VerticalAlignment="Center"
+                                  ToolTip="{Binding MultiSiteToolTip}" ToolTipService.ShowOnDisabled="True"/>
+                        <Button DockPanel.Dock="Right" Content="⚙" FontSize="15" Padding="10,4" Style="{StaticResource SecondaryButton}" Command="{Binding OpenMultiSiteModuleSettingsCommand}" ToolTip="Paramètres du module « MultiSite »"/>
                     </DockPanel>
                 </StackPanel>
             </Border>

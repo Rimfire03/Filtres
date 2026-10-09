@@ -230,11 +230,11 @@ public partial class App
     /// changement de chemin de base de données (Paramètres) : un simple rechargement du contexte ne
     /// suffirait pas, tous les écrans déjà ouverts (barre latérale, année consultée...) gardant sinon des
     /// données de l'ancienne base en mémoire.</summary>
-    public static void Restart()
+    public static void Restart(string? arguments = null)
     {
         var exePath = Environment.ProcessPath;
         if (exePath is not null)
-            Process.Start(new ProcessStartInfo { FileName = exePath, UseShellExecute = true });
+            Process.Start(new ProcessStartInfo { FileName = exePath, Arguments = arguments ?? string.Empty, UseShellExecute = true });
         Current.Dispatcher.Invoke(() => Current.Shutdown()); // peut être appelé depuis un thread d'arrière-plan
     }
 

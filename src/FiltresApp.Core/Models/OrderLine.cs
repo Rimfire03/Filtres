@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using FiltresApp.Core.Services;
 
 namespace FiltresApp.Core.Models;
@@ -17,8 +17,11 @@ public enum OrderDocumentType
 /// <see cref="OrderDocumentType.CommandeChmy"/>), avec des colonnes de grille différentes adaptées à
 /// chaque usage. L'ancienne entité <see cref="InventoryLine"/> reste en base (données historiques
 /// préservées) mais n'est plus utilisée par l'interface.</para></summary>
-public class OrderLine
+public class OrderLine : ISiteScoped
 {
+    /// <summary>Site auquel appartient la ligne (module MultiSite, voir <see cref="Site"/>).</summary>
+    public int SiteId { get; set; }
+
     public int Id { get; set; }
     public OrderDocumentType DocumentType { get; set; }
     public int Ordre { get; set; }

@@ -83,6 +83,12 @@ public partial class App : Application
             return;
         }
 
+        if (!ChooseStartupSite(e.Args))
+        {
+            Shutdown(-1);
+            return;
+        }
+
         Dialogs = new DialogService();
         Printer = new PrintService();
         PdfExport = new PdfExportService();

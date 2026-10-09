@@ -26,7 +26,8 @@ public class ExcelExportService
         return year < today.Year || (year == today.Year && month < today.Month);
     }
 
-    public string ExportYear(FiltresDbContext ctx, string exportFolder, int year)
+    /// <summary>Exporte l'année <paramref name="year"/> du site courant du contexte (module MultiSite : les données des autres sites ne sont jamais exportées).</summary>
+    public string ExportYear(FiltresDbContext ctx, string exportFolder, int year, string? siteName = null)
     {
         Directory.CreateDirectory(exportFolder);
 
@@ -39,7 +40,8 @@ public class ExcelExportService
             AddDynamicSheet(workbook, ctx, variety);
 
         var now = DateTime.Now;
-        var fileName = $"Suivi filtres {year} du {now:dd.MM.yyyy} a {now.Hour}.{now.Minute}.xlsx";
+        var sitePart = string.IsNullOrWhiteSpace(siteName) ? "" : " - " + string.Concat(siteName.Split(Path.GetInvalidFileNameChars())).Trim();
+        var fileName = $"Suivi filtres {year}{sitePart} du {now:dd.MM.yyyy} a {now.Hour}.{now.Minute}.xlsx";
         var fullPath = Path.Combine(exportFolder, fileName);
         workbook.SaveAs(fullPath);
         return fullPath;

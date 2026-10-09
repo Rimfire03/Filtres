@@ -53,10 +53,28 @@ public partial class MainViewModel : ObservableObject
     public NavigationItem FiltreSettingsItem { get; private set; } = null!;
     public NavigationItem BeltsSettingsItem { get; private set; } = null!;
     public NavigationItem BearingsSettingsItem { get; private set; } = null!;
+    public NavigationItem MultiSiteSettingsItem { get; private set; } = null!;
 
     /// <summary>Année consultée, partagée par tous les écrans de suivi de filtres (remplace l'ancienne
     /// remise à zéro annuelle : changer l'année ne supprime rien, l'historique reste consultable).</summary>
     public YearContext YearContext => App.YearContext;
+
+    /// <summary>Sélecteur de site (module MultiSite), au-dessus du sélecteur d'année : visible seulement si le module est utilisable (activé et couvert par la licence) et que plusieurs sites existent.</summary>
+    public IReadOnlyList<Site> Sites => App.Sites;
+    public bool ShowSiteSelector => App.MultiSiteAvailable;
+
+    public Site? SelectedSite
+    {
+        get => App.Sites.FirstOrDefault(s => s.Id == App.CurrentSite.Id);
+        set
+        {
+            if (value is null || value.Id == App.CurrentSite.Id) return;
+            if (App.Dialogs.ShowConfirm("Changer de site", $"Ouvrir le site « {value.Nom} » ? Le logiciel va redémarrer."))
+                App.SwitchSite(value.Id);
+            else
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(() => OnPropertyChanged(nameof(SelectedSite))); // remet l'ancien choix
+        }
+    }
 
     [ObservableProperty] private NavigationItem? _selectedItem;
     [ObservableProperty] private object? _currentViewModel;
@@ -114,11 +132,20 @@ public partial class MainViewModel : ObservableObject
             () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Belts));
         BearingsSettingsItem = new NavigationItem("Paramètres du module Roulements", "⚙",
             () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Bearings));
+        MultiSiteSettingsItem = new NavigationItem("Paramètres du module MultiSite", "⚙",
+            () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.MultiSite));
 
         NavigationItems = new ObservableCollection<NavigationItem>();
         RefreshModuleVisibility();
         App.ModuleVisibilityChanged += RefreshModuleVisibility;
         App.CompanyLogoChanged += () => OnPropertyChanged(nameof(LogoImage));
+        App.SitesChanged += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            OnPropertyChanged(nameof(Sites));
+            OnPropertyChanged(nameof(SelectedSite));
+            OnPropertyChanged(nameof(ShowSiteSelector));
+        });
+        App.ModuleVisibilityChanged += () => OnPropertyChanged(nameof(ShowSiteSelector));
         LicenseManager.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(OnLicenseChanged);
     }
 
@@ -136,6 +163,7 @@ public partial class MainViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(LicenseFooter));
         OnPropertyChanged(nameof(LicenseFooterBrush));
+        OnPropertyChanged(nameof(ShowSiteSelector));
         RefreshModuleVisibility();
     }
 

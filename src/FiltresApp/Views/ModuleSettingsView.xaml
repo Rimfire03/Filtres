@@ -16,6 +16,40 @@
             <TextBlock Text="Aucun réglage spécifique pour ce module pour l'instant." Style="{StaticResource SectionText}" Margin="0,12,0,0"
                        Visibility="{Binding IsOther, Converter={StaticResource BoolToVis}}"/>
 
+            <!-- MultiSite : gestion des sites (création, renommage, suppression avec nettoyage, site par défaut). -->
+            <StackPanel Visibility="{Binding IsMultiSite, Converter={StaticResource BoolToVis}}">
+                <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0" IsEnabled="{Binding Settings.CanToggleMultiSiteModule}"
+                        ToolTip="{Binding Settings.MultiSiteToolTip}" ToolTipService.ShowOnDisabled="True">
+                    <StackPanel>
+                        <TextBlock Text="Sites" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                   Text="Chaque site a ses propres changements de filtre périodique et sur encrassement, Liste K7, Inventaire, Commande, courroies et roulements. Seuls les Paramètres sont communs. Un nouveau site est vide. Le sélecteur de site (barre latérale) n'apparaît que lorsque plusieurs sites existent."/>
+                        <TextBlock Text="{Binding Settings.MultiSiteToolTip}" Foreground="{StaticResource BrushDanger}" Margin="0,0,0,8" TextWrapping="Wrap"
+                                   Visibility="{Binding Settings.ShowMultiSiteNotLicensed, Converter={StaticResource BoolToVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Settings.SiteRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,0,0,6" LastChildFill="True">
+                                        <Button DockPanel.Dock="Right" Content="Supprimer" Style="{StaticResource DangerButton}" Margin="6,0,0,0"
+                                                Command="{Binding DataContext.Settings.DeleteSiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <Button DockPanel.Dock="Right" Content="Renommer" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"
+                                                Command="{Binding DataContext.Settings.RenameSiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <Button DockPanel.Dock="Right" Content="Par défaut" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"
+                                                ToolTip="Ouvrir automatiquement ce site au démarrage (un second clic retire le site par défaut)"
+                                                Command="{Binding DataContext.Settings.SetDefaultSiteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Ajouter un site..." Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                Command="{Binding Settings.AddSiteCommand}"/>
+                        <TextBlock Text="{Binding Settings.DefaultSiteDisplay}" Style="{StaticResource SectionText}" Margin="0,12,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Settings.SiteStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
             <StackPanel Visibility="{Binding IsFiltre, Converter={StaticResource BoolToVis}}">
                 <!-- Titres, icônes et état plié / déplié par défaut des menus dépliants, des vues « Changement
                      filtre périodique » et des variétés « Changement sur encrassement » (SettingsViewModel.Menus.cs). -->
