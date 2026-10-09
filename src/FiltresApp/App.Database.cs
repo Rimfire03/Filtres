@@ -15,6 +15,11 @@ public partial class App
     /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
     public static int DatabaseVersion { get; private set; }
 
+    /// <summary>Type de base utilisé, pour le pied de page : « Locale (SQLite) » ou « Serveur PostgreSQL ».</summary>
+    public static string DatabaseModeLabel => DbFactory is { IsServer: true }
+        ? "Serveur " + DatabaseProviderInfo.DisplayName(DbFactory.Target.Provider)
+        : "Locale (SQLite)";
+
     /// <summary>Tant qu'aucun fichier de base de données n'existe à l'emplacement configuré (ex. tout
     /// premier lancement après un clone du dépôt, qui ne contient volontairement aucune DB), propose à
     /// l'utilisateur d'en créer une nouvelle (vide) ou de choisir un fichier .db existant (ex. une

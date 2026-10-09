@@ -131,18 +131,22 @@ public partial class DatabaseServerWindow : Window
 
         TestResultText.Foreground = (Brush)FindResource("BrushTextSecondary");
         TestResultText.Text = "Connexion en cours...";
+        TestButton.ClearValue(BackgroundProperty);
+        TestButton.ClearValue(ForegroundProperty);
         TestButton.IsEnabled = false;
         try
         {
             var result = await Task.Run(() => new DbContextFactory(DbTarget.ForServer(info)).TestConnection(timeoutSeconds: 8));
             if (!result.DatabaseExists && result.CanCreateDatabase == false)
             {
+                SetTestButtonState(ok: false);
                 TestResultText.Foreground = (Brush)FindResource("BrushDanger");
                 TestResultText.Text = $"Serveur joignable (version {result.ServerInfo}) mais la base « {info.Database} » n'existe pas et l'utilisateur « {info.UserName} » n'a pas le droit de créer une base. " +
                                       "Créez-la sur le serveur, ou donnez-lui ce droit.";
             }
             else
             {
+                SetTestButtonState(ok: true);
                 TestResultText.Foreground = (Brush)FindResource("BrushPrimary");
                 TestResultText.Text = $"Connexion réussie (version {result.ServerInfo}). " + (!result.DatabaseExists
                     ? $"La base « {info.Database} » n'existe pas encore : elle sera créée automatiquement" + (result.CanCreateDatabase == true ? "." : " (si l'utilisateur en a le droit).")
@@ -151,6 +155,7 @@ public partial class DatabaseServerWindow : Window
         }
         catch (Exception ex)
         {
+            SetTestButtonState(ok: false);
             TestResultText.Foreground = (Brush)FindResource("BrushDanger");
             TestResultText.Text = "Échec de la connexion : " + Describe(ex);
         }
@@ -158,6 +163,13 @@ public partial class DatabaseServerWindow : Window
         {
             TestButton.IsEnabled = true;
         }
+    }
+
+    /// <summary>Bouton « Tester la connexion » : vert si le test a réussi, rouge sinon.</summary>
+    private void SetTestButtonState(bool ok)
+    {
+        TestButton.Background = new SolidColorBrush(ok ? Color.FromRgb(0x16, 0xA3, 0x4A) : Color.FromRgb(0xDC, 0x26, 0x26));
+        TestButton.Foreground = Brushes.White;
     }
 
     private async void OnMigrateClick(object sender, RoutedEventArgs e)
