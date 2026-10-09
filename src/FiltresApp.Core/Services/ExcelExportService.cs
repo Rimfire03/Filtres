@@ -116,9 +116,9 @@ public class ExcelExportService
 
         Finish(ws, headers.Count, row - 1);
 
-        // Séparation épaisse après « Périodicité » (5e colonne), posée après le quadrillage fin ; les bandeaux
-        // de famille fusionnés en sont exclus.
-        const int periodicityCol = 5;
+        // Séparation épaisse juste avant les colonnes de remplacement (après « Périodicité », ou après « Compteur
+        // d'heures » pour Charbon), posée après le quadrillage fin ; les bandeaux de famille fusionnés en sont exclus.
+        var periodicityCol = firstMonthCol - 1;
         for (var r = 1; r < row; r++)
             if (!familyRows.Contains(r))
                 ws.Cell(r, periodicityCol).Style.Border.RightBorder = XLBorderStyleValues.Thick;
