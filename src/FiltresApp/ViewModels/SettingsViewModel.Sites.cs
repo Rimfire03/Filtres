@@ -149,8 +149,10 @@ public partial class SettingsViewModel
 
             if (row.Id == App.CurrentSite.Id)
             {
-                App.Dialogs.ShowMessage("Site supprimé", $"Le site « {row.Nom} » (qui était ouvert) a été supprimé. Le logiciel redémarre.");
-                App.Restart();
+                // Le site ouvert est supprimé : on bascule sur le site par défaut ou le premier restant.
+                App.RefreshSites();
+                var next = App.Sites.FirstOrDefault(s => s.Id == App.Settings.DefaultSiteId) ?? App.Sites[0];
+                App.SwitchSite(next.Id);
                 return;
             }
 

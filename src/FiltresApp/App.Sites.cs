@@ -94,7 +94,21 @@ public partial class App
         }
     }
 
-    /// <summary>Bascule vers un autre site : redémarre l'application sur ce site (tous les écrans repartent des
-    /// données du nouveau site, sans mélange possible avec l'ancien).</summary>
-    public static void SwitchSite(int siteId) => Restart($"--site={siteId}");
+    /// <summary>Bascule vers un autre site sans redémarrer : le filtre de site du contexte change, puis la fenêtre principale reçoit un nouveau modèle de vue (menus, vues, années du nouveau site) ; l'ancien est détaché des événements globaux.</summary>
+    public static void SwitchSite(int siteId)
+    {
+        var site = Sites.FirstOrDefault(s => s.Id == siteId);
+        if (site is null || site.Id == CurrentSite.Id) return;
+
+        UseSite(site);
+        YearContext = CreateYearContext();
+        SitesChanged?.Invoke();
+
+        if (Current.MainWindow is { } window)
+        {
+            var old = window.DataContext as FiltresApp.ViewModels.MainViewModel;
+            window.DataContext = new FiltresApp.ViewModels.MainViewModel();
+            old?.Dispose();
+        }
+    }
 }

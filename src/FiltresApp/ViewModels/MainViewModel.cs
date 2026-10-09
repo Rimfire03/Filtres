@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     public ObservableCollection<NavigationItem> NavigationItems { get; }
 
@@ -69,10 +69,9 @@ public partial class MainViewModel : ObservableObject
         set
         {
             if (value is null || value.Id == App.CurrentSite.Id) return;
-            if (App.Dialogs.ShowConfirm("Changer de site", $"Ouvrir le site « {value.Nom} » ? Le logiciel va redémarrer."))
-                App.SwitchSite(value.Id);
-            else
-                System.Windows.Application.Current.Dispatcher.BeginInvoke(() => OnPropertyChanged(nameof(SelectedSite))); // remet l'ancien choix
+            // Différé : la fenêtre change de modèle de vue, ce qui ne doit pas se faire pendant la mise à jour de la liaison.
+            var id = value.Id;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(() => App.SwitchSite(id));
         }
     }
 
@@ -137,16 +136,32 @@ public partial class MainViewModel : ObservableObject
 
         NavigationItems = new ObservableCollection<NavigationItem>();
         RefreshModuleVisibility();
-        App.ModuleVisibilityChanged += RefreshModuleVisibility;
-        App.CompanyLogoChanged += () => OnPropertyChanged(nameof(LogoImage));
-        App.SitesChanged += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+        _onLogoChanged = () => OnPropertyChanged(nameof(LogoImage));
+        _onSitesChanged = () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             OnPropertyChanged(nameof(Sites));
             OnPropertyChanged(nameof(SelectedSite));
             OnPropertyChanged(nameof(ShowSiteSelector));
         });
-        App.ModuleVisibilityChanged += () => OnPropertyChanged(nameof(ShowSiteSelector));
-        LicenseManager.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(OnLicenseChanged);
+        _onModulesChanged = () => OnPropertyChanged(nameof(ShowSiteSelector));
+        _onLicenseChanged = () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(OnLicenseChanged);
+        App.ModuleVisibilityChanged += RefreshModuleVisibility;
+        App.CompanyLogoChanged += _onLogoChanged;
+        App.SitesChanged += _onSitesChanged;
+        App.ModuleVisibilityChanged += _onModulesChanged;
+        LicenseManager.Changed += _onLicenseChanged;
+    }
+
+    private readonly Action _onLogoChanged, _onSitesChanged, _onModulesChanged, _onLicenseChanged;
+
+    /// <summary>Se détache des événements globaux : à appeler quand ce modèle de vue est remplacé (changement de site, voir App.SwitchSite), sinon l'ancien continuerait à réagir.</summary>
+    public void Dispose()
+    {
+        App.ModuleVisibilityChanged -= RefreshModuleVisibility;
+        App.CompanyLogoChanged -= _onLogoChanged;
+        App.SitesChanged -= _onSitesChanged;
+        App.ModuleVisibilityChanged -= _onModulesChanged;
+        LicenseManager.Changed -= _onLicenseChanged;
     }
 
     /// <summary>Pied de page (à gauche) : statut de la licence, en couleur d'alerte pour une licence expirée
