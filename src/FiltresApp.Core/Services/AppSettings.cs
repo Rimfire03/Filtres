@@ -31,6 +31,9 @@ public class AppSettings
     public int MaxBackupsToKeep { get; set; } = 30;
     public DateTime? AutoBackupLastRun { get; set; }
 
+    /// <summary>Noms des sauvegardes (Save DB) protégées contre la suppression automatique.</summary>
+    public List<string> ProtectedBackups { get; set; } = new();
+
     /// <summary>Fenêtre "Rattacher des filtres..." : n'afficher par défaut que les filtres dont la dimension
     /// correspond (approximativement) à celle de la ligne. Désactivé : tous les filtres sont affichés.</summary>
     public bool LinkDimensionFilterEnabled { get; set; } = true;

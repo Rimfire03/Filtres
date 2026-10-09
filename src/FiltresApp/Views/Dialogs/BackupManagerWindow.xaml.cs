@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -193,13 +193,28 @@ public partial class BackupManagerWindow : Window
         }
     }
 
+    private void OnProtectClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox { DataContext: BackupEntry b } box) return;
+        b.IsProtected = box.IsChecked == true;
+        if (b.IsProtected) BackupService.ProtectedFiles.Add(b.FileName); else BackupService.ProtectedFiles.Remove(b.FileName);
+        App.Settings.ProtectedBackups = BackupService.ProtectedFiles.ToList();
+        App.Settings.Save();
+        SetAction(b.IsProtected
+            ? "Sauvegarde protégée : elle ne sera pas supprimée automatiquement."
+            : "Protection retirée : cette sauvegarde pourra être supprimée par la purge automatique.", error: false);
+    }
+
     private void OnDelete(object sender, RoutedEventArgs e)
     {
         if (Selected() is not { } b) return;
-        if (!App.Dialogs.ShowConfirm("Supprimer la sauvegarde", $"Supprimer définitivement {b.FileName} ?")) return;
+        if (!App.Dialogs.ShowConfirm("Supprimer la sauvegarde", $"Supprimer définitivement {b.FileName} ?" +
+                (b.IsProtected ? "\n\nCette sauvegarde est protégée : la suppression manuelle l'enlèvera quand même." : ""))) return;
         try
         {
             BackupService.Delete(b.Path);
+            App.Settings.ProtectedBackups = BackupService.ProtectedFiles.ToList();
+            App.Settings.Save();
             Reload();
             SetAction("Sauvegarde supprimée.", error: false);
         }

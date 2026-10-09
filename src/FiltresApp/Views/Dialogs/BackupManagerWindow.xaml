@@ -1,4 +1,4 @@
-<Window x:Class="FiltresApp.Views.Dialogs.BackupManagerWindow"
+﻿<Window x:Class="FiltresApp.Views.Dialogs.BackupManagerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Gestion des sauvegardes automatiques"
@@ -38,7 +38,7 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBlock Text="Nombre de sauvegardes à conserver :" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <TextBox x:Name="KeepBox" Width="60" TextChanged="OnSettingChanged"/>
-                    <TextBlock Text="  (0 = illimité ; s'applique à toutes les sauvegardes .bak du dossier, les plus anciennes sont supprimées)"
+                    <TextBlock Text="  (0 = illimité ; les plus anciennes sont supprimées, sauf celles cochées « Protégée », qui ne comptent pas dans ce nombre)"
                                Style="{StaticResource SectionText}" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
@@ -64,6 +64,14 @@
             <DataGrid x:Name="BackupGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
                       SelectionMode="Single" CanUserAddRows="False" HeadersVisibility="Column">
                 <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Protégée" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsProtected, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Click="OnProtectClick" ToolTip="Cochée : cette sauvegarde n'est jamais supprimée automatiquement"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Date" Binding="{Binding DateText}" Width="150"/>
                     <DataGridTextColumn Header="Ancienneté" Binding="{Binding AgeText}" Width="100"/>
                     <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="1.6*"/>

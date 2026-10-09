@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 
@@ -9,6 +9,9 @@ namespace FiltresApp.Core.Services;
 public sealed record BackupEntry(string Path, DateTime Date, long Size, string Kind, string Source,
     int? SchemaVersion, string? AppVersion)
 {
+    /// <summary>Sauvegarde protégée : jamais supprimée automatiquement (purge du nombre conservé).</summary>
+    public bool IsProtected { get; set; }
+
     public string FileName => System.IO.Path.GetFileName(Path);
     public string DateText => Date.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture);
     public string SchemaText => SchemaVersion is { } v ? "v" + v : "?";
@@ -43,6 +46,9 @@ public static class BackupService
     /// <summary>Suspend la purge (le temps de lire une sauvegarde qu'on s'apprête à restaurer).</summary>
     public static bool PruneSuspended { get; set; }
 
+    /// <summary>Noms des fichiers protégés contre la suppression automatique (réglages).</summary>
+    public static HashSet<string> ProtectedFiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     public static List<BackupEntry> List()
     {
         var dir = DbContextFactory.BackupDirectory;
@@ -72,7 +78,7 @@ public static class BackupService
         }
 
         var (schema, app) = ReadDbInfo(path);
-        return new BackupEntry(path, date, info.Length, kind, source, schema, app);
+        return new BackupEntry(path, date, info.Length, kind, source, schema, app) { IsProtected = ProtectedFiles.Contains(name) };
     }
 
     private static string KindOf(string reason)
@@ -128,6 +134,7 @@ public static class BackupService
     public static void Delete(string path)
     {
         File.Delete(path);
+        ProtectedFiles.Remove(System.IO.Path.GetFileName(path));
         foreach (var suffix in new[] { "-wal", "-shm" })
             if (File.Exists(path + suffix)) File.Delete(path + suffix);
     }
@@ -137,7 +144,7 @@ public static class BackupService
     {
         if (keep <= 0 || PruneSuspended) return 0;
         var removed = 0;
-        foreach (var old in List().Skip(keep))
+        foreach (var old in List().Where(b => !b.IsProtected).Skip(keep))
         {
             try { Delete(old.Path); removed++; }
             catch { /* fichier ouvert ailleurs : réessayé à la prochaine purge */ }

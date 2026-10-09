@@ -1,4 +1,4 @@
-using System.Windows.Threading;
+﻿using System.Windows.Threading;
 using FiltresApp.Core.Services;
 
 namespace FiltresApp.Services;
@@ -27,6 +27,7 @@ public sealed class AutoBackupScheduler
     public void Start()
     {
         BackupService.MaxToKeep = App.Settings.MaxBackupsToKeep;
+        BackupService.ProtectedFiles = new HashSet<string>(App.Settings.ProtectedBackups, StringComparer.OrdinalIgnoreCase);
         _ = DbContextFactory.BackupDirectory; // crée le dossier Save DB même si aucune sauvegarde n'existe encore
         _timer.Start();
         _ = CheckAsync();
