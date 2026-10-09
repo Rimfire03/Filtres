@@ -117,6 +117,12 @@
                     <TextBlock Text="Mises à jour" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
                               IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,10"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10"
+                                ToolTip="Main : versions stables. Dev : dernières versions, y compris les pré-versions de test.">
+                        <TextBlock Text="Canal" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Width="120" ItemsSource="{Binding UpdateChannelChoices}"
+                                  SelectedItem="{Binding UpdateChannel}"/>
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Vérifier maintenant" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding CheckForUpdatesCommand}" IsEnabled="{Binding IsCheckingForUpdate, Converter={StaticResource InverseBool}}"/>

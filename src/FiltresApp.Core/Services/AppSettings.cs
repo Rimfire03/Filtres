@@ -15,6 +15,10 @@ public class AppSettings
     public CoverPageInfo CoverPage { get; set; } = new();
     public bool AutoUpdateEnabled { get; set; } = true;
 
+    /// <summary>Canal de mise à jour : "Main" (dernière release stable) ou "Dev" (dernière release, pré-versions
+    /// comprises).</summary>
+    public string UpdateChannel { get; set; } = UpdateChannels.Main;
+
     /// <summary>Fenêtre "Rattacher des filtres..." : n'afficher par défaut que les filtres dont la dimension
     /// correspond (approximativement) à celle de la ligne. Désactivé : tous les filtres sont affichés.</summary>
     public bool LinkDimensionFilterEnabled { get; set; } = true;

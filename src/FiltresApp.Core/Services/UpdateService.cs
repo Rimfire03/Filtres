@@ -16,6 +16,13 @@ public record UpdateInfo(string Version, string ReleaseUrl, string ReleaseNotes,
 /// <see cref="DownloadAndApplyAsync"/>), pas un script .bat sur disque (une première version basée sur un
 /// script batch s'était révélée peu fiable : le script pouvait supprimer son propre dossier pendant qu'il
 /// s'exécutait encore, s'interrompant avant de relancer l'application).</summary>
+public static class UpdateChannels
+{
+    public const string Main = "Main";
+    public const string Dev = "Dev";
+    public static readonly string[] All = [Main, Dev];
+}
+
 public class UpdateService
 {
     private const string RepoOwner = "Rimfire03";
@@ -40,10 +47,14 @@ public class UpdateService
     /// de l'API GitHub, pare-feu). L'appelant du démarrage silencieux (voir App.Updates.cs) est
     /// responsable de ne pas déranger l'utilisateur pour ces erreurs ; le bouton "Vérifier maintenant"
     /// (Paramètres) les affiche telles quelles.</summary>
-    public async Task<UpdateInfo?> CheckForUpdateAsync(string currentVersion)
+    public async Task<UpdateInfo?> CheckForUpdateAsync(string currentVersion, string channel = UpdateChannels.Main)
     {
-        using var response = await Http.GetAsync(
-            $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest");
+        // Main : dernière release stable. Dev : release la plus récente, pré-versions comprises.
+        var dev = string.Equals(channel, UpdateChannels.Dev, StringComparison.OrdinalIgnoreCase);
+        var url = dev
+            ? $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases?per_page=10"
+            : $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
+        using var response = await Http.GetAsync(url);
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync();
@@ -54,6 +65,14 @@ public class UpdateService
         using var stream = await response.Content.ReadAsStreamAsync();
         using var doc = await JsonDocument.ParseAsync(stream);
         var root = doc.RootElement;
+        if (dev)
+        {
+            // Liste triée de la plus récente à la plus ancienne : première release non brouillon.
+            var first = root.EnumerateArray().FirstOrDefault(r =>
+                !(r.TryGetProperty("draft", out var d) && d.ValueKind == JsonValueKind.True));
+            if (first.ValueKind != JsonValueKind.Object) return null;
+            root = first;
+        }
 
         var tag = root.TryGetProperty("tag_name", out var tagEl) ? tagEl.GetString() ?? "" : "";
         var versionText = tag.TrimStart('v', 'V');

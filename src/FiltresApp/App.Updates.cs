@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using FiltresApp.Core.Services;
 
 namespace FiltresApp;
@@ -28,7 +28,7 @@ public partial class App
         UpdateInfo? info;
         try
         {
-            info = Task.Run(() => Updater.CheckForUpdateAsync(CurrentVersion)).GetAwaiter().GetResult();
+            info = Task.Run(() => Updater.CheckForUpdateAsync(CurrentVersion, Settings.UpdateChannel)).GetAwaiter().GetResult();
         }
         catch
         {
@@ -66,7 +66,7 @@ public partial class App
         UpdateInfo? info;
         try
         {
-            info = await Updater.CheckForUpdateAsync(CurrentVersion);
+            info = await Updater.CheckForUpdateAsync(CurrentVersion, Settings.UpdateChannel);
         }
         catch
         {

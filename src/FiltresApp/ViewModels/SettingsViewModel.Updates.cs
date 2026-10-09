@@ -14,6 +14,20 @@ public partial class SettingsViewModel
 
     private UpdateInfo? _pendingUpdate;
 
+    public string[] UpdateChannelChoices => UpdateChannels.All;
+
+    [ObservableProperty] private string _updateChannel = App.Settings.UpdateChannel;
+
+    /// <summary>Sauvegardé immédiatement ; l'ancien résultat de recherche ne vaut plus pour le nouveau canal.</summary>
+    partial void OnUpdateChannelChanged(string value)
+    {
+        App.Settings.UpdateChannel = value;
+        App.Settings.Save();
+        UpdateAvailable = false;
+        _pendingUpdate = null;
+        UpdateStatusMessage = string.Empty;
+    }
+
     [RelayCommand]
     private async Task CheckForUpdates()
     {
@@ -23,7 +37,7 @@ public partial class SettingsViewModel
         UpdateStatusMessage = "Recherche d'une mise à jour...";
         try
         {
-            var info = await App.Updater.CheckForUpdateAsync(App.CurrentVersion);
+            var info = await App.Updater.CheckForUpdateAsync(App.CurrentVersion, App.Settings.UpdateChannel);
             if (info is null)
             {
                 UpdateStatusMessage = $"Vous utilisez la dernière version ({App.CurrentVersion}).";

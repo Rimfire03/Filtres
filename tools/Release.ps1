@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Release complete de Filtres : publish, deplacement de LatoFont, signature, zip, release GitHub.
 
@@ -18,6 +18,7 @@ param(
     [string]$Notes,
     [string]$NotesFile,
     [switch]$NoPublish,
+    [switch]$Prerelease,
     [string]$Repo = "Rimfire03/Filtres"
 )
 
@@ -121,6 +122,6 @@ if ($NoPublish) {
 # --- Publication
 Step "gh release create $tag"
 $sha = (Git rev-parse HEAD | Select-Object -First 1).Trim()
-& gh.exe release create $tag $zip $msi --repo $Repo --target $sha --title "Version $version" --notes-file $notesPath --latest
+& gh.exe release create $tag $zip $msi --repo $Repo --target $sha --title "Version $version" --notes-file $notesPath $(if ($Prerelease) { "--prerelease" } else { "--latest" })
 if ($LASTEXITCODE -ne 0) { throw "gh release create a echoue (code $LASTEXITCODE)." }
 Write-Host "[release] OK : https://github.com/$Repo/releases/tag/$tag"
