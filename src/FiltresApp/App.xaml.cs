@@ -113,6 +113,7 @@ public partial class App : Application
     {
         Db?.Dispose();
         _writeLock?.Dispose();
+        ReleaseServerLock();
         base.OnExit(e);
     }
 
@@ -126,7 +127,7 @@ public partial class App : Application
     }
 
     public static string ReadOnlyTitle =>
-        "Données en lecture seule : fichier actuellement utilisé par " +
+        "Données en lecture seule : " + (DbFactory is { IsServer: true } ? "base actuellement utilisée par " : "fichier actuellement utilisé par ") +
         (WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner);
 
     public static string ReadOnlyMessage =>

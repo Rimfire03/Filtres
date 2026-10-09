@@ -107,7 +107,7 @@
                 <StackPanel>
                     <TextBlock Text="Lecture seule" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
-                        Avec un fichier SQLite, un seul poste peut modifier la base à la fois (le premier à l'ouvrir). Les autres postes s'ouvrent en lecture seule, avec un bandeau jaune de rappel et une puce orange dans le pied de page : fermez puis relancez l'application une fois le premier poste sorti pour reprendre la main. Avec un serveur de base de données, plusieurs postes peuvent écrire en même temps : il n'y a pas de lecture seule. Une sauvegarde automatique n'est jamais lancée depuis un poste en lecture seule.
+                        Un seul poste peut modifier la base à la fois, avec un fichier SQLite comme avec un serveur de base de données : le premier à l'ouvrir. Les autres postes s'ouvrent en lecture seule, avec un bandeau jaune de rappel et une puce orange dans le pied de page : fermez puis relancez l'application une fois le premier poste sorti pour reprendre la main. Avec un serveur, le droit d'écriture est libéré à la fermeture de l'application, ou une minute et demie après un plantage ou une coupure du premier poste. Une sauvegarde automatique n'est jamais lancée depuis un poste en lecture seule.
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -124,7 +124,7 @@
                 <StackPanel>
                     <TextBlock Text="Serveur de base de données" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
-                        Par défaut la base est un fichier SQLite. Paramètres → "Réglages BDD avancés..." permet d'utiliser à la place un serveur (PostgreSQL recommandé, MariaDB / MySQL ou SQL Server) : plusieurs postes écrivent alors en même temps. "Tester la connexion" devient vert si le serveur répond, rouge sinon ; la base est créée sur le serveur si elle n'existe pas et si l'utilisateur en a le droit. Le bloc "Migration" copie toute la base du fichier vers le serveur, ou du serveur vers le fichier SQLite ; la source n'est jamais modifiée et la copie est vérifiée. Paramètres → Base de données → Sauvegarde permet d'exporter toute la base dans un fichier (dump complet) et de l'importer, y compris sur un autre moteur : la base actuelle est sauvegardée juste avant l'import.
+                        Par défaut la base est un fichier SQLite. Paramètres → "Réglages BDD avancés..." permet d'utiliser à la place un serveur (PostgreSQL recommandé, MariaDB / MySQL ou SQL Server) : plusieurs postes se connectent au même serveur ; comme avec un fichier, seul le premier connecté peut modifier les données, les autres sont en lecture seule. "Tester la connexion" devient vert si le serveur répond, rouge sinon ; la base est créée sur le serveur si elle n'existe pas et si l'utilisateur en a le droit. Le bloc "Migration" copie toute la base du fichier vers le serveur, ou du serveur vers le fichier SQLite ; la source n'est jamais modifiée et la copie est vérifiée. Paramètres → Base de données → Sauvegarde permet d'exporter toute la base dans un fichier (dump complet) et de l'importer, y compris sur un autre moteur : la base actuelle est sauvegardée juste avant l'import.
                     </TextBlock>
                 </StackPanel>
             </Border>            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">

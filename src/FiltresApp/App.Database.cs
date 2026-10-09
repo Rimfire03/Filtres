@@ -10,6 +10,8 @@ namespace FiltresApp;
 public partial class App
 {
     private static DbWriteLock? _writeLock;
+    private static ServerWriteLock? _serverLock;
+    private static System.Windows.Threading.DispatcherTimer? _serverLockTimer;
     private static string? _writeLockPath;
 
     /// <summary>Version du fichier de base ouvert (voir DbContextFactory.LatestVersion).</summary>
@@ -102,8 +104,8 @@ public partial class App
     }
 
     /// <summary>Prend l'accès en écriture si aucun autre poste ne l'a déjà, sinon ouvre la base en
-    /// lecture seule. Sur un serveur de base de données, pas de verrou : le serveur gère les écritures
-    /// simultanées de tous les postes.</summary>
+    /// lecture seule. Sur un serveur de base de données, le verrou est une ligne de la table DbInfo
+    /// (voir <see cref="ServerWriteLock"/>) : même règle du premier connecté.</summary>
     private static void OpenDatabase(DbTarget target)
     {
         if (target.IsServer)
@@ -111,8 +113,15 @@ public partial class App
             _writeLock?.Dispose();
             _writeLock = null;
             _writeLockPath = null;
-            IsReadOnly = false;
-            WriteLockOwner = null;
+            // Comme avec un fichier : seul le premier poste connecté peut écrire, les suivants sont en lecture seule.
+            if (_serverLock is null)
+            {
+                var result = ServerWriteLock.TryAcquire(target);
+                _serverLock = result.Lock;
+                IsReadOnly = result.Lock is null && result.OwnerUser is not null;
+                WriteLockOwner = IsReadOnly ? result.OwnerUser : null;
+                if (_serverLock is not null) StartServerLockHeartbeat();
+            }
         }
         else
         {
@@ -132,12 +141,57 @@ public partial class App
         CheckDatabaseVersion();
         BackupOnVersionChange();
         DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
+        if (target.IsServer && !IsReadOnly && _serverLock is null)
+        {
+            // Base serveur qui vient d'être créée : le verrou n'existait pas encore, on le prend maintenant.
+            _serverLock = ServerWriteLock.TryAcquire(target).Lock;
+            if (_serverLock is not null) StartServerLockHeartbeat();
+        }
         DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
         PeriodicViewRegistry.Load(Db);
         LoadCompanyLogo();
     }
 
+    /// <summary>Renouvelle le verrou d'écriture du serveur toutes les 15 s. Si un autre poste l'a repris (ce poste est
+    /// resté injoignable plus d'une minute), l'application redémarre en lecture seule.</summary>
+    private static void StartServerLockHeartbeat()
+    {
+        _serverLockTimer?.Stop();
+        _serverLockTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+        _serverLockTimer.Tick += async (_, _) =>
+        {
+            var held = _serverLock;
+            if (held is null) return;
+            bool still;
+            try
+            {
+                still = await Task.Run(held.Refresh);
+            }
+            catch
+            {
+                return; // serveur injoignable : on réessaie au prochain tour (la puce du pied de page signale la perte)
+            }
+            if (still) return;
+
+            _serverLockTimer?.Stop();
+            _serverLock = null;
+            MessageBox.Show(
+                "Un autre poste a repris l'accès en écriture à la base (ce poste est resté injoignable trop longtemps).\n\n" +
+                "L'application va redémarrer en lecture seule.",
+                "Accès en écriture perdu", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Restart();
+        };
+        _serverLockTimer.Start();
+    }
+
+    /// <summary>Libère le verrou d'écriture du serveur (fermeture de l'application).</summary>
+    private static void ReleaseServerLock()
+    {
+        _serverLockTimer?.Stop();
+        _serverLock?.Dispose();
+        _serverLock = null;
+    }
     /// <summary>Quand le logiciel a changé de version depuis le dernier démarrage (mise à jour par l'application, MSI ou
     /// copie manuelle), sauvegarde la base dans FiltreData\Save DB avant qu'elle ne soit ouverte et migrée. Un échec de
     /// sauvegarde ne bloque pas le démarrage.</summary>

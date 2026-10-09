@@ -1,4 +1,4 @@
-# Suivi maintenance filtres à air
+﻿# Suivi maintenance filtres à air
 
 Application Windows (.NET 8 / WPF) de suivi de maintenance des filtres à air, courroies et
 roulements. Stockage SQLite portable, exécutable unique autonome (aucune installation requise).
@@ -117,7 +117,11 @@ synchronisé type OneDrive/Dropbox, qui corromprait le fichier SQLite). Accès e
 Alternative au fichier SQLite : **Paramètres > Base de données > « Réglages BDD avancés... »**.
 
 - Moteurs gérés : **PostgreSQL (recommandé)**, MariaDB / MySQL, Microsoft SQL Server. Plusieurs
-  postes écrivent en même temps, sans verrou ni lecture seule.
+  postes peuvent se connecter au même serveur ; comme avec un fichier, **seul le premier connecté
+  est en lecture/écriture**, les suivants sont en lecture seule (écritures refusées côté logiciel).
+  Le verrou est une ligne `WriteLock` de la table `DbInfo` (jeton, session, poste, date), renouvelée
+  toutes les 15 s par le poste rédacteur et libérée à sa fermeture ; elle expire 90 s après un
+  plantage ou une coupure.
 - Réglages : moteur, serveur, port, base, utilisateur, mot de passe (enregistré chiffré par DPAPI
   dans `FiltreData\settings.json`, lisible seulement par la session Windows qui l'a saisi), SSL.
   « Tester la connexion » vérifie le serveur avant d'enregistrer.

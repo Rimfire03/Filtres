@@ -16,8 +16,8 @@ public class DbContextFactory
     public DbContextFactory(DbTarget target, bool readOnly = false)
     {
         _target = target;
-        // Un serveur gère lui-même les accès simultanés : jamais de lecture seule imposée par le logiciel.
-        _readOnly = readOnly && !target.IsServer;
+        // Lecture seule : fichier SQLite ouvert en lecture seule, ou serveur dont les écritures sont refusées (ReadOnlyGuard).
+        _readOnly = readOnly;
         if (!target.IsServer)
         {
             var dir = Path.GetDirectoryName(target.FilePath);
@@ -116,7 +116,7 @@ public class DbContextFactory
 
     /// <summary>La connexion a échoué parce que la base demandée n'existe pas (et non parce que le serveur est
     /// injoignable ou que les identifiants sont refusés).</summary>
-    private static bool IsMissingDatabase(Exception ex) => ex switch
+    internal static bool IsMissingDatabase(Exception ex) => ex switch
     {
         Npgsql.PostgresException pg => pg.SqlState == "3D000",
         MySqlConnector.MySqlException my => my.Number == 1049,

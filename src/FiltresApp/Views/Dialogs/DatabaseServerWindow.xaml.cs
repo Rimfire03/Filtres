@@ -75,7 +75,7 @@ public partial class DatabaseServerWindow : Window
         if (ProviderHint is null) return;
         ProviderHint.Text = _provider switch
         {
-            DatabaseProvider.PostgreSql => "Conseillé pour cet usage : gratuit, plusieurs postes peuvent écrire en même temps, très fiable. Port par défaut : 5432.",
+            DatabaseProvider.PostgreSql => "Conseillé pour cet usage : gratuit, accepte plusieurs postes connectés, très fiable. Port par défaut : 5432.",
             DatabaseProvider.MariaDb => "Compatible MariaDB 10 et MySQL 8. Port par défaut : 3306.",
             DatabaseProvider.SqlServer => "SQL Server 2017 ou plus récent (l'édition Express convient). Port par défaut : 1433.",
             _ => ""

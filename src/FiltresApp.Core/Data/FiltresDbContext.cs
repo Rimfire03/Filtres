@@ -1,4 +1,4 @@
-using FiltresApp.Core.Models;
+﻿using FiltresApp.Core.Models;
 using FiltresApp.Core.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -83,11 +83,15 @@ public class FiltresDbContext : DbContext
         // Contexte partagé pour toute la session : sans suivi, chaque requête relit la base et voit donc
         // les modifications enregistrées entre-temps par le poste rédacteur.
         if (_readOnly) optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        // Serveur : pas de mode lecture seule natif comme SQLite, donc toute écriture est refusée par un intercepteur.
+        if (_readOnly && _target.IsServer) optionsBuilder.AddInterceptors(ReadOnlyGuard.Instance);
     }
 
     // Suivi de la dernière saisie sur serveur (pas de déclencheurs SQLite) : voir DatabaseWriteTracking.
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        if (_readOnly && _target.IsServer) throw ReadOnlyGuard.Error();
+
         foreach (var entry in ChangeTracker.Entries<ISiteScoped>())
             if (entry.State == EntityState.Added && entry.Entity.SiteId == 0) entry.Entity.SiteId = CurrentSiteId;
 
@@ -208,4 +212,22 @@ public class FiltresDbContext : DbContext
             modelBuilder.Entity(type).HasQueryFilter(filter);
         }
     }
+}
+
+/// <summary>Refuse toute commande d'écriture sur un poste en lecture seule connecté à un serveur de base de données
+/// (voir <see cref="ServerWriteLock"/>).</summary>
+internal sealed class ReadOnlyGuard : Microsoft.EntityFrameworkCore.Diagnostics.DbCommandInterceptor
+{
+    public static readonly ReadOnlyGuard Instance = new();
+
+    public static InvalidOperationException Error() =>
+        new("Ce poste est en lecture seule : un autre poste a l'accès en écriture à la base. Aucune modification n'a été enregistrée.");
+
+    public override Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> NonQueryExecuting(
+        System.Data.Common.DbCommand command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData eventData,
+        Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result) => throw Error();
+
+    public override ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>> NonQueryExecutingAsync(
+        System.Data.Common.DbCommand command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData eventData,
+        Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result, CancellationToken cancellationToken = default) => throw Error();
 }

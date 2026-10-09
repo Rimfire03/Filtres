@@ -1,4 +1,4 @@
-using FiltresApp.Core.Services;
+﻿using FiltresApp.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.Core.Data;
@@ -25,6 +25,7 @@ internal static class ServerSql
             DatabaseProvider.PostgreSql => """CREATE TABLE IF NOT EXISTS "DbInfo" ("Key" varchar(100) NOT NULL PRIMARY KEY, "Value" text NOT NULL);""",
             DatabaseProvider.MariaDb => "CREATE TABLE IF NOT EXISTS `DbInfo` (`Key` varchar(100) NOT NULL PRIMARY KEY, `Value` longtext NOT NULL);",
             DatabaseProvider.SqlServer => "IF OBJECT_ID(N'DbInfo', N'U') IS NULL CREATE TABLE [DbInfo] ([Key] nvarchar(100) NOT NULL PRIMARY KEY, [Value] nvarchar(max) NOT NULL);",
+            DatabaseProvider.Sqlite => """CREATE TABLE IF NOT EXISTS "DbInfo" ("Key" TEXT NOT NULL PRIMARY KEY, "Value" TEXT NOT NULL);""",
             _ => throw new NotSupportedException()
         };
         ctx.Database.ExecuteSqlRaw(sql);
