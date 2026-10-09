@@ -1,7 +1,7 @@
-﻿<Window x:Class="FiltresApp.Views.Dialogs.SiteChooserWindow"
+<Window x:Class="FiltresApp.Views.Dialogs.SiteChooserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Choix du site" Height="420" Width="420"
+        Title="Choix du site" Height="440" Width="440"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -15,7 +15,7 @@
                  MouseDoubleClick="OnDoubleClick"/>
         <CheckBox x:Name="DefaultCheck" Grid.Row="2" Margin="0,0,0,12" VerticalContentAlignment="Top"
                   ToolTip="Modifiable dans les paramètres du module MultiSite">
-            <TextBlock Text="Toujours ouvrir ce site (modifiable dans les paramètres du module MultiSite)" TextWrapping="Wrap"/>
+            <TextBlock Text="Toujours ouvrir ce site" Width="300"/>
         </CheckBox>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Quitter" Style="{StaticResource SecondaryButton}" Width="90" Click="OnCancel"/>
