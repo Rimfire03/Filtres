@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using FiltresApp.Core.Services;
@@ -168,6 +168,13 @@ public partial class DatabaseServerWindow : Window
 
     // ---- Dump complet ----
 
+    /// <summary>Dossier FiltreData\Save DB, proposé par défaut pour télécharger et recharger les dumps.</summary>
+    private static string SaveDbDirectory()
+    {
+        System.IO.Directory.CreateDirectory(FiltresApp.Core.Services.DbContextFactory.BackupDirectory);
+        return FiltresApp.Core.Services.DbContextFactory.BackupDirectory;
+    }
+
     private async void OnDumpClick(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.SaveFileDialog
@@ -202,7 +209,12 @@ public partial class DatabaseServerWindow : Window
     {
         if (!App.GuardWritable()) return;
 
-        var dialog = new Microsoft.Win32.OpenFileDialog { Title = "Recharger un dump", Filter = "Dump de la base (*.db)|*.db|Tous les fichiers (*.*)|*.*" };
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Recharger un dump",
+            Filter = "Dump ou sauvegarde (*.db;*.bak)|*.db;*.bak|Tous les fichiers (*.*)|*.*",
+            InitialDirectory = SaveDbDirectory()
+        };
         if (dialog.ShowDialog(this) != true) return;
         var path = dialog.FileName;
 

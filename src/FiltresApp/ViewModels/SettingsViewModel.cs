@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -247,6 +247,13 @@ public partial class SettingsViewModel : ObservableObject
         StatusMessage = "Paramètres enregistrés.";
     }
 
+    /// <summary>Dossier FiltreData\Save DB (créé au besoin) : emplacement proposé pour les dumps et sauvegardes.</summary>
+    private static string SaveDbDirectory()
+    {
+        Directory.CreateDirectory(DbContextFactory.BackupDirectory);
+        return DbContextFactory.BackupDirectory;
+    }
+
     [RelayCommand]
     private void ExportDatabase()
     {
@@ -254,7 +261,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             Filter = "Base de données SQLite (*.db)|*.db",
             FileName = $"save_db_filtre_{DateTime.Now:yyyyMMdd_HHmmss}_{App.CurrentVersion}.db",
-            InitialDirectory = System.IO.Path.GetDirectoryName(App.Settings.ResolvedDatabasePath)
+            InitialDirectory = SaveDbDirectory()
         };
         if (dialog.ShowDialog() != true) return;
 
@@ -278,7 +285,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!App.GuardWritable()) return;
 
-        var dialog = new OpenFileDialog { Filter = "Sauvegarde de base de données (*.db)|*.db" };
+        var dialog = new OpenFileDialog { Filter = "Sauvegarde de base de données (*.db)|*.db", InitialDirectory = SaveDbDirectory() };
         if (dialog.ShowDialog() != true) return;
 
         if (!App.Dialogs.ShowConfirm("Importer une sauvegarde",
