@@ -5,7 +5,7 @@
   <Package Name="Filtres" Manufacturer="TomLine prod&amp;co" Version="$(Version)"
            UpgradeCode="2C18CFB5-6EE1-43E5-A889-ACE458362778" Scope="perMachine" Language="1036" Codepage="1252">
 
-    <MajorUpgrade DowngradeErrorMessage="Une version plus récente de Filtres est déjà installée." />
+    <MajorUpgrade AllowDowngrades="yes" />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
     <Icon Id="app.ico" SourceFile="$(IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="app.ico" />

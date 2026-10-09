@@ -115,6 +115,18 @@ $log
     [IO.File]::WriteAllText($notesPath, $body, (New-Object Text.UTF8Encoding($false)))
 }
 
+# --- Version du schema de base (derniere migration de DatabaseMigrations.All) : marqueur lu par l'application
+# pour ne proposer un retour Dev -> Main que si la base est compatible.
+$migText = [IO.File]::ReadAllText((Join-Path $root "src\FiltresApp.Core\Data\Migrations\DatabaseMigrations.cs"))
+$allBlock = [regex]::Match($migText, 'All\s*=\s*\r?\n\s*\{(?<b>.*?)\r?\n\s*\};', 'Singleline')
+$schema = $null
+if ($allBlock.Success) {
+    $nums = [regex]::Matches($allBlock.Groups['b'].Value, '(?m)^ {8}\((\d+),') | ForEach-Object { [int]$_.Groups[1].Value }
+    if ($nums) { $schema = ($nums | Measure-Object -Maximum).Maximum }
+}
+if (-not $schema) { throw "Version du schema de base introuvable dans DatabaseMigrations.cs." }
+[IO.File]::AppendAllText($notesPath, "`n`n<!-- db-schema: $schema -->`n", (New-Object Text.UTF8Encoding($false)))
+Step "schema de base $schema"
 if ($NoPublish) {
     Write-Host "[release] -NoPublish : arret avant GitHub. Zip : $zip ; MSI : $msi ; notes : $notesPath"
     return

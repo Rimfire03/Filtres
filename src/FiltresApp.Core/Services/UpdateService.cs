@@ -7,7 +7,12 @@ using System.Text.Json;
 namespace FiltresApp.Core.Services;
 
 /// <summary>Informations sur une nouvelle version disponible, extraites de la release GitHub.</summary>
-public record UpdateInfo(string Version, string ReleaseUrl, string ReleaseNotes, string AssetUrl, string AssetName);
+/// <param name="DbSchema">Version du schéma de base lue dans les notes de la release (marqueur
+/// <c>&lt;!-- db-schema: N --&gt;</c> ajouté par tools\Release.ps1), null si absente.</param>
+/// <param name="IsChannelSwitch">Retour sur le canal Main depuis une build Dev : la version proposée peut être
+/// plus ancienne que celle installée.</param>
+public record UpdateInfo(string Version, string ReleaseUrl, string ReleaseNotes, string AssetUrl, string AssetName,
+    int? DbSchema = null, bool IsChannelSwitch = false);
 
 /// <summary>Vérifie et applique les mises à jour en s'appuyant sur les releases GitHub du dépôt
 /// (exécutable portable publié en asset .zip sur chaque release) : télécharge l'archive, la décompresse,
@@ -47,8 +52,17 @@ public class UpdateService
     /// de l'API GitHub, pare-feu). L'appelant du démarrage silencieux (voir App.Updates.cs) est
     /// responsable de ne pas déranger l'utilisateur pour ces erreurs ; le bouton "Vérifier maintenant"
     /// (Paramètres) les affiche telles quelles.</summary>
-    public async Task<UpdateInfo?> CheckForUpdateAsync(string currentVersion, string channel = UpdateChannels.Main)
+    /// <summary>Explication quand la dernière vérification n'a rien proposé alors qu'un retour sur Main était
+    /// demandé (ex. base incompatible), sinon null.</summary>
+    public string? LastCheckNote { get; private set; }
+
+    /// <param name="installedIsDev">La build installée est une build du canal Dev.</param>
+    /// <param name="currentDbSchema">Version de schéma de base gérée par la build installée : sert à ne proposer
+    /// le retour sur Main que si la dernière version Main partage ce même schéma.</param>
+    public async Task<UpdateInfo?> CheckForUpdateAsync(string currentVersion, string channel = UpdateChannels.Main,
+        bool installedIsDev = false, int? currentDbSchema = null)
     {
+        LastCheckNote = null;
         // Main : dernière release stable (branche main). Dev : release la plus récente de la branche dev, dont le
         // tag se termine par "-dev" (publiée en pré-version, donc jamais vue par /releases/latest).
         var dev = string.Equals(channel, UpdateChannels.Dev, StringComparison.OrdinalIgnoreCase);
@@ -79,7 +93,27 @@ public class UpdateService
 
         var tag = root.TryGetProperty("tag_name", out var tagEl) ? tagEl.GetString() ?? "" : "";
         var versionText = tag.TrimStart('v', 'V');   // ex. "1.12.0" ou "1.12.0-dev"
-        if (!IsNewer(versionText, currentVersion)) return null;
+        var releaseNotes = root.TryGetProperty("body", out var notesEl) ? notesEl.GetString() ?? "" : "";
+        var marker = System.Text.RegularExpressions.Regex.Match(releaseNotes, @"<!--\s*db-schema:\s*(\d+)\s*-->");
+        int? dbSchema = marker.Success ? int.Parse(marker.Groups[1].Value) : null;
+
+        var channelSwitch = false;
+        if (!IsNewer(versionText, currentVersion))
+        {
+            // Retour sur Main depuis une build Dev : la version Main est proposée même si son numéro est plus ancien,
+            // mais seulement si elle gère le même schéma de base (sinon l'ancienne version ne saurait pas ouvrir la base).
+            if (dev || !installedIsDev) return null;
+            if (dbSchema is null || currentDbSchema is null || dbSchema != currentDbSchema)
+            {
+                LastCheckNote = $"La dernière version Main ({versionText}) n'est pas proposée : " +
+                    (dbSchema is null
+                        ? "la version de sa base de données n'est pas connue."
+                        : $"sa base de données (version {dbSchema}) est différente de la vôtre (version {currentDbSchema}).") +
+                    " Une version Main plus récente sera proposée dès qu'elle sera compatible.";
+                return null;
+            }
+            channelSwitch = true;
+        }
 
         // Version installée (MSI) : on récupère le .msi ; version portable : le .zip.
         var ext = InstallMode.IsInstalled ? ".msi" : ".zip";
@@ -99,10 +133,9 @@ public class UpdateService
         if (assetUrl == null || assetName == null)
             throw new InvalidOperationException($"La release {tag} sur GitHub n'a pas de fichier {ext} en pièce jointe.");
 
-        var notes = root.TryGetProperty("body", out var bodyEl) ? bodyEl.GetString() ?? "" : "";
         var htmlUrl = root.TryGetProperty("html_url", out var urlEl) ? urlEl.GetString() ?? "" : "";
 
-        return new UpdateInfo(versionText, htmlUrl, notes, assetUrl, assetName);
+        return new UpdateInfo(versionText, htmlUrl, releaseNotes, assetUrl, assetName, dbSchema, channelSwitch);
     }
 
     /// <summary>Télécharge l'archive .zip de la nouvelle version, la décompresse intégralement, puis lance

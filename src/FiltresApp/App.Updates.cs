@@ -21,17 +21,21 @@ public partial class App
 
     /// <summary>Version affichée à l'utilisateur : <see cref="CurrentVersion"/> suivie de « -dev » pour une build
     /// publiée sur le canal Dev (métadonnée ReleaseChannel posée par tools\Release.ps1).</summary>
-    public static string DisplayVersion
-    {
-        get
-        {
-            var channel = System.Reflection.Assembly.GetExecutingAssembly()
-                .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
-                .OfType<System.Reflection.AssemblyMetadataAttribute>()
-                .FirstOrDefault(a => a.Key == "ReleaseChannel")?.Value;
-            return string.IsNullOrWhiteSpace(channel) ? CurrentVersion : $"{CurrentVersion}-{channel}";
-        }
-    }
+    public static string DisplayVersion => string.IsNullOrWhiteSpace(BuildChannel) ? CurrentVersion : $"{CurrentVersion}-{BuildChannel}";
+
+    /// <summary>Canal de la build en cours (« dev » pour une release de la branche dev), vide pour une build Main.</summary>
+    public static string BuildChannel =>
+        System.Reflection.Assembly.GetExecutingAssembly()
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
+            .OfType<System.Reflection.AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "ReleaseChannel")?.Value ?? "";
+
+    public static bool IsDevBuild => string.Equals(BuildChannel, "dev", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Vérification selon le canal choisi dans les Paramètres ; depuis une build Dev, un retour sur Main est
+    /// proposé si la dernière version Main partage la version de base de données du logiciel.</summary>
+    public static Task<UpdateInfo?> CheckForUpdateAsync() =>
+        Updater.CheckForUpdateAsync(CurrentVersion, Settings.UpdateChannel, IsDevBuild, DbContextFactory.LatestVersion);
 
     /// <summary>Base de données plus récente que ce logiciel : cherche la dernière version et propose de
     /// l'installer (la base n'est pas touchée, donc pas de sauvegarde). Renvoie true si l'installation a été
@@ -42,7 +46,7 @@ public partial class App
         UpdateInfo? info;
         try
         {
-            info = Task.Run(() => Updater.CheckForUpdateAsync(CurrentVersion, Settings.UpdateChannel)).GetAwaiter().GetResult();
+            info = Task.Run(() => Updater.CheckForUpdateAsync(CurrentVersion, Settings.UpdateChannel)).GetAwaiter().GetResult(); // base plus récente que le logiciel : jamais de retour en arrière
         }
         catch
         {
@@ -80,7 +84,7 @@ public partial class App
         UpdateInfo? info;
         try
         {
-            info = await Updater.CheckForUpdateAsync(CurrentVersion, Settings.UpdateChannel);
+            info = await CheckForUpdateAsync();
         }
         catch
         {
@@ -88,8 +92,10 @@ public partial class App
         }
         if (info is null) return;
 
-        var proceed = Dialogs.ShowConfirm("Mise à jour disponible",
-            $"Une nouvelle version {info.Version} est disponible (version actuelle : {DisplayVersion}).\n\n" +
+        var proceed = Dialogs.ShowConfirm(info.IsChannelSwitch ? "Retour sur le canal Main" : "Mise à jour disponible",
+            (info.IsChannelSwitch
+                ? $"Vous avez choisi le canal Main. La dernière version Main ({info.Version}) utilise la même base de données que votre version actuelle ({DisplayVersion}).\n\n"
+                : $"Une nouvelle version {info.Version} est disponible (version actuelle : {DisplayVersion}).\n\n") +
             "Voulez-vous la télécharger et l'installer maintenant ? Une copie de sauvegarde de la base de données sera faite avant toute chose. L'application va se fermer puis redémarrer automatiquement.\n\n" +
             "Vous pouvez désactiver cette vérification automatique dans Paramètres.");
         if (!proceed) return;

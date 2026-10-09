@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Services;
 
@@ -38,16 +38,18 @@ public partial class SettingsViewModel
         UpdateStatusMessage = "Recherche d'une mise à jour...";
         try
         {
-            var info = await App.Updater.CheckForUpdateAsync(App.CurrentVersion, App.Settings.UpdateChannel);
+            var info = await App.CheckForUpdateAsync();
             if (info is null)
             {
-                UpdateStatusMessage = $"Vous utilisez la dernière version ({App.DisplayVersion}).";
+                UpdateStatusMessage = App.Updater.LastCheckNote ?? $"Vous utilisez la dernière version ({App.DisplayVersion}).";
             }
             else
             {
                 _pendingUpdate = info;
                 UpdateAvailable = true;
-                UpdateStatusMessage = $"Nouvelle version disponible : {info.Version} (actuelle : {App.DisplayVersion}).";
+                UpdateStatusMessage = info.IsChannelSwitch
+                    ? $"Retour sur le canal Main possible : version {info.Version} (actuelle : {App.DisplayVersion}), même base de données."
+                    : $"Nouvelle version disponible : {info.Version} (actuelle : {App.DisplayVersion}).";
             }
         }
         catch (Exception ex)
