@@ -293,23 +293,57 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (!App.GuardWritable()) return;
 
-        var dialog = new OpenFileDialog { Filter = "Sauvegarde de base de données (*.db)|*.db", InitialDirectory = SaveDbDirectory() };
+        var dialog = new OpenFileDialog
+        {
+            Title = "Importer une sauvegarde ou un dump",
+            Filter = "Sauvegarde ou dump (*.db;*.bak)|*.db;*.bak|Tous les fichiers (*.*)|*.*",
+            InitialDirectory = SaveDbDirectory()
+        };
         if (dialog.ShowDialog() != true) return;
+        var path = dialog.FileName;
+
+        // Le fichier doit être une base de ce logiciel, pas plus récente que lui.
+        int version;
+        try
+        {
+            version = new DbContextFactory(DbTarget.ForFile(path), readOnly: true).GetDatabaseVersion();
+        }
+        catch (Exception ex)
+        {
+            App.Dialogs.ShowMessage("Fichier illisible", "Ce fichier n'est pas une sauvegarde valide : " + ex.Message);
+            return;
+        }
+        if (version == 0)
+        {
+            App.Dialogs.ShowMessage("Fichier illisible", "Ce fichier ne contient pas de base de données de ce logiciel.");
+            return;
+        }
+        if (version > DbContextFactory.LatestVersion)
+        {
+            App.Dialogs.ShowMessage("Sauvegarde trop récente",
+                $"Cette sauvegarde a été créée par une version plus récente du logiciel (base v{version}, ce logiciel gère v{DbContextFactory.LatestVersion}). Mettez d'abord le logiciel à jour.");
+            return;
+        }
 
         if (!App.Dialogs.ShowConfirm("Importer une sauvegarde",
-                "Cette opération va REMPLACER toutes les données actuelles de l'application par celles du fichier de sauvegarde sélectionné, " +
-                "puis redémarrer l'application (la version de la sauvegarde sera vérifiée et mise à jour si besoin, comme pour toute base plus ancienne). Continuer ?"))
+                $"TOUTES les données actuelles ({App.DbFactory.Target.Describe()}) vont être remplacées par celles du fichier :\n{path}\n\n" +
+                "Une copie de sécurité de la base actuelle est faite juste avant. Le logiciel redémarrera ensuite (la version de la sauvegarde sera mise à jour si besoin). Continuer ?"))
         {
             return;
         }
 
         try
         {
-            App.ImportDatabaseBackup(dialog.FileName);
+            // La purge est suspendue : elle ne doit pas supprimer la sauvegarde choisie avant son import.
+            BackupService.PruneSuspended = true;
+            var safety = App.DbFactory.CreateBackup("avant-import");
+            BackupStatusMessage = $"Copie de sécurité faite : {safety}";
+            App.ImportDatabaseBackup(path);
         }
         catch (Exception ex)
         {
-            BackupStatusMessage = $"Erreur pendant l'import de la sauvegarde : {ex.Message}";
+            BackupService.PruneSuspended = false;
+            BackupStatusMessage = $"Erreur pendant l'import de la sauvegarde : {ex.Message}\nLa base actuelle n'a pas été modifiée.";
         }
     }
 }

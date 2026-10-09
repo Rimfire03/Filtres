@@ -54,7 +54,6 @@ public partial class DatabaseServerWindow : Window
         var server = ServerModeRadio.IsChecked == true;
         ServerPanel.IsEnabled = !_busy;
         MigrationPanel.IsEnabled = !_busy;
-        DumpPanel.IsEnabled = !_busy;
         SaveButton.IsEnabled = !_busy;
         CloseButton.IsEnabled = !_busy;
         ServerPanel.Opacity = server || MigrationPanel.IsEnabled ? 1 : 0.6;
@@ -164,112 +163,6 @@ public partial class DatabaseServerWindow : Window
         {
             TestButton.IsEnabled = true;
         }
-    }
-
-    // ---- Dump complet ----
-
-    /// <summary>Dossier FiltreData\Save DB, proposé par défaut pour télécharger et recharger les dumps.</summary>
-    private static string SaveDbDirectory()
-    {
-        System.IO.Directory.CreateDirectory(FiltresApp.Core.Services.DbContextFactory.BackupDirectory);
-        return FiltresApp.Core.Services.DbContextFactory.BackupDirectory;
-    }
-
-    private async void OnDumpClick(object sender, RoutedEventArgs e)
-    {
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Title = "Télécharger un dump complet",
-            Filter = "Dump de la base (*.db)|*.db",
-            FileName = $"dump_filtres_{DateTime.Now:yyyyMMdd_HHmmss}_{App.CurrentVersion}.db"
-        };
-        if (dialog.ShowDialog(this) != true) return;
-
-        SetDumpBusy(true, "Création du dump en cours...");
-        try
-        {
-            var path = dialog.FileName;
-            await Task.Run(() => App.DbFactory.ExportTo(path));
-            var size = new System.IO.FileInfo(path).Length;
-            DumpStatusText.Foreground = (Brush)FindResource("BrushPrimary");
-            DumpStatusText.Text = $"Dump enregistré ({size / 1024.0 / 1024.0:0.0} Mo) : {path}";
-        }
-        catch (Exception ex)
-        {
-            DumpStatusText.Foreground = (Brush)FindResource("BrushDanger");
-            DumpStatusText.Text = "Échec du dump : " + Describe(ex);
-        }
-        finally
-        {
-            SetDumpBusy(false);
-        }
-    }
-
-    private async void OnReloadDumpClick(object sender, RoutedEventArgs e)
-    {
-        if (!App.GuardWritable()) return;
-
-        var dialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Title = "Recharger un dump",
-            Filter = "Dump ou sauvegarde (*.db;*.bak)|*.db;*.bak|Tous les fichiers (*.*)|*.*",
-            InitialDirectory = SaveDbDirectory()
-        };
-        if (dialog.ShowDialog(this) != true) return;
-        var path = dialog.FileName;
-
-        // Le fichier doit être une base de ce logiciel, pas plus récente que lui.
-        int dumpVersion;
-        try
-        {
-            dumpVersion = await Task.Run(() => new DbContextFactory(DbTarget.ForFile(path), readOnly: true).GetDatabaseVersion());
-        }
-        catch (Exception ex)
-        {
-            App.Dialogs.ShowMessage("Dump illisible", "Ce fichier n'est pas un dump valide : " + Describe(ex));
-            return;
-        }
-        if (dumpVersion > DbContextFactory.LatestVersion)
-        {
-            App.Dialogs.ShowMessage("Dump trop récent", $"Ce dump a été créé par une version plus récente du logiciel (base v{dumpVersion}, ce logiciel gère v{DbContextFactory.LatestVersion}). Mettez d'abord le logiciel à jour.");
-            return;
-        }
-        if (dumpVersion == 0)
-        {
-            App.Dialogs.ShowMessage("Dump illisible", "Ce fichier ne contient pas de base de données de ce logiciel.");
-            return;
-        }
-
-        if (!App.Dialogs.ShowConfirm("Recharger un dump",
-                $"TOUTES les données actuelles ({App.DbFactory.Target.Describe()}) vont être remplacées par celles du dump :\n{path}\n\n" +
-                "Une copie de sécurité de la base actuelle est faite juste avant. Le logiciel redémarrera ensuite. Continuer ?"))
-            return;
-
-        SetDumpBusy(true, "Copie de sécurité de la base actuelle...");
-        try
-        {
-            var safety = await Task.Run(() => App.DbFactory.CreateBackup("avant-rechargement-dump"));
-            SetDumpBusy(true, $"Copie de sécurité faite ({safety}). Rechargement du dump...");
-            await Task.Run(() => App.ImportDatabaseBackup(path));
-        }
-        catch (Exception ex)
-        {
-            SetDumpBusy(false);
-            DumpStatusText.Foreground = (Brush)FindResource("BrushDanger");
-            DumpStatusText.Text = "Échec du rechargement : " + Describe(ex) + "\nLa base actuelle n'a pas été modifiée (une copie de sécurité existe).";
-        }
-    }
-
-    private void SetDumpBusy(bool busy, string? text = null)
-    {
-        _busy = busy;
-        DumpProgress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
-        if (text is not null)
-        {
-            DumpStatusText.Foreground = (Brush)FindResource("BrushTextSecondary");
-            DumpStatusText.Text = text;
-        }
-        UpdateEnabledState();
     }
 
     /// <summary>Bouton « Tester la connexion » : vert si le test a réussi, rouge sinon.</summary>

@@ -105,18 +105,12 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Dump complet : sauvegarde / restauration de toute la base, quel que soit le moteur. -->
+                <!-- Les dumps et sauvegardes sont regroupés dans Paramètres > Base de données > Sauvegarde. -->
                 <Border x:Name="DumpPanel" Style="{StaticResource CardBorder}" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock Text="Dump complet (sauvegarde)" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
-                                   Text="Télécharge toute la base actuelle dans un seul fichier, utilisable comme sauvegarde. Le fichier peut être rechargé plus tard, y compris sur un autre moteur (fichier SQLite ou serveur). Recharger un dump REMPLACE toutes les données actuelles ; une copie de sécurité de la base actuelle est faite juste avant."/>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="Télécharger un dump complet..." Style="{StaticResource PrimaryButton}" Click="OnDumpClick"/>
-                            <Button Content="Recharger un dump..." Style="{StaticResource DangerButton}" Click="OnReloadDumpClick"/>
-                        </StackPanel>
-                        <ProgressBar x:Name="DumpProgress" IsIndeterminate="True" Height="6" Margin="0,10,0,0" Visibility="Collapsed"/>
-                        <TextBlock x:Name="DumpStatusText" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                        <TextBlock Text="Sauvegarde et dump complet" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap"
+                                   Text="Le téléchargement et le rechargement d'un dump complet (fichier utilisable comme sauvegarde, rechargeable sur n'importe quel moteur) se trouvent maintenant dans Paramètres → Base de données → Sauvegarde, avec les sauvegardes automatiques."/>
                     </StackPanel>
                 </Border>
             </StackPanel>
