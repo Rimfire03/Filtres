@@ -25,8 +25,7 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $csproj = Join-Path $root "src\FiltresApp\FiltresApp.csproj"
-$publishDir = Join-Path $root "src\FiltresApp\bin\Release
-et8.0-windows\win-x64\publish"
+$publishDir = Join-Path $root "src\FiltresApp\bin\Release\net8.0-windows\win-x64\publish"
 
 function Git { $ErrorActionPreference = "Continue"; & git.exe -C $root @args 2>&1 | ForEach-Object { "$_" } }
 function Step([string]$m) { Write-Host "[release] $m" }
