@@ -301,7 +301,15 @@ public class DbContextFactory
     private void Backup(FiltresDbContext ctx, int fromVersion) => BackupTo(ctx, $"avant-maj-v{fromVersion}");
 
     /// <summary>Dossier des sauvegardes automatiques : FiltreData\Save DB (créé au besoin).</summary>
-    public static string BackupDirectory => Path.Combine(AppSettings.DataDirectoryPath, "Save DB");
+    public static string BackupDirectory
+    {
+        get
+        {
+            var dir = Path.Combine(AppSettings.DataDirectoryPath, "Save DB");
+            try { Directory.CreateDirectory(dir); } catch { /* dossier en lecture seule : l'erreur viendra à l'écriture */ }
+            return dir;
+        }
+    }
 
     /// <summary>Copie cohérente de la base avant une opération destructive ; retourne le chemin de la copie.
     /// Toujours dans FiltreData\Save DB : copie du fichier SQLite, ou fichier SQLite complet pour un serveur.</summary>
@@ -312,6 +320,7 @@ public class DbContextFactory
         {
             var path = Path.Combine(BackupDirectory, $"serveur.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak");
             ExportTo(path);
+            BackupService.Prune(BackupService.MaxToKeep);
             return path;
         }
         using var ctx = Create();
@@ -324,6 +333,7 @@ public class DbContextFactory
         var backupPath = Path.Combine(BackupDirectory,
             $"{Path.GetFileName(_target.FilePath)}.{reason}-{DateTime.Now:yyyyMMdd-HHmmss}.bak");
         ctx.Database.ExecuteSqlRaw("VACUUM INTO {0};", backupPath);
+        BackupService.Prune(BackupService.MaxToKeep);
         return backupPath;
     }
 

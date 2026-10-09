@@ -45,6 +45,14 @@ public partial class SettingsViewModel : ObservableObject
         ? "Mode : serveur de base de données - " + App.DbFactory.Target.Describe()
         : "Mode : fichier SQLite";
 
+    /// <summary>Ouvre la page « Gestion des sauvegardes automatiques » (liste, planification, conservation).</summary>
+    [RelayCommand]
+    private void OpenBackupManager()
+    {
+        var window = new FiltresApp.Views.Dialogs.BackupManagerWindow { Owner = System.Windows.Application.Current.MainWindow };
+        window.ShowDialog();
+    }
+
     /// <summary>Ouvre la page « Réglages BDD avancés » (serveur de base de données, migration).</summary>
     [RelayCommand]
     private void OpenDatabaseAdvancedSettings()

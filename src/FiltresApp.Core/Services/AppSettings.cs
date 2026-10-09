@@ -22,6 +22,15 @@ public class AppSettings
     /// <summary>Version du logiciel au dernier démarrage : si elle change, la base est sauvegardée (Save DB) avant\r\n    /// d'être ouverte par la nouvelle version.</summary>
     public string? LastRunVersion { get; set; }
 
+    // Sauvegarde automatique planifiée (voir BackupSchedule) et nombre de sauvegardes conservées (0 = illimité).
+    public bool AutoBackupEnabled { get; set; }
+    public string AutoBackupFrequency { get; set; } = BackupSchedule.Daily;
+    public string AutoBackupTime { get; set; } = "02:00";
+    public int AutoBackupDayOfWeek { get; set; } = (int)DayOfWeek.Monday;
+    public int AutoBackupDayOfMonth { get; set; } = 1;
+    public int MaxBackupsToKeep { get; set; } = 30;
+    public DateTime? AutoBackupLastRun { get; set; }
+
     /// <summary>Fenêtre "Rattacher des filtres..." : n'afficher par défaut que les filtres dont la dimension
     /// correspond (approximativement) à celle de la ligne. Désactivé : tous les filtres sont affichés.</summary>
     public bool LinkDimensionFilterEnabled { get; set; } = true;

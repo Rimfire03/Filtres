@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Services;
@@ -101,6 +101,7 @@ public partial class App : Application
         ShutdownMode = ShutdownMode.OnLastWindowClose;
         StartLicenseRevalidation();
         DatabaseHealth.Start();
+        AutoBackup.Start();
 
         if (IsReadOnly)
             MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);

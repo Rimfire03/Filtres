@@ -140,7 +140,8 @@
                     <TextBlock Text="Sauvegarde de la base de données" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBlock Text="Exporte une copie complète du fichier de base (nommée save_db_filtre_DATE_VERSION.db), à garder ou transférer sur un autre poste. L'import ouvre un sélecteur de fichier, puis restaure la sauvegarde choisie en vérifiant sa version et en la mettant à jour si besoin." Style="{StaticResource SectionText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
                     <Button Content="Exporter la base de données" Style="{StaticResource PrimaryButton}" Command="{Binding ExportDatabaseCommand}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
-                    <Button Content="Importer une sauvegarde..." Style="{StaticResource DangerButton}" Command="{Binding ImportDatabaseCommand}" HorizontalAlignment="Left" IsEnabled="{x:Static app:App.IsWritable}"/>
+                    <Button Content="Importer une sauvegarde..." Style="{StaticResource DangerButton}" Command="{Binding ImportDatabaseCommand}" HorizontalAlignment="Left" Margin="0,0,0,12" IsEnabled="{x:Static app:App.IsWritable}"/>
+                    <Button Content="Gestion des sauvegardes automatiques..." Style="{StaticResource SecondaryButton}" Command="{Binding OpenBackupManagerCommand}" HorizontalAlignment="Left"/>
                     <TextBlock Text="{Binding BackupStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
