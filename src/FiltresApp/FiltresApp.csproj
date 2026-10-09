@@ -9,7 +9,7 @@
     <AssemblyName>FiltresApp</AssemblyName>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <Version>1.12.1</Version>
+    <Version>1.12.2</Version>
     <Company>TomLine prod&amp;co</Company>
     <Copyright>Â© TomLine prod&amp;co by Thomas Guidez</Copyright>
   </PropertyGroup>
