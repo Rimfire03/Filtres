@@ -134,11 +134,20 @@ public partial class DatabaseServerWindow : Window
         TestButton.IsEnabled = false;
         try
         {
-            var result = await Task.Run(() => new DbContextFactory(DbTarget.ForServer(info)).TestConnection());
-            TestResultText.Foreground = (Brush)FindResource("BrushPrimary");
-            TestResultText.Text = $"Connexion réussie (serveur {result.ServerInfo}). " + (!result.DatabaseExists
-                ? "La base n'existe pas encore : elle sera créée."
-                : result.HasAppTables ? "La base contient déjà des données de l'application." : "La base existe et est vide.");
+            var result = await Task.Run(() => new DbContextFactory(DbTarget.ForServer(info)).TestConnection(timeoutSeconds: 8));
+            if (!result.DatabaseExists && result.CanCreateDatabase == false)
+            {
+                TestResultText.Foreground = (Brush)FindResource("BrushDanger");
+                TestResultText.Text = $"Serveur joignable (version {result.ServerInfo}) mais la base « {info.Database} » n'existe pas et l'utilisateur « {info.UserName} » n'a pas le droit de créer une base. " +
+                                      "Créez-la sur le serveur, ou donnez-lui ce droit.";
+            }
+            else
+            {
+                TestResultText.Foreground = (Brush)FindResource("BrushPrimary");
+                TestResultText.Text = $"Connexion réussie (version {result.ServerInfo}). " + (!result.DatabaseExists
+                    ? $"La base « {info.Database} » n'existe pas encore : elle sera créée automatiquement" + (result.CanCreateDatabase == true ? "." : " (si l'utilisateur en a le droit).")
+                    : result.HasAppTables ? "La base contient déjà des données de l'application." : "La base existe et est vide.");
+            }
         }
         catch (Exception ex)
         {

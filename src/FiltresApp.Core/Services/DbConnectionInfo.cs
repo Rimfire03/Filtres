@@ -56,6 +56,10 @@ public class DbConnectionInfo
     /// <summary>Connexion chiffrée (SSL/TLS) vers le serveur.</summary>
     public bool UseSsl { get; set; }
 
+    /// <summary>Délai de connexion en secondes (réduit pour le test de connexion).</summary>
+    [JsonIgnore]
+    public int ConnectTimeoutSeconds { get; set; } = 15;
+
     /// <summary>Mot de passe chiffré (DPAPI, base64) tel qu'enregistré dans settings.json.</summary>
     public string? ProtectedPassword { get; set; }
 
@@ -70,7 +74,7 @@ public class DbConnectionInfo
     public DbConnectionInfo Clone() => new()
     {
         Provider = Provider, Host = Host, Port = Port, Database = Database,
-        UserName = UserName, UseSsl = UseSsl, ProtectedPassword = ProtectedPassword
+        UserName = UserName, UseSsl = UseSsl, ProtectedPassword = ProtectedPassword, ConnectTimeoutSeconds = ConnectTimeoutSeconds
     };
 
     /// <summary>Résumé sans secret, pour l'affichage.</summary>
@@ -88,7 +92,7 @@ public class DbConnectionInfo
                 {
                     Host = Host, Port = Port, Database = db, Username = UserName, Password = Password,
                     SslMode = UseSsl ? SslMode.Require : SslMode.Prefer,
-                    Timeout = 15, CommandTimeout = 60, Pooling = true
+                    Timeout = ConnectTimeoutSeconds, CommandTimeout = 60, Pooling = true
                 }.ConnectionString;
 
             case DatabaseProvider.MariaDb:
@@ -96,7 +100,7 @@ public class DbConnectionInfo
                 {
                     Server = Host, Port = (uint)Port, Database = db, UserID = UserName, Password = Password,
                     SslMode = UseSsl ? MySqlSslMode.Required : MySqlSslMode.Preferred,
-                    ConnectionTimeout = 15, DefaultCommandTimeout = 60, AllowUserVariables = true
+                    ConnectionTimeout = (uint)ConnectTimeoutSeconds, DefaultCommandTimeout = 60, AllowUserVariables = true
                 }.ConnectionString;
 
             case DatabaseProvider.SqlServer:
@@ -105,7 +109,7 @@ public class DbConnectionInfo
                     DataSource = Port == 1433 || Port <= 0 ? Host : $"{Host},{Port}",
                     InitialCatalog = db, UserID = UserName, Password = Password,
                     Encrypt = UseSsl ? SqlConnectionEncryptOption.Mandatory : SqlConnectionEncryptOption.Optional,
-                    TrustServerCertificate = true, ConnectTimeout = 15, CommandTimeout = 60
+                    TrustServerCertificate = true, ConnectTimeout = ConnectTimeoutSeconds, CommandTimeout = 60
                 }.ConnectionString;
 
             default:

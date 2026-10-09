@@ -69,53 +69,77 @@ public class DbContextFactory
         return ctx.Database.SqlQueryRaw<string>("""SELECT "Value" AS "Value" FROM "DbInfo" WHERE "Key" = 'AppVersion'""").FirstOrDefault();
     }
 
-    /// <summary>Test de connexion détaillé (écran de réglages) : lève une exception explicite en cas d'échec,
-    /// sinon retourne la version du serveur et si la base de l'application y existe déjà.</summary>
-    public (string ServerInfo, bool HasAppTables, bool DatabaseExists) TestConnection()
+    /// <summary>Résultat du test de connexion à un serveur.</summary>
+    public sealed record ServerTestResult(string ServerInfo, bool DatabaseExists, bool HasAppTables, bool? CanCreateDatabase);
+
+    /// <summary>Test de connexion détaillé (écran de réglages) : lève une exception explicite en cas d'échec.
+    /// Si la base demandée n'existe pas mais que le serveur répond, ce n'est pas une erreur : la base sera
+    /// créée (si l'utilisateur en a le droit, indiqué quand le moteur permet de le savoir).</summary>
+    public ServerTestResult TestConnection(int timeoutSeconds = 15)
     {
         if (!IsServer) throw new InvalidOperationException("Test réservé aux serveurs.");
-        using var ctx = Create();
+        var server = _target.Server!.Clone();
+        server.ConnectTimeoutSeconds = timeoutSeconds;
+        using var ctx = new FiltresDbContext(DbTarget.ForServer(server), false);
         var conn = ctx.Database.GetDbConnection();
         try
         {
             conn.Open();
         }
-        catch when (_target.Server!.Provider != DatabaseProvider.Sqlite && TryServerLevelConnect(out var info))
+        catch (Exception ex) when (IsMissingDatabase(ex))
         {
-            // Serveur joignable mais la base n'existe pas encore : elle sera créée.
-            return (info, false, false);
+            // Serveur joignable, base absente : on se connecte au niveau serveur pour le confirmer.
+            var (info, canCreate) = ServerLevelConnect(server);
+            return new ServerTestResult(info, false, false, canCreate);
         }
-        var serverInfo = $"{conn.ServerVersion}";
-        var has = ServerSql.HasAppTables(ctx);
-        conn.Close();
-        return (serverInfo, has, true);
-    }
-
-    private bool TryServerLevelConnect(out string info)
-    {
-        info = "";
-        var server = _target.Server!;
-        var adminDb = server.Provider switch
-        {
-            DatabaseProvider.PostgreSql => "postgres",
-            DatabaseProvider.SqlServer => "master",
-            _ => null
-        };
         try
         {
-            using System.Data.Common.DbConnection c = server.Provider switch
-            {
-                DatabaseProvider.PostgreSql => new Npgsql.NpgsqlConnection(server.BuildConnectionString(adminDb)),
-                DatabaseProvider.SqlServer => new Microsoft.Data.SqlClient.SqlConnection(server.BuildConnectionString(adminDb)),
-                _ => new MySqlConnector.MySqlConnection(server.BuildConnectionString(""))
-            };
-            c.Open();
-            info = c.ServerVersion;
-            return true;
+            return new ServerTestResult(conn.ServerVersion, true, ServerSql.HasAppTables(ctx), null);
         }
-        catch
+        finally
         {
-            return false;
+            conn.Close();
+        }
+    }
+
+    /// <summary>La connexion a échoué parce que la base demandée n'existe pas (et non parce que le serveur est
+    /// injoignable ou que les identifiants sont refusés).</summary>
+    private static bool IsMissingDatabase(Exception ex) => ex switch
+    {
+        Npgsql.PostgresException pg => pg.SqlState == "3D000",
+        MySqlConnector.MySqlException my => my.Number == 1049,
+        Microsoft.Data.SqlClient.SqlException ms => ms.Number == 4060,
+        _ => false
+    };
+
+    /// <summary>Connexion au serveur sans la base de l'application (base « postgres » / « master », ou aucune
+    /// pour MariaDB) : retourne la version du serveur et, quand c'est vérifiable, le droit de créer une base.</summary>
+    private static (string Info, bool? CanCreate) ServerLevelConnect(DbConnectionInfo server)
+    {
+        switch (server.Provider)
+        {
+            case DatabaseProvider.PostgreSql:
+            {
+                using var c = new Npgsql.NpgsqlConnection(server.BuildConnectionString("postgres"));
+                c.Open();
+                using var cmd = c.CreateCommand();
+                cmd.CommandText = "SELECT rolcreatedb OR rolsuper FROM pg_roles WHERE rolname = current_user";
+                return (c.ServerVersion, cmd.ExecuteScalar() as bool?);
+            }
+            case DatabaseProvider.SqlServer:
+            {
+                using var c = new Microsoft.Data.SqlClient.SqlConnection(server.BuildConnectionString("master"));
+                c.Open();
+                using var cmd = c.CreateCommand();
+                cmd.CommandText = "SELECT CASE WHEN IS_SRVROLEMEMBER('sysadmin') = 1 OR IS_SRVROLEMEMBER('dbcreator') = 1 THEN 1 ELSE 0 END";
+                return (c.ServerVersion, Convert.ToInt32(cmd.ExecuteScalar()) == 1);
+            }
+            default:
+            {
+                using var c = new MySqlConnector.MySqlConnection(server.BuildConnectionString(""));
+                c.Open();
+                return (c.ServerVersion, null);
+            }
         }
     }
 
@@ -180,7 +204,18 @@ public class DbContextFactory
     {
         using var ctx = Create();
         var creator = ctx.GetService<IRelationalDatabaseCreator>();
-        if (!creator.Exists()) creator.Create();
+        try
+        {
+            if (!creator.Exists()) creator.Create();
+        }
+        catch (Exception ex)
+        {
+            var inner = ex;
+            while (inner.InnerException is not null) inner = inner.InnerException;
+            throw new InvalidOperationException(
+                $"La base « {_target.Server!.Database} » n'existe pas sur le serveur et n'a pas pu être créée : {inner.Message}\n" +
+                "Créez-la sur le serveur, ou donnez à l'utilisateur le droit de créer des bases.", ex);
+        }
 
         if (!ServerSql.HasAppTables(ctx))
         {
