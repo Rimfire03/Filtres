@@ -68,7 +68,9 @@ public partial class App : Application
         }
         catch (DatabaseVersionException ex)
         {
-            MessageBox.Show(ex.Message, "Démarrage impossible : version de la base de données", MessageBoxButton.OK, MessageBoxImage.Stop);
+            // Base plus récente que le logiciel : proposer la mise à jour du logiciel plutôt qu'une erreur.
+            if (!(ex.AppTooOld && OfferUpdateForNewerDatabase()))
+                MessageBox.Show(ex.Message, "Démarrage impossible : version de la base de données", MessageBoxButton.OK, MessageBoxImage.Stop);
             Shutdown(-1);
             return;
         }

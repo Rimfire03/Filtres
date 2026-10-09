@@ -97,7 +97,7 @@ public partial class App
                 $"Version de la base : {dbVersion}" + (by is null ? "" : $" (mise à jour par le logiciel version {by})") + "\n" +
                 $"Version de base gérée par ce logiciel : {expected}\n\n" +
                 "Installez la dernière version du logiciel sur ce poste" + (by is null ? "" : $" ({by} ou plus récente)") +
-                ", puis relancez-le. Rien n'a été modifié dans la base.");
+                ", puis relancez-le. Rien n'a été modifié dans la base.", appTooOld: true);
         }
 
         if (dbVersion < expected && !IsReadOnly)

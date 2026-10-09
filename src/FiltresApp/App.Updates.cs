@@ -1,3 +1,4 @@
+using System.Windows;
 using FiltresApp.Core.Services;
 
 namespace FiltresApp;
@@ -15,6 +16,42 @@ public partial class App
         {
             var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             return v is null ? "0.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
+        }
+    }
+
+    /// <summary>Base de données plus récente que ce logiciel : cherche la dernière version et propose de
+    /// l'installer (la base n'est pas touchée, donc pas de sauvegarde). Renvoie true si l'installation a été
+    /// lancée (l'appelant quitte alors sans message d'erreur), false s'il faut afficher l'erreur habituelle
+    /// (pas de mise à jour trouvée, réseau indisponible, refus ou échec).</summary>
+    private static bool OfferUpdateForNewerDatabase()
+    {
+        UpdateInfo? info;
+        try
+        {
+            info = Task.Run(() => Updater.CheckForUpdateAsync(CurrentVersion)).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return false;
+        }
+        if (info is null) return false;
+
+        var accepted = MessageBox.Show(
+            $"La base de données a été mise à jour par une version plus récente du logiciel : votre version ({CurrentVersion}) ne peut pas l'ouvrir.\n\n" +
+            $"La version {info.Version} est disponible. La télécharger et l'installer maintenant ? " +
+            "La base de données ne sera pas modifiée. L'application va se fermer puis redémarrer automatiquement.",
+            "Mise à jour du logiciel nécessaire", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+        if (accepted != MessageBoxResult.Yes) return false;
+
+        try
+        {
+            Task.Run(() => Updater.DownloadAndApplyAsync(info)).GetAwaiter().GetResult();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"La mise à jour a échoué : {ex.Message}", "Mise à jour", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
     }
 
