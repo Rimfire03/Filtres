@@ -92,15 +92,23 @@
                         <Button Content="Gestion des sauvegardes automatiques..." Style="{StaticResource SecondaryButton}" Command="{Binding OpenBackupManagerCommand}" Margin="0,0,0,8"/>
                     </WrapPanel>
                     <TextBlock Text="{Binding BackupStatusMessage}" TextWrapping="Wrap" Margin="0,2,0,10" Foreground="{StaticResource BrushPrimary}"/>
-                    <Separator Margin="0,0,0,10"/>
-                    <TextBlock Text="Dossier d'export PDF (remplace le chemin réseau de l'ancienne macro Excel) :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+
+                    <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Export PDF / Excel : dossier de destination des exports. -->
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Export PDF" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Dossier d'export PDF :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
                     <DockPanel Margin="0,0,0,10">
                         <Button DockPanel.Dock="Right" Content="Parcourir..." Style="{StaticResource SecondaryButton}" Command="{Binding BrowsePdfExportPathCommand}"/>
                         <TextBox Text="{Binding PdfExportPath, UpdateSourceTrigger=PropertyChanged}"/>
                     </DockPanel>
-
-                    <Button Content="Enregistrer les paramètres" Style="{StaticResource PrimaryButton}" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left"/>
-                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                    <Button Content="Enregistrer le dossier" Style="{StaticResource PrimaryButton}" Command="{Binding SavePdfExportPathCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding PdfStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
 

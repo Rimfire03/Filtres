@@ -19,6 +19,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _exportStatusMessage = string.Empty;
 
     [ObservableProperty] private string _backupStatusMessage = string.Empty;
+    [ObservableProperty] private string _pdfStatusMessage = string.Empty;
 
     [ObservableProperty] private bool _autoUpdateEnabled;
     [ObservableProperty] private bool _linkDimensionFilterEnabled;
@@ -243,7 +244,6 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         App.Settings.DatabasePath = DatabasePath;
-        App.Settings.PdfExportPath = PdfExportPath;
         App.Settings.Save();
 
         if (databasePathChanged)
@@ -255,6 +255,14 @@ public partial class SettingsViewModel : ObservableObject
         StatusMessage = "Paramètres enregistrés.";
     }
 
+    /// <summary>Enregistre le dossier d'export PDF / Excel (carte « Export PDF » des Paramètres).</summary>
+    [RelayCommand]
+    private void SavePdfExportPath()
+    {
+        App.Settings.PdfExportPath = PdfExportPath;
+        App.Settings.Save();
+        PdfStatusMessage = "Dossier d'export enregistré.";
+    }
     /// <summary>Dossier FiltreData\Save DB (créé au besoin) : emplacement proposé pour les dumps et sauvegardes.</summary>
     private static string SaveDbDirectory()
     {
