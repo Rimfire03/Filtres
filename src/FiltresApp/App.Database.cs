@@ -21,6 +21,8 @@ public partial class App
     /// sauvegarde). Retourne false si l'utilisateur annule, auquel cas l'application doit se fermer.</summary>
     private static bool EnsureDatabaseSelected()
     {
+        if (Settings.UseDatabaseServer) return EnsureServerReachable();
+
         while (!File.Exists(Settings.ResolvedDatabasePath))
         {
             var choice = MessageBox.Show(
@@ -56,22 +58,69 @@ public partial class App
         return true;
     }
 
-    /// <summary>Prend l'accès en écriture si aucun autre poste ne l'a déjà, sinon ouvre la base en
-    /// lecture seule.</summary>
-    private static void OpenDatabase(string path)
+    /// <summary>Mode serveur : vérifie que le serveur répond avant d'ouvrir la base. En cas d'échec, propose de
+    /// réessayer, de revenir au fichier SQLite local ou de quitter. Retourne false pour quitter.</summary>
+    private static bool EnsureServerReachable()
     {
-        // Rechargement du même fichier par le rédacteur : on garde le verrou pour ne pas le céder.
-        if (_writeLock is null || !string.Equals(_writeLockPath, path, StringComparison.OrdinalIgnoreCase))
+        while (true)
+        {
+            string error;
+            try
+            {
+                new DbContextFactory(Settings.ResolvedTarget).TestConnection();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                while (ex.InnerException is not null) ex = ex.InnerException;
+                error = ex.Message;
+            }
+
+            var choice = MessageBox.Show(
+                $"Impossible de joindre le serveur de base de données :\n{Settings.DatabaseServer.Describe()}\n\n{error}\n\n" +
+                "Oui : réessayer.\n" +
+                "Non : utiliser de nouveau le fichier SQLite local.\n" +
+                "Annuler : fermer l'application.",
+                "Serveur de base de données injoignable", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+
+            if (choice == MessageBoxResult.Yes) continue;
+            if (choice != MessageBoxResult.No) return false;
+
+            Settings.UseDatabaseServer = false;
+            Settings.Save();
+            return EnsureDatabaseSelected();
+        }
+    }
+
+    /// <summary>Prend l'accès en écriture si aucun autre poste ne l'a déjà, sinon ouvre la base en
+    /// lecture seule. Sur un serveur de base de données, pas de verrou : le serveur gère les écritures
+    /// simultanées de tous les postes.</summary>
+    private static void OpenDatabase(DbTarget target)
+    {
+        if (target.IsServer)
         {
             _writeLock?.Dispose();
-            _writeLock = DbWriteLock.TryAcquire(path);
-            _writeLockPath = path;
+            _writeLock = null;
+            _writeLockPath = null;
+            IsReadOnly = false;
+            WriteLockOwner = null;
         }
-        IsReadOnly = _writeLock is null;
-        WriteLockOwner = IsReadOnly ? DbWriteLock.ReadOwner(path) : null;
+        else
+        {
+            var path = target.FilePath!;
+            // Rechargement du même fichier par le rédacteur : on garde le verrou pour ne pas le céder.
+            if (_writeLock is null || !string.Equals(_writeLockPath, path, StringComparison.OrdinalIgnoreCase))
+            {
+                _writeLock?.Dispose();
+                _writeLock = DbWriteLock.TryAcquire(path);
+                _writeLockPath = path;
+            }
+            IsReadOnly = _writeLock is null;
+            WriteLockOwner = IsReadOnly ? DbWriteLock.ReadOwner(path) : null;
+        }
 
-        DbFactory = new DbContextFactory(path, IsReadOnly);
-        CheckDatabaseVersion(path);
+        DbFactory = new DbContextFactory(target, IsReadOnly);
+        CheckDatabaseVersion();
         DbFactory.EnsureDatabaseUpToDate(CurrentVersion);
         DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
@@ -82,9 +131,9 @@ public partial class App
     /// <summary>Bloque l'ouverture si ce logiciel et la base ne sont pas à la même version : logiciel trop
     /// ancien pour une base déjà mise à jour, ou poste en lecture seule qui ne peut pas mettre la base à
     /// jour lui-même.</summary>
-    private static void CheckDatabaseVersion(string path)
+    private static void CheckDatabaseVersion()
     {
-        if (!File.Exists(path)) return; // base neuve, créée directement à la dernière version
+        if (DbFactory.IsNewDatabase()) return; // base neuve, créée directement à la dernière version
 
         var dbVersion = DbFactory.GetDatabaseVersion();
         var expected = DbContextFactory.LatestVersion;
@@ -102,11 +151,14 @@ public partial class App
 
         if (dbVersion < expected && !IsReadOnly)
         {
-            var changes = string.Join("\n", DbContextFactory.PendingMigrations(dbVersion).Select(c => "  • " + c));
+            var pending = DbFactory.IsServer ? DbContextFactory.PendingServerMigrations(dbVersion) : DbContextFactory.PendingMigrations(dbVersion);
+            var changes = string.Join("\n", pending.Select(c => "  • " + c));
             var accepted = MessageBox.Show(
                 $"La base de données est en version {dbVersion} ; cette version du logiciel ({CurrentVersion}) a besoin de la version {expected}.\n\n" +
                 $"Modifications à appliquer :\n{changes}\n\n" +
-                "Une copie de sauvegarde complète de la base sera faite à côté du fichier avant la mise à jour. " +
+                (DbFactory.IsServer
+                    ? "Faites une sauvegarde du serveur avant de continuer si ce n'est pas déjà fait. "
+                    : "Une copie de sauvegarde complète de la base sera faite à côté du fichier avant la mise à jour. ") +
                 "Après la mise à jour, les postes équipés d'une version plus ancienne du logiciel ne pourront plus l'ouvrir.\n\n" +
                 "Mettre à jour la base maintenant ?",
                 "Mise à jour de la base de données", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
@@ -136,6 +188,28 @@ public partial class App
     /// jour de base). Réservé au poste rédacteur (voir <see cref="GuardWritable"/>, appelé par l'appelant).</summary>
     public static void ImportDatabaseBackup(string backupPath)
     {
+        if (DbFactory.IsServer)
+        {
+            // Serveur : la sauvegarde (fichier SQLite) est d'abord mise à jour sur une copie temporaire, puis
+            // son contenu remplace celui du serveur.
+            var temp = Path.Combine(Path.GetTempPath(), $"filtres-import-{Guid.NewGuid():N}.db");
+            try
+            {
+                File.Copy(backupPath, temp, overwrite: true);
+                new DbContextFactory(temp).EnsureDatabaseUpToDate(CurrentVersion);
+                DatabaseCopier.Copy(DbTarget.ForFile(temp), DbFactory.Target, CurrentVersion, replaceDestination: true);
+            }
+            finally
+            {
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                foreach (var f in Directory.GetFiles(Path.GetTempPath(), Path.GetFileName(temp) + "*"))
+                    try { File.Delete(f); } catch { /* temporaire */ }
+            }
+            Db.Dispose();
+            Restart();
+            return;
+        }
+
         Db.Dispose();
         // Les connexions Sqlite peuvent rester mises en pool après Dispose() et garder le fichier
         // verrouillé : on les libère explicitement avant d'écraser le fichier.

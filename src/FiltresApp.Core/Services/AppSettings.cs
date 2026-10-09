@@ -47,6 +47,21 @@ public class AppSettings
     /// réglages) : seul l'exécutable doit rester à la racine du dossier publié.</summary>
     private static string DataDirectory => Path.Combine(AppContext.BaseDirectory, "FiltreData");
 
+    /// <summary>Dossier des données locales (réglages, sauvegardes de serveur).</summary>
+    public static string DataDirectoryPath => DataDirectory;
+
+    /// <summary>Utiliser un serveur de base de données (réglages dans <see cref="DatabaseServer"/>) au lieu du
+    /// fichier SQLite <see cref="DatabasePath"/>. Le fichier n'est jamais supprimé en passant sur un serveur.</summary>
+    public bool UseDatabaseServer { get; set; }
+
+    /// <summary>Dernier réglage de serveur saisi (conservé même si on revient au fichier).</summary>
+    public DbConnectionInfo DatabaseServer { get; set; } = new();
+
+    /// <summary>Base à ouvrir selon les réglages.</summary>
+    [JsonIgnore]
+    public DbTarget ResolvedTarget =>
+        UseDatabaseServer ? DbTarget.ForServer(DatabaseServer) : DbTarget.ForFile(ResolvedDatabasePath);
+
     private static string SettingsFilePath => Path.Combine(DataDirectory, "settings.json");
 
     public static AppSettings Load()

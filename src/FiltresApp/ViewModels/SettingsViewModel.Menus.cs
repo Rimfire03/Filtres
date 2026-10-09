@@ -176,8 +176,11 @@ public partial class SettingsViewModel
 
     /// <summary>Le choix manuel d'une variété comme famille de Commande / Inventaire mémorise son nom : un
     /// renommage doit le suivre, sinon la ligne perdrait sa famille.</summary>
-    internal static void RenameVarietyInOrderLines(string oldName, string newName) =>
-        App.Db.Database.ExecuteSqlRaw(
-            """UPDATE "OrderLines" SET "FamilyOverrideType" = {0} WHERE "FamilyOverride" = {1} AND lower("FamilyOverrideType") = lower({2});""",
-            newName, OrderLine.DynamicTypeOverride, oldName);
+    internal static void RenameVarietyInOrderLines(string oldName, string newName)
+    {
+        var oldLower = oldName.ToLower();
+        App.Db.OrderLines
+            .Where(l => l.FamilyOverride == OrderLine.DynamicTypeOverride && l.FamilyOverrideType != null && l.FamilyOverrideType.ToLower() == oldLower)
+            .ExecuteUpdate(s => s.SetProperty(l => l.FamilyOverrideType, newName));
+    }
 }

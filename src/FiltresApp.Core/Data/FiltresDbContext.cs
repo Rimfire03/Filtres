@@ -1,4 +1,5 @@
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,14 +7,21 @@ namespace FiltresApp.Core.Data;
 
 public class FiltresDbContext : DbContext
 {
-    private readonly string _dbPath;
+    private readonly DbTarget _target;
     private readonly bool _readOnly;
 
-    public FiltresDbContext(string dbPath, bool readOnly = false)
+    // Version du serveur MariaDB/MySQL détectée une fois par serveur (la détection ouvre une connexion).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ServerVersion> MySqlVersions = new();
+
+    public FiltresDbContext(string dbPath, bool readOnly = false) : this(DbTarget.ForFile(dbPath), readOnly) { }
+
+    public FiltresDbContext(DbTarget target, bool readOnly = false)
     {
-        _dbPath = dbPath;
+        _target = target;
         _readOnly = readOnly;
     }
+
+    public DatabaseProvider Provider => _target.Provider;
 
     public DbSet<PeriodicFilter> PeriodicFilters => Set<PeriodicFilter>();
     public DbSet<FilterReplacement> FilterReplacements => Set<FilterReplacement>();
@@ -42,17 +50,44 @@ public class FiltresDbContext : DbContext
     {
         // Journal SQLite par défaut (DELETE) volontairement conservé : le mode WAL ne fonctionne pas sur
         // un disque réseau. Le délai d'attente couvre les lectures qui tombent pendant une écriture.
-        var connectionString = new SqliteConnectionStringBuilder
+        switch (_target.Provider)
         {
-            DataSource = _dbPath,
-            Mode = _readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate,
-            DefaultTimeout = 30
-        }.ToString();
-        optionsBuilder.UseSqlite(connectionString);
+            case DatabaseProvider.Sqlite:
+                var connectionString = new SqliteConnectionStringBuilder
+                {
+                    DataSource = _target.FilePath,
+                    Mode = _readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate,
+                    DefaultTimeout = 30
+                }.ToString();
+                optionsBuilder.UseSqlite(connectionString);
+                break;
+
+            case DatabaseProvider.PostgreSql:
+                optionsBuilder.UseNpgsql(_target.Server!.BuildConnectionString());
+                break;
+
+            case DatabaseProvider.MariaDb:
+                var mysql = _target.Server!.BuildConnectionString();
+                optionsBuilder.UseMySql(mysql, MySqlVersions.GetOrAdd(mysql, ServerVersion.AutoDetect));
+                break;
+
+            case DatabaseProvider.SqlServer:
+                optionsBuilder.UseSqlServer(_target.Server!.BuildConnectionString());
+                break;
+        }
 
         // Contexte partagé pour toute la session : sans suivi, chaque requête relit la base et voit donc
         // les modifications enregistrées entre-temps par le poste rédacteur.
         if (_readOnly) optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    }
+
+    // Suivi de la dernière saisie sur serveur (pas de déclencheurs SQLite) : voir DatabaseWriteTracking.
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        var changed = Provider != DatabaseProvider.Sqlite && ChangeTracker.HasChanges();
+        var result = base.SaveChanges(acceptAllChangesOnSuccess);
+        if (changed && result > 0) DatabaseWriteTracking.StampServer(this);
+        return result;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

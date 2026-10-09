@@ -112,6 +112,26 @@ synchronisé type OneDrive/Dropbox, qui corromprait le fichier SQLite). Accès e
 - Les utilisateurs doivent avoir les droits d'écriture sur le dossier de la base. Ne jamais
   activer le mode WAL de SQLite (ne fonctionne pas sur un disque réseau).
 
+## Utilisation à plusieurs (serveur de base de données)
+
+Alternative au fichier SQLite : **Paramètres > Base de données > « Réglages BDD avancés... »**.
+
+- Moteurs gérés : **PostgreSQL (recommandé)**, MariaDB / MySQL, Microsoft SQL Server. Plusieurs
+  postes écrivent en même temps, sans verrou ni lecture seule.
+- Réglages : moteur, serveur, port, base, utilisateur, mot de passe (enregistré chiffré par DPAPI
+  dans `FiltreData\settings.json`, lisible seulement par la session Windows qui l'a saisi), SSL.
+  « Tester la connexion » vérifie le serveur avant d'enregistrer.
+- La base et les tables sont créées au premier lancement si l'utilisateur du serveur en a le droit.
+- **Migration** : « Migrer la base actuelle vers ce serveur » copie toutes les données (dans une seule
+  transaction, avec contrôle du nombre de lignes par table). La base d'origine n'est pas modifiée.
+- « Exporter la base de données » produit toujours un fichier SQLite complet, y compris depuis un
+  serveur ; « Importer une sauvegarde » le recharge dans le serveur.
+- Au démarrage, si le serveur ne répond pas, le logiciel propose de réessayer ou de repasser sur le
+  fichier SQLite local.
+- Mises à jour du schéma : un serveur naît au dernier schéma (créé par EF Core). Toute nouvelle
+  migration ajoutée à `DatabaseMigrations.All` doit avoir son équivalent portable dans
+  `DatabaseMigrations.ServerMigrations`, sinon le démarrage sur serveur échoue explicitement.
+
 ## Modules et écrans
 
 Chaque module listé ci-dessous est **activable/désactivable** depuis Paramètres → carte

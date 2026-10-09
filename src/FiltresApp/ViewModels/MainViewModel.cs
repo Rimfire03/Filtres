@@ -478,6 +478,11 @@ public partial class MainViewModel : ObservableObject
         HelpItem.IsSelected = value == HelpItem;
         SettingsItem.IsSelected = value == SettingsItem;
 
+        // Serveur de base de données : d'autres postes écrivent en même temps. Le contexte partagé garde les
+        // lignes déjà lues telles quelles ; on l'oublie à chaque changement d'écran (rien n'est en attente, les
+        // saisies sont enregistrées tout de suite) pour que le rechargement ci-dessous relise le serveur.
+        if (App.DbFactory.IsServer && !App.Db.ChangeTracker.HasChanges()) App.Db.ChangeTracker.Clear();
+
         var vm = value?.GetOrCreateViewModel();
         // Recharge les données à chaque fois qu'on (re)sélectionne l'écran : nécessaire notamment pour
         // que "Inventaire" et "Commande" (qui partagent désormais les mêmes lignes en base, voir

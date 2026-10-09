@@ -18,6 +18,13 @@ public static class DatabaseWriteTracking
     /// chaque ouverture par le poste rédacteur, donc aussi pour les tables ajoutées par une nouvelle version.</summary>
     public static void EnsureTriggers(FiltresDbContext ctx)
     {
+        if (ctx.Provider != DatabaseProvider.Sqlite)
+        {
+            // Serveur : pas de déclencheurs, l'heure est inscrite par FiltresDbContext.SaveChanges.
+            ServerSql.EnsureDbInfo(ctx);
+            return;
+        }
+
         ctx.Database.ExecuteSqlRaw("""CREATE TABLE IF NOT EXISTS "DbInfo" ("Key" TEXT NOT NULL PRIMARY KEY, "Value" TEXT NOT NULL);""");
 
         var tables = ctx.Database.SqlQueryRaw<string>(
@@ -49,14 +56,31 @@ public static class DatabaseWriteTracking
     {
         try
         {
-            var value = ctx.Database.SqlQueryRaw<string>(
-                $"""SELECT "Value" AS "Value" FROM "DbInfo" WHERE "Key" = '{LastWriteKey}'""").FirstOrDefault();
+            var value = ctx.Provider == DatabaseProvider.Sqlite
+                ? ctx.Database.SqlQueryRaw<string>(
+                    $"""SELECT "Value" AS "Value" FROM "DbInfo" WHERE "Key" = '{LastWriteKey}'""").FirstOrDefault()
+                : ServerSql.GetInfo(ctx, LastWriteKey);
             return DateTime.TryParse(value, System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.None, out var at) ? at : null;
         }
-        catch (Exception ex) when (ex is Microsoft.Data.Sqlite.SqliteException or InvalidOperationException)
+        catch (Exception ex) when (ex is Microsoft.Data.Sqlite.SqliteException or InvalidOperationException
+                                       or System.Data.Common.DbException)
         {
             return null;
+        }
+    }
+
+    /// <summary>Serveur de base de données : inscrit l'heure locale de la saisie qui vient d'être enregistrée
+    /// (équivalent des déclencheurs SQLite). Ne doit jamais faire échouer l'enregistrement déjà fait.</summary>
+    public static void StampServer(FiltresDbContext ctx)
+    {
+        try
+        {
+            ServerSql.SetInfo(ctx, LastWriteKey, DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture));
+        }
+        catch
+        {
+            // suivi informatif seulement
         }
     }
 }

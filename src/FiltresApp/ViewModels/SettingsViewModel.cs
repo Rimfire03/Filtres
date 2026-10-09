@@ -38,7 +38,20 @@ public partial class SettingsViewModel : ObservableObject
 
     /// <summary>Taille du fichier de base de données, affichée en Ko ou Mo. Recalculée après tout ce qui
     /// peut la faire varier sensiblement (rechargement, suppression d'historique).</summary>
-    public string DatabaseSizeDisplay => FormatFileSize(App.Settings.ResolvedDatabasePath);
+    public string DatabaseSizeDisplay => App.DbFactory.IsServer ? "serveur" : FormatFileSize(App.Settings.ResolvedDatabasePath);
+
+    /// <summary>Mode de stockage actuel, avec le serveur le cas échéant (sans mot de passe).</summary>
+    public string DatabaseModeDisplay => App.DbFactory.IsServer
+        ? "Mode : serveur de base de données - " + App.DbFactory.Target.Describe()
+        : "Mode : fichier SQLite";
+
+    /// <summary>Ouvre la page « Réglages BDD avancés » (serveur de base de données, migration).</summary>
+    [RelayCommand]
+    private void OpenDatabaseAdvancedSettings()
+    {
+        var window = new FiltresApp.Views.Dialogs.DatabaseServerWindow { Owner = System.Windows.Application.Current.MainWindow };
+        window.ShowDialog();
+    }
 
     private static string FormatFileSize(string path)
     {

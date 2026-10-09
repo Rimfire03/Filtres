@@ -64,7 +64,7 @@ public partial class App : Application
                 return;
             }
 
-            OpenDatabase(Settings.ResolvedDatabasePath);
+            OpenDatabase(Settings.ResolvedTarget);
         }
         catch (DatabaseVersionException ex)
         {
@@ -77,7 +77,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Impossible d'ouvrir la base de données :\n{Settings?.ResolvedDatabasePath}\n\n{ex.Message}",
+                $"Impossible d'ouvrir la base de données :\n{Settings?.ResolvedTarget.Describe()}\n\n{ex.Message}",
                 "Erreur au démarrage", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(-1);
             return;

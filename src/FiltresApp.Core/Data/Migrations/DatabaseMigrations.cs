@@ -54,6 +54,35 @@ internal static class DatabaseMigrations
         (28, "Compteur d'heures de fonctionnement à la réalisation (option par vue)", AddOperatingHoursColumns),
     };
 
+    /// <summary>Dernière version de <see cref="All"/> déjà contenue dans le schéma créé directement par EF Core sur
+    /// un serveur (PostgreSQL, MariaDB/MySQL, SQL Server) : les bases serveur naissent au dernier schéma et
+    /// n'ont jamais besoin des migrations SQLite ci-dessus.</summary>
+    internal const int ServerBaselineVersion = 28;
+
+    /// <summary>Mises à jour du schéma des bases serveur, pour les versions au-delà de
+    /// <see cref="ServerBaselineVersion"/>. RÈGLE : toute nouvelle migration ajoutée à <see cref="All"/> doit avoir ici
+    /// une entrée de même numéro (corps vide si le changement est sans effet sur le schéma), écrite en code portable
+    /// (LINQ / <see cref="ServerSql"/>, pas de PRAGMA ni de syntaxe propre à un moteur). Sinon le démarrage
+    /// sur serveur échoue explicitement plutôt que de laisser le schéma diverger.</summary>
+    internal static readonly (int Version, string Description, Action<FiltresDbContext> Apply)[] ServerMigrations =
+    {
+    };
+
+    /// <summary>Mises à jour serveur à appliquer depuis <paramref name="fromVersion"/>.</summary>
+    internal static IReadOnlyList<(int Version, string Description, Action<FiltresDbContext> Apply)> ServerPlan(int fromVersion)
+    {
+        var plan = new List<(int Version, string Description, Action<FiltresDbContext> Apply)>();
+        foreach (var m in All.Where(m => m.Version > Math.Max(fromVersion, ServerBaselineVersion)))
+        {
+            var server = ServerMigrations.Where(s => s.Version == m.Version).ToList();
+            if (server.Count == 0)
+                throw new InvalidOperationException(
+                    $"Mise à jour de base v{m.Version} ({m.Description}) sans équivalent pour les serveurs de bases de données (DatabaseMigrations.ServerMigrations).");
+            plan.Add(server[0]);
+        }
+        return plan;
+    }
+
     /// <summary>Option par vue « compteur d'heures » et valeur relevée sur chaque remplacement. Idempotent.</summary>
     private static void AddOperatingHoursColumns(FiltresDbContext ctx)
     {
