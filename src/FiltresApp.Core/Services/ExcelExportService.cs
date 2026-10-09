@@ -62,7 +62,6 @@ public class ExcelExportService
             .ToLookup(r => r.PeriodicFilterId);
 
         var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place", "Périodicité" };
-        if (view.Category == FilterCategory.Charbon) headers.Add("Compteur d'heures");
         var firstMonthCol = headers.Count + 1;
         var perMonth = view.TracksOperatingHours ? 3 : 2;
         for (var m = 1; m <= 12; m++)
@@ -93,7 +92,6 @@ public class ExcelExportService
                 ws.Cell(row, col++).Value = f.MediaType;
                 ws.Cell(row, col++).Value = f.QuantityInPlace;
                 ws.Cell(row, col++).Value = f.PeriodicityDisplay;
-                if (view.Category == FilterCategory.Charbon) ws.Cell(row, col++).Value = f.HourCounter;
 
                 var repsForFilter = replacements[f.Id];
                 var plannedMonths = f.GetPeriodicityMonths();
@@ -116,8 +114,8 @@ public class ExcelExportService
 
         Finish(ws, headers.Count, row - 1);
 
-        // Séparation épaisse juste avant les colonnes de remplacement (après « Périodicité », ou après « Compteur
-        // d'heures » pour Charbon), posée après le quadrillage fin ; les bandeaux de famille fusionnés en sont exclus.
+        // Séparation épaisse juste avant les colonnes de remplacement (après « Périodicité »), posée après le
+        // quadrillage fin ; les bandeaux de famille fusionnés en sont exclus.
         var periodicityCol = firstMonthCol - 1;
         for (var r = 1; r < row; r++)
             if (!familyRows.Contains(r))
