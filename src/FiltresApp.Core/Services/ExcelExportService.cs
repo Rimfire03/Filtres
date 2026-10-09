@@ -81,9 +81,10 @@ public class ExcelExportService
             : new[] { (Title: (string?)null, Items: filters) };
 
         var row = 2;
+        var familyRows = new List<int>();
         foreach (var (title, items) in groups)
         {
-            if (title is not null) WriteFamilyRow(ws, row++, title, headers.Count);
+            if (title is not null) { familyRows.Add(row); WriteFamilyRow(ws, row++, title, headers.Count); }
             foreach (var f in items)
             {
                 var col = 1;
@@ -113,7 +114,14 @@ public class ExcelExportService
             }
         }
 
-        Finish(ws, headers.Count);
+        Finish(ws, headers.Count, row - 1);
+
+        // Séparation épaisse après « Périodicité » (5e colonne), posée après le quadrillage fin ; les bandeaux
+        // de famille fusionnés en sont exclus.
+        const int periodicityCol = 5;
+        for (var r = 1; r < row; r++)
+            if (!familyRows.Contains(r))
+                ws.Cell(r, periodicityCol).Style.Border.RightBorder = XLBorderStyleValues.Thick;
     }
 
     // ---- Variétés du menu dépliant "Filtres F7 à H14" (pas de périodicité fixe : dates des derniers
@@ -166,7 +174,7 @@ public class ExcelExportService
             }
         }
 
-        Finish(ws, headers.Count);
+        Finish(ws, headers.Count, row - 1);
     }
 
     // ---- Mise en forme commune ----
@@ -197,8 +205,13 @@ public class ExcelExportService
         cell.Style.DateFormat.Format = "dd/MM/yyyy";
     }
 
-    private static void Finish(IXLWorksheet ws, int columnCount)
+    private static void Finish(IXLWorksheet ws, int columnCount, int lastRow)
     {
+        // Quadrillage fin sur tout le tableau.
+        var table = ws.Range(1, 1, Math.Max(lastRow, 1), columnCount);
+        table.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+        table.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
         ws.SheetView.FreezeRows(1);
         ws.Columns(1, columnCount).AdjustToContents();
     }
