@@ -65,6 +65,14 @@
                         <TextBlock Text="Le mode édition (création de vues et de variétés) se trouve sur la page de chaque menu dépliant (« Changement filtre périodique », « Changement sur encrassement ») : bouton rouge (désactivé) / vert (activé)." Style="{StaticResource SectionText}" Margin="0,0,0,8" TextWrapping="Wrap"/>
                         <CheckBox Content="Rattacher des filtres... : n'afficher par défaut que les dimensions correspondantes (±5 mm)"
                                   IsChecked="{Binding Settings.LinkDimensionFilterEnabled}"/>
+                        <TextBlock Text="Compteur d'heures de fonctionnement : activé par vue, il est demandé en cochant « Réalisé » et ajouté à l'export Excel." Style="{StaticResource SectionText}" Margin="0,12,0,4" TextWrapping="Wrap"/>
+                        <ItemsControl ItemsSource="{Binding Settings.HourCounterViews}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsEnabled}" Margin="0,0,0,4"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
 

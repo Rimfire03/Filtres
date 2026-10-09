@@ -333,8 +333,23 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// <summary>Case à cocher de la grille : fixe la date du jour sur le remplacement du mois consulté (voir
     /// <see cref="SelectedConsultedMonth"/>) ; décocher le supprime. Ne touche jamais aux autres mois /
     /// années : c'est ce qui permet de changer d'année sans perdre l'historique.</summary>
-    public void SetReplacementDone(PeriodicFilter filter, bool done) =>
-        SaveConsultedMonthReplacement(filter, done ? DateForConsultedMonth() : null, refreshQuantity: true);
+    public void SetReplacementDone(PeriodicFilter filter, bool done)
+    {
+        if (!done || !App.Db.PeriodicViews.AsNoTracking().Any(v => v.Id == _viewId && v.TracksOperatingHours))
+        {
+            SaveConsultedMonthReplacement(filter, done ? DateForConsultedMonth() : null, refreshQuantity: true);
+            return;
+        }
+
+        // Option « compteur d'heures » de la vue : relevé demandé à la réalisation ; annuler laisse la case décochée.
+        int? hours = null;
+        var fields = new List<EditField>
+        {
+            EditField.NullableInt("Compteur d'heures de fonctionnement", () => hours, v => hours = v)
+        };
+        if (!App.Dialogs.EditFields($"Changement réalisé : {filter.Location}", fields)) return;
+        SaveConsultedMonthReplacement(filter, DateForConsultedMonth(), refreshQuantity: true, hours, setHours: true);
+    }
 
     /// <summary>Date du mois consulté au jour choisi dans le sélecteur "Jour" (aujourd'hui si aucun mois
     /// consulté).</summary>
@@ -349,11 +364,12 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     public void SetReplacementDate(PeriodicFilter filter, DateOnly? date) =>
         SaveConsultedMonthReplacement(filter, date, refreshQuantity: false);
 
-    private void SaveConsultedMonthReplacement(PeriodicFilter filter, DateOnly? date, bool refreshQuantity)
+    private void SaveConsultedMonthReplacement(PeriodicFilter filter, DateOnly? date, bool refreshQuantity,
+        int? hours = null, bool setHours = false)
     {
         if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
         filter.Replacements = ReplacementTrackingService.SetMonthReplacement(App.Db, filter.Id,
-            consulted.Year, consulted.Month, date, filter.QuantityInPlace, refreshQuantity);
+            consulted.Year, consulted.Month, date, filter.QuantityInPlace, refreshQuantity, hours, setHours);
     }
 
     /// <summary>Bascule l'option "Changé tous les 15 jours" (menu contextuel de la grille, G4 plissé

@@ -46,6 +46,32 @@ public partial class MenuTitleEdit : ObservableObject
     [ObservableProperty] private bool _defaultExpanded;
 }
 
+/// <summary>Case « Saisir le compteur d'heures de fonctionnement » d'une vue (Paramètres du module Filtre).</summary>
+public partial class HourCounterViewOption : ObservableObject
+{
+    private readonly int _viewId;
+
+    public HourCounterViewOption(int viewId, string name, bool enabled)
+    {
+        _viewId = viewId;
+        Name = name;
+        _isEnabled = enabled;
+    }
+
+    public string Name { get; }
+
+    [ObservableProperty] private bool _isEnabled;
+
+    partial void OnIsEnabledChanged(bool value)
+    {
+        if (!App.GuardWritable()) return;
+        var view = App.Db.PeriodicViews.FirstOrDefault(v => v.Id == _viewId);
+        if (view is null) return;
+        view.TracksOperatingHours = value;
+        App.Db.SaveChanges();
+    }
+}
+
 /// <summary>Carte « Titres et icônes des menus » de « Paramètres du module Filtre » : titre, icône devant le titre
 /// et, pour les deux menus dépliants, état par défaut (plié / déplié) au lancement. Enregistré dans la base
 /// (commun à tous les postes).</summary>
@@ -54,7 +80,20 @@ public partial class SettingsViewModel
     [ObservableProperty] private ObservableCollection<MenuTitleEdit> _menuEdits = new();
     [ObservableProperty] private string _menuEditStatusMessage = string.Empty;
 
-    private void InitializeMenus() => LoadMenuEdits();
+    private void InitializeMenus()
+    {
+        LoadMenuEdits();
+        LoadHourCounterViews();
+    }
+
+    /// <summary>Carte « Comportement » : une case par vue « Changement filtre périodique » pour activer la saisie
+    /// du compteur d'heures de fonctionnement à la réalisation. Enregistré au clic.</summary>
+    [ObservableProperty] private ObservableCollection<HourCounterViewOption> _hourCounterViews = new();
+
+    private void LoadHourCounterViews() =>
+        HourCounterViews = new ObservableCollection<HourCounterViewOption>(
+            App.Db.PeriodicViews.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList()
+                .Select(v => new HourCounterViewOption(v.Id, v.Nom, v.TracksOperatingHours)));
 
     private void LoadMenuEdits()
     {

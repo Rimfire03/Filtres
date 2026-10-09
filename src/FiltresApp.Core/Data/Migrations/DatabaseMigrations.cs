@@ -51,7 +51,17 @@ internal static class DatabaseMigrations
         (25, "Courroies : quantités soufflage / extraction et choix de la fonction changée", AddBeltFunctionColumns),
         (26, "Courroies : type (référence) distinct pour le soufflage et l'extraction", AddBeltFunctionTypeColumns),
         (27, "Menus « Changement filtre périodique » / « Changement sur encrassement » : vues, titres, icônes", AddPeriodicViewsAndMenuEntries),
+        (28, "Compteur d'heures de fonctionnement à la réalisation (option par vue)", AddOperatingHoursColumns),
     };
+
+    /// <summary>Option par vue « compteur d'heures » et valeur relevée sur chaque remplacement. Idempotent.</summary>
+    private static void AddOperatingHoursColumns(FiltresDbContext ctx)
+    {
+        if (!SchemaInspector.GetColumns(ctx, "PeriodicViews").Contains("TracksOperatingHours"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicViews" ADD COLUMN "TracksOperatingHours" INTEGER NOT NULL DEFAULT 0;""");
+        if (!SchemaInspector.GetColumns(ctx, "FilterReplacements").Contains("OperatingHours"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "FilterReplacements" ADD COLUMN "OperatingHours" INTEGER NULL;""");
+    }
 
     /// <summary>Menu « Changement filtre périodique » : une table de vues (les quatre d'origine G4 plissés, G4 plan, G3,
     /// Charbon, créées ici, plus celles que l'utilisateur ajoutera), rattachement de chaque filtre périodique à sa

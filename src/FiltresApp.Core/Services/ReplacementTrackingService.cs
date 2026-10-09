@@ -13,7 +13,7 @@ public static class ReplacementTrackingService
     /// remplacement du mois donné. Ne touche jamais aux autres mois / années. Une ligne créée reçoit la
     /// quantité <paramref name="quantity"/> ; une ligne existante aussi si <paramref name="refreshQuantity"/>.</summary>
     public static List<FilterReplacement> SetMonthReplacement(FiltresDbContext db, int filterId, int year, int month,
-        DateOnly? date, int quantity, bool refreshQuantity)
+        DateOnly? date, int quantity, bool refreshQuantity, int? operatingHours = null, bool setOperatingHours = false)
     {
         var tracked = db.PeriodicFilters.Include(f => f.Replacements).First(f => f.Id == filterId);
         var existing = tracked.Replacements.FirstOrDefault(r => r.Month == month && r.Year == year);
@@ -39,6 +39,7 @@ public static class ReplacementTrackingService
                 existing.QuantityDone = quantity;
             }
             existing.DateDone = date;
+            if (setOperatingHours) existing.OperatingHours = operatingHours;
         }
 
         db.SaveChanges();
@@ -49,7 +50,8 @@ public static class ReplacementTrackingService
             Month = r.Month,
             Year = r.Year,
             QuantityDone = r.QuantityDone,
-            DateDone = r.DateDone
+            DateDone = r.DateDone,
+            OperatingHours = r.OperatingHours
         }).ToList();
     }
 

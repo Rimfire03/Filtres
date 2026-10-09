@@ -16,6 +16,15 @@ public class ExcelExportService
 
     private static readonly XLColor FamilyFill = XLColor.FromHtml("#1F2937");
     private static readonly XLColor HeaderFill = XLColor.FromHtml("#E5E7EB");
+    private static readonly XLColor StripeFill = XLColor.FromHtml("#F2F2F2");
+    private static readonly XLColor OverdueFill = XLColor.FromHtml("#FFC7CE");
+
+    /// <summary>Mois entièrement écoulé : le mois en cours n'est pas encore en retard.</summary>
+    private static bool IsPast(int year, int month)
+    {
+        var today = DateTime.Today;
+        return year < today.Year || (year == today.Year && month < today.Month);
+    }
 
     public string ExportYear(FiltresDbContext ctx, string exportFolder, int year)
     {
@@ -55,10 +64,12 @@ public class ExcelExportService
         var headers = new List<string> { "Filtres", "Dimension", "Type", "Qté en place", "Périodicité" };
         if (view.Category == FilterCategory.Charbon) headers.Add("Compteur d'heures");
         var firstMonthCol = headers.Count + 1;
+        var perMonth = view.TracksOperatingHours ? 3 : 2;
         for (var m = 1; m <= 12; m++)
         {
             headers.Add($"{MonthShortNames[m - 1]} {year} réalisé");
             headers.Add($"{MonthShortNames[m - 1]} {year} date");
+            if (view.TracksOperatingHours) headers.Add($"{MonthShortNames[m - 1]} {year} heures");
         }
 
         var ws = AddSheet(workbook, view.Nom);
@@ -84,12 +95,19 @@ public class ExcelExportService
                 if (view.Category == FilterCategory.Charbon) ws.Cell(row, col++).Value = f.HourCounter;
 
                 var repsForFilter = replacements[f.Id];
+                var plannedMonths = f.GetPeriodicityMonths();
                 for (var m = 1; m <= 12; m++)
                 {
                     var rep = repsForFilter.FirstOrDefault(r => r.Month == m);
-                    var realizedCol = firstMonthCol + (m - 1) * 2;
+                    var realizedCol = firstMonthCol + (m - 1) * perMonth;
                     ws.Cell(row, realizedCol).Value = rep is { DateDone: not null } ? "Oui" : "";
                     if (rep?.DateDone is { } d) WriteDate(ws.Cell(row, realizedCol + 1), d);
+                    if (view.TracksOperatingHours && rep?.OperatingHours is { } h) ws.Cell(row, realizedCol + 2).Value = h;
+
+                    // 1 mois sur 2 en gris léger (janvier, mars...) ; changement prévu, passé et non réalisé : rouge.
+                    var block = ws.Range(row, realizedCol, row, realizedCol + perMonth - 1);
+                    if (m % 2 == 1) block.Style.Fill.BackgroundColor = StripeFill;
+                    if (rep?.DateDone is null && plannedMonths.Contains(m) && IsPast(year, m)) block.Style.Fill.BackgroundColor = OverdueFill;
                 }
                 row++;
             }
@@ -140,6 +158,10 @@ public class ExcelExportService
                     .Take(DynamicHistoryColumnCount)
                     .ToList();
                 foreach (var d in dates) WriteDate(ws.Cell(row, col++), d);
+
+                // Colonnes « Changement -1, -3... » en gris léger, une sur deux.
+                for (var i = 1; i <= DynamicHistoryColumnCount; i += 2)
+                    ws.Cell(row, 4 + i).Style.Fill.BackgroundColor = StripeFill;
                 row++;
             }
         }

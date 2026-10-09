@@ -31,6 +31,10 @@ public class PeriodicView
 
     public bool IsBuiltIn => Category is not null;
 
+    /// <summary>Option (Paramètres du module Filtre) : cocher « Réalisé » demande le compteur d'heures de
+    /// fonctionnement, repris dans l'export Excel de l'année.</summary>
+    public bool TracksOperatingHours { get; set; }
+
     /// <summary>Besoin semestriel de Commande calculé automatiquement pour les filtres de cette vue : toutes les
     /// vues sauf Charbon (voir <see cref="OrderLine.UsesComputedNeed"/>).</summary>
     public bool ComputesNeed => Category != FilterCategory.Charbon;

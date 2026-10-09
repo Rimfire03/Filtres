@@ -14,4 +14,8 @@ public class FilterReplacement
 
     public int QuantityDone { get; set; }
     public DateOnly? DateDone { get; set; }
+
+    /// <summary>Compteur d'heures de fonctionnement relevé à la réalisation (vues où
+    /// <see cref="PeriodicView.TracksOperatingHours"/> est activé), null sinon.</summary>
+    public int? OperatingHours { get; set; }
 }
