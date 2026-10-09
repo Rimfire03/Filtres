@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
@@ -49,10 +49,11 @@ public class UpdateService
     /// (Paramètres) les affiche telles quelles.</summary>
     public async Task<UpdateInfo?> CheckForUpdateAsync(string currentVersion, string channel = UpdateChannels.Main)
     {
-        // Main : dernière release stable. Dev : release la plus récente, pré-versions comprises.
+        // Main : dernière release stable (branche main). Dev : release la plus récente de la branche dev, dont le
+        // tag se termine par "-dev" (publiée en pré-version, donc jamais vue par /releases/latest).
         var dev = string.Equals(channel, UpdateChannels.Dev, StringComparison.OrdinalIgnoreCase);
         var url = dev
-            ? $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases?per_page=10"
+            ? $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases?per_page=30"
             : $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
         using var response = await Http.GetAsync(url);
         if (!response.IsSuccessStatusCode)
@@ -67,15 +68,17 @@ public class UpdateService
         var root = doc.RootElement;
         if (dev)
         {
-            // Liste triée de la plus récente à la plus ancienne : première release non brouillon.
+            // Liste triée de la plus récente à la plus ancienne : première release non brouillon dont le tag finit par -dev.
             var first = root.EnumerateArray().FirstOrDefault(r =>
-                !(r.TryGetProperty("draft", out var d) && d.ValueKind == JsonValueKind.True));
+                !(r.TryGetProperty("draft", out var d) && d.ValueKind == JsonValueKind.True)
+                && r.TryGetProperty("tag_name", out var tn)
+                && (tn.GetString() ?? "").EndsWith("-dev", StringComparison.OrdinalIgnoreCase));
             if (first.ValueKind != JsonValueKind.Object) return null;
             root = first;
         }
 
         var tag = root.TryGetProperty("tag_name", out var tagEl) ? tagEl.GetString() ?? "" : "";
-        var versionText = tag.TrimStart('v', 'V');
+        var versionText = tag.TrimStart('v', 'V');   // ex. "1.12.0" ou "1.12.0-dev"
         if (!IsNewer(versionText, currentVersion)) return null;
 
         // Version installée (MSI) : on récupère le .msi ; version portable : le .zip.
@@ -254,7 +257,8 @@ public class UpdateService
 
     private static (int Major, int Minor, int Patch) ParseVersion(string version)
     {
-        var parts = version.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        var dash = version.IndexOf('-');   // suffixe de canal ("-dev") ignoré pour la comparaison
+        var parts = (dash >= 0 ? version[..dash] : version).Split('.', StringSplitOptions.RemoveEmptyEntries);
         int Part(int i) => i < parts.Length && int.TryParse(parts[i], out var n) ? n : 0;
         return (Part(0), Part(1), Part(2));
     }

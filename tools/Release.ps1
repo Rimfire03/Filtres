@@ -18,14 +18,15 @@ param(
     [string]$Notes,
     [string]$NotesFile,
     [switch]$NoPublish,
-    [switch]$Prerelease,
+    [ValidateSet("main","dev")][string]$Channel = "main",
     [string]$Repo = "Rimfire03/Filtres"
 )
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $csproj = Join-Path $root "src\FiltresApp\FiltresApp.csproj"
-$publishDir = Join-Path $root "src\FiltresApp\bin\Release\net8.0-windows\win-x64\publish"
+$publishDir = Join-Path $root "src\FiltresApp\bin\Release
+et8.0-windows\win-x64\publish"
 
 function Git { $ErrorActionPreference = "Continue"; & git.exe -C $root @args 2>&1 | ForEach-Object { "$_" } }
 function Step([string]$m) { Write-Host "[release] $m" }
@@ -34,7 +35,8 @@ function Step([string]$m) { Write-Host "[release] $m" }
 $m = [regex]::Match([IO.File]::ReadAllText($csproj), '<Version>(\d+\.\d+\.\d+)</Version>')
 if (-not $m.Success) { throw "Balise <Version> introuvable dans $csproj" }
 $version = $m.Groups[1].Value
-$tag = "v$version"
+$dev = ($Channel -eq "dev")
+$tag = if ($dev) { "v$version-dev" } else { "v$version" }
 Step "version $version"
 
 # --- Controles
@@ -122,6 +124,6 @@ if ($NoPublish) {
 # --- Publication
 Step "gh release create $tag"
 $sha = (Git rev-parse HEAD | Select-Object -First 1).Trim()
-& gh.exe release create $tag $zip $msi --repo $Repo --target $sha --title "Version $version" --notes-file $notesPath $(if ($Prerelease) { "--prerelease" } else { "--latest" })
+& gh.exe release create $tag $zip $msi --repo $Repo --target $sha --title "Version $version$(if ($dev) { ' (dev)' })" --notes-file $notesPath $(if ($dev) { "--prerelease" } else { "--latest" })
 if ($LASTEXITCODE -ne 0) { throw "gh release create a echoue (code $LASTEXITCODE)." }
 Write-Host "[release] OK : https://github.com/$Repo/releases/tag/$tag"

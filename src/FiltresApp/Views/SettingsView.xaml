@@ -1,4 +1,4 @@
-<UserControl x:Class="FiltresApp.Views.SettingsView"
+﻿<UserControl x:Class="FiltresApp.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:FiltresApp.ViewModels"
@@ -118,7 +118,7 @@
                     <CheckBox Content="Vérifier automatiquement les mises à jour au démarrage"
                               IsChecked="{Binding AutoUpdateEnabled}" Margin="0,0,0,10"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10"
-                                ToolTip="Main : versions stables. Dev : dernières versions, y compris les pré-versions de test.">
+                                ToolTip="Main : versions stables (branche main). Dev : versions de test (branche dev, tag en -dev).">
                         <TextBlock Text="Canal" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <ComboBox Width="120" ItemsSource="{Binding UpdateChannelChoices}"
                                   SelectedItem="{Binding UpdateChannel}"/>
