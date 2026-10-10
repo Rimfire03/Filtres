@@ -135,6 +135,7 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
         WorkloadSeries =
         [
             Column("Filtres à changer", rows.Select(r => r.FiltersDue), 0),
+            Column("Filtres à laver", rows.Select(r => r.ToWash), 3),
             new LineSeries<int>
             {
                 Name = "Réalisés", Values = rows.Select(r => r.DoneOfDue).ToArray(), Fill = null,
@@ -149,6 +150,10 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
         {
             Name = v, Values = rows.Select(r => r.DueByView.GetValueOrDefault(v)).ToArray(),
             Fill = new SolidColorPaint(SKColor.Parse(Palette[i % Palette.Length]))
+        }).Append(new StackedColumnSeries<int>
+        {
+            Name = "Filtres à laver", Values = rows.Select(r => r.ToWash).ToArray(),
+            Fill = new SolidColorPaint(SKColor.Parse(Palette[views.Count % Palette.Length]))
         }).ToArray();
 
         CompletionSeries =
@@ -163,20 +168,20 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
         ];
 
         var thisMonth = rows[today.Month - 1];
-        DueThisMonth = today.Year == SelectedYear ? thisMonth.FiltersDue.ToString() : "-";
+        DueThisMonth = today.Year == SelectedYear ? thisMonth.Total.ToString() : "-";
         OverdueCount = Overdue.Count.ToString();
-        var totalDue = rows.Sum(r => r.FiltersDue);
+        var totalDue = rows.Sum(r => r.Total);
         var totalDone = rows.Sum(r => r.DoneOfDue);
         YearTotalDue = totalDue.ToString();
         YearCompletion = totalDue == 0 ? "-" : $"{(double)totalDone / totalDue:P0}";
-        var withLoad = rows.Where(r => r.FiltersDue > 0).ToList();
+        var withLoad = rows.Where(r => r.Total > 0).ToList();
         if (withLoad.Count == 0) PeakText = "";
         else
         {
-            var avg = rows.Average(r => r.FiltersDue);
-            var max = rows.MaxBy(r => r.FiltersDue)!;
-            var min = rows.MinBy(r => r.FiltersDue)!;
-            PeakText = $"Pic : {max.MonthName} ({max.FiltersDue} filtres, {max.FiltersDue - avg:+0.#;-0.#} par rapport à la moyenne de {avg:0.#}). Creux : {min.MonthName} ({min.FiltersDue}).";
+            var avg = rows.Average(r => r.Total);
+            var max = rows.MaxBy(r => r.Total)!;
+            var min = rows.MinBy(r => r.Total)!;
+            PeakText = $"Pic : {max.MonthName} ({max.Total} filtres, {max.Total - avg:+0.#;-0.#} par rapport à la moyenne de {avg:0.#}). Creux : {min.MonthName} ({min.Total}).";
         }
     }
 
@@ -253,8 +258,8 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
             var sheets = new List<StatisticsSheet>();
             if (ShowFilters)
             {
-                sheets.Add(new("Charge mensuelle", ["Mois", "Filtres à changer", "Quantité à fournir", "Réalisés", "Taux de réalisation"],
-                    Workload.Select(r => new object?[] { r.MonthName, r.FiltersDue, r.QuantityToSupply, r.DoneOfDue, r.CompletionText }).ToList()));
+                sheets.Add(new("Charge mensuelle", ["Mois", "Filtres à changer", "Filtres à laver", "Quantité à fournir", "Réalisés", "Taux de réalisation"],
+                    Workload.Select(r => new object?[] { r.MonthName, r.FiltersDue, r.ToWash, r.QuantityToSupply, r.DoneOfDue, r.CompletionText }).ToList()));
                 sheets.Add(new("Retards", ["Vue", "Emplacement", "Dimension", "Échéance", "Jours de retard", "Quantité"],
                     Overdue.Select(r => new object?[] { r.View, r.Location, r.Dimension, r.MonthText, r.DaysLate, r.Quantity }).ToList()));
                 if (HasOperatingHours)

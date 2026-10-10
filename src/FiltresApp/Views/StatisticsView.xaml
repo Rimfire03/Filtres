@@ -63,11 +63,12 @@
                             <StackPanel>
                                 <TextBlock Text="Charge de travail prévisionnelle mensuelle" FontWeight="SemiBold" Margin="0,0,0,4"/>
                                 <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,8"
-                                           Text="Filtres dont la périodicité tombe dans le mois, quantité à fournir (option « 15 jours » comprise, filtres lavables exclus) et réalisation de l'année choisie."/>
+                                           Text="Filtres dont la périodicité tombe dans le mois, séparés entre filtres à changer et filtres à laver. La quantité à fournir (option « 15 jours » comprise) ne compte que les filtres à changer ; la réalisation porte sur l'ensemble."/>
                                 <DataGrid ItemsSource="{Binding Workload}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="420">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Mois" Binding="{Binding MonthName}" Width="*"/>
                                         <DataGridTextColumn Header="Filtres à changer" Binding="{Binding FiltersDue}" Width="140"/>
+                                        <DataGridTextColumn Header="Filtres à laver" Binding="{Binding ToWash}" Width="130"/>
                                         <DataGridTextColumn Header="Quantité à fournir" Binding="{Binding QuantityToSupply}" Width="140"/>
                                         <DataGridTextColumn Header="Réalisés" Binding="{Binding DoneOfDue}" Width="100"/>
                                         <DataGridTextColumn Header="Taux de réalisation" Binding="{Binding CompletionText}" Width="150"/>

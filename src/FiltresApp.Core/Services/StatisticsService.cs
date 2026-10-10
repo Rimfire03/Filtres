@@ -5,10 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FiltresApp.Core.Services;
 
-/// <summary>Charge prévisionnelle d'un mois : nombre de filtres à changer, quantité à fournir et réalisation.</summary>
-public sealed record MonthlyWorkloadRow(int Month, string MonthName, int FiltersDue, int QuantityToSupply,
+/// <summary>Charge prévisionnelle d'un mois : filtres à changer, filtres à laver (lavables, jamais fournis),
+/// quantité à fournir et réalisation (sur l'ensemble des échéances).</summary>
+public sealed record MonthlyWorkloadRow(int Month, string MonthName, int FiltersDue, int ToWash, int QuantityToSupply,
     int DoneOfDue, double? CompletionRate, IReadOnlyDictionary<string, int> DueByView)
 {
+    public int Total => FiltersDue + ToWash;
     public string CompletionText => CompletionRate is { } r ? $"{r:P0}" : "-";
 }
 
@@ -71,10 +73,11 @@ public static class StatisticsService
         for (var m = 1; m <= 12; m++)
         {
             var due = filters.Where(f => f.GetPeriodicityMonths().Contains(m)).ToList();
-            var supply = due.Where(f => !f.IsWashable).Sum(f => f.QuantityInPlace * (f.ChangedEvery15Days ? 2 : 1));
+            var toChange = due.Where(f => !f.IsWashable).ToList();
+            var supply = toChange.Sum(f => f.QuantityInPlace * (f.ChangedEvery15Days ? 2 : 1));
             var done = due.Count(f => IsDone(f, m, year));
-            var byView = due.GroupBy(ViewName).ToDictionary(g => g.Key, g => g.Count());
-            rows.Add(new MonthlyWorkloadRow(m, MonthNames[m - 1], due.Count, supply, done,
+            var byView = toChange.GroupBy(ViewName).ToDictionary(g => g.Key, g => g.Count());
+            rows.Add(new MonthlyWorkloadRow(m, MonthNames[m - 1], toChange.Count, due.Count - toChange.Count, supply, done,
                 due.Count == 0 ? null : (double)done / due.Count, byView));
         }
         return rows;
