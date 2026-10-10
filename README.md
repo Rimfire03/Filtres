@@ -111,6 +111,23 @@ synchronisé type OneDrive/Dropbox, qui corromprait le fichier SQLite). Accès e
   l'accès en écriture une fois le rédacteur sorti.
 - Les utilisateurs doivent avoir les droits d'écriture sur le dossier de la base. Ne jamais
   activer le mode WAL de SQLite (ne fonctionne pas sur un disque réseau).
+## Statistiques
+
+Menu **Statistiques** (au-dessus de Paramètres), libre de licence : vue d'analyse du site courant et de
+l'année du sélecteur. Les onglets Filtres périodiques / Encrassement / Courroies / Roulements ne sont
+affichés que si le module est couvert par la licence et activé. Les calculs sont dans
+`StatisticsService` (Core), l'écran dans `StatisticsView` / `StatisticsViewModel`, les graphiques par
+LiveCharts2 (SkiaSharp). Export Excel : un classeur, une feuille par tableau (`StatisticsExcelExport`).
+
+- **Filtres périodiques** : charge prévisionnelle mensuelle (filtres à changer, quantité à fournir avec
+  option « 15 jours », filtres lavables exclus), charge par vue, taux de réalisation, échéances en
+  retard (mois écoulés de l'année), heures de fonctionnement entre deux changements.
+- **Encrassement** : changements par année et par variété, durée de vie réelle par filtre, filtres sans
+  changement depuis N mois.
+- **Courroies** : changements par année (soufflage / extraction), stock minimum par type = 2 × la quantité
+  en place de la centrale qui en utilise le plus, intervalle moyen par centrale.
+- **Roulements** : changements par année (avant / arrière / volute), intervalle par centrale, unités sans
+  changement depuis N ans.
 
 ## Utilisation à plusieurs (serveur de base de données)
 

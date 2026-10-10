@@ -149,6 +149,22 @@
                     </TextBlock>
                 </StackPanel>
             </Border>
-        </StackPanel>
+            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Statistiques" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap">
+                        Le menu « Statistiques », juste au-dessus de « Paramètres », ouvre une vue d'analyse du site en
+                        cours, sans licence particulière. L'année analysée est celle du sélecteur du menu de gauche.
+                        Un onglet n'apparaît que si son module est couvert par la licence et activé. Filtres
+                        périodiques : charge prévisionnelle mensuelle (filtres à changer, quantité à fournir, taux de
+                        réalisation), charge par vue, échéances en retard, heures de fonctionnement. Encrassement :
+                        changements par année et par variété, durée de vie réelle, filtres sans changement depuis N
+                        mois. Courroies : changements par année, stock minimum par type (2 changements complets de la
+                        centrale qui en utilise le plus). Roulements : changements par année, intervalle par centrale,
+                        unités sans changement depuis N ans. « Exporter en Excel » enregistre tous les tableaux dans le
+                        dossier d'export.
+                    </TextBlock>
+                </StackPanel>
+            </Border>        </StackPanel>
     </ScrollViewer>
 </UserControl>

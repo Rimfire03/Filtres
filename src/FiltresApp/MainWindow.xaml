@@ -1,4 +1,4 @@
-<Window x:Class="FiltresApp.MainWindow"
+﻿<Window x:Class="FiltresApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:FiltresApp.ViewModels"
@@ -163,6 +163,30 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- "Statistiques" : juste au-dessus de "Paramètres" (déclaré après lui : les éléments ancrés en
+                         bas s'empilent vers le haut). Module libre de licence. -->
+                    <Border DockPanel.Dock="Bottom" Margin="6,0,6,8" CornerRadius="6" Cursor="Hand">
+                        <Border.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding ShowStatisticsCommand}"/>
+                        </Border.InputBindings>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding StatisticsItem.IsSelected}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource BrushSidebarSelected}"/>
+                                    </DataTrigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource BrushSidebarHover}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel Orientation="Horizontal" Margin="14,7">
+                            <TextBlock Text="{Binding StatisticsItem.Icon}" Margin="0,0,10,0" FontSize="14" VerticalAlignment="Center" Foreground="#CBD5E1"/>
+                            <TextBlock Text="{Binding StatisticsItem.Title}" FontSize="13" VerticalAlignment="Center" Foreground="#CBD5E1"/>
+                        </StackPanel>
+                    </Border>
                     <!-- Séparateur entre le menu défilant (modules) et la section épinglée Paramètres/Aide ci-dessus. -->
                     <Border DockPanel.Dock="Bottom" Height="1" Background="{StaticResource BrushSidebarBorder}" Margin="16,4,16,8"/>
 

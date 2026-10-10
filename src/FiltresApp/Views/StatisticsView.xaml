@@ -1,0 +1,295 @@
+﻿<UserControl x:Class="FiltresApp.Views.StatisticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             d:DataContext="{d:DesignInstance vm:StatisticsViewModel}" mc:Ignorable="d">
+    <DockPanel Margin="24">
+        <!-- En-tête : titre, année, export. -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Exporter en Excel" Style="{StaticResource SecondaryButton}" Command="{Binding ExportExcelCommand}"
+                        Visibility="{Binding ShowContent, Converter={StaticResource BoolToVis}}"/>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
+                    <TextBlock Text="Année :" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBlock Text="{Binding SelectedYear}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="Se change avec le sélecteur Année du menu de gauche"/>
+                </StackPanel>
+                <TextBlock Text="Statistiques" Style="{StaticResource HeaderText}"/>
+            </DockPanel>
+            <TextBlock Text="Analyse du site en cours. Seuls les modules couverts par la licence et activés sont analysés." Style="{StaticResource SectionText}" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,6,0,0" Foreground="{StaticResource BrushPrimary}"/>
+        </StackPanel>
+
+        <TextBlock Text="Aucun module analysable : activez un module couvert par votre licence dans Paramètres."
+                   Style="{StaticResource SectionText}" Visibility="{Binding ShowNothing, Converter={StaticResource BoolToVis}}"/>
+
+        <TabControl Visibility="{Binding ShowContent, Converter={StaticResource BoolToVis}}">
+            <!-- ============ Vue d'ensemble ============ -->
+            <TabItem Header="Vue d'ensemble" Visibility="{Binding ShowFilters, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1100" HorizontalAlignment="Left">
+                        <UniformGrid Columns="4" Margin="0,0,0,16">
+                            <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                                <TextBlock Text="Filtres à changer ce mois-ci" Style="{StaticResource SectionText}"/>
+                                <TextBlock Text="{Binding DueThisMonth}" FontSize="26" FontWeight="SemiBold"/></StackPanel></Border>
+                            <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                                <TextBlock Text="Échéances en retard" Style="{StaticResource SectionText}"/>
+                                <TextBlock Text="{Binding OverdueCount}" FontSize="26" FontWeight="SemiBold"/></StackPanel></Border>
+                            <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                                <TextBlock Text="Échéances de l'année" Style="{StaticResource SectionText}"/>
+                                <TextBlock Text="{Binding YearTotalDue}" FontSize="26" FontWeight="SemiBold"/></StackPanel></Border>
+                            <Border Style="{StaticResource CardBorder}"><StackPanel>
+                                <TextBlock Text="Taux de réalisation" Style="{StaticResource SectionText}"/>
+                                <TextBlock Text="{Binding YearCompletion}" FontSize="26" FontWeight="SemiBold"/></StackPanel></Border>
+                        </UniformGrid>
+                        <TextBlock Text="{Binding PeakText}" TextWrapping="Wrap" Style="{StaticResource SectionText}" Margin="0,0,0,12"/>
+                        <Border Style="{StaticResource CardBorder}" Height="320">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="Charge mensuelle prévue et réalisée" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <lvc:CartesianChart Series="{Binding WorkloadSeries}" XAxes="{Binding MonthAxes}" LegendPosition="Bottom"/>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ Filtres périodiques ============ -->
+            <TabItem Header="Filtres périodiques" Visibility="{Binding ShowFilters, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1100" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Charge de travail prévisionnelle mensuelle" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                           Text="Filtres dont la périodicité tombe dans le mois, quantité à fournir (option « 15 jours » comprise, filtres lavables exclus) et réalisation de l'année choisie."/>
+                                <DataGrid ItemsSource="{Binding Workload}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="420">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Mois" Binding="{Binding MonthName}" Width="*"/>
+                                        <DataGridTextColumn Header="Filtres à changer" Binding="{Binding FiltersDue}" Width="140"/>
+                                        <DataGridTextColumn Header="Quantité à fournir" Binding="{Binding QuantityToSupply}" Width="140"/>
+                                        <DataGridTextColumn Header="Réalisés" Binding="{Binding DoneOfDue}" Width="100"/>
+                                        <DataGridTextColumn Header="Taux de réalisation" Binding="{Binding CompletionText}" Width="150"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <lvc:CartesianChart Series="{Binding WorkloadSeries}" XAxes="{Binding MonthAxes}" Height="260" Margin="0,12,0,0" LegendPosition="Bottom"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Charge par vue (catégorie)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <lvc:CartesianChart Series="{Binding ViewSeries}" XAxes="{Binding MonthAxes}" Height="260" LegendPosition="Bottom"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Taux de réalisation par mois" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <lvc:CartesianChart Series="{Binding CompletionSeries}" XAxes="{Binding MonthAxes}" Height="220" LegendPosition="Hidden"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Échéances en retard (mois écoulés de l'année en cours)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <DataGrid ItemsSource="{Binding Overdue}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="320">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Vue" Binding="{Binding View}" Width="160"/>
+                                        <DataGridTextColumn Header="Emplacement" Binding="{Binding Location}" Width="*"/>
+                                        <DataGridTextColumn Header="Dimension" Binding="{Binding Dimension}" Width="160"/>
+                                        <DataGridTextColumn Header="Échéance" Binding="{Binding MonthText}" Width="90"/>
+                                        <DataGridTextColumn Header="Jours de retard" Binding="{Binding DaysLate}" Width="120"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16" Visibility="{Binding HasOperatingHours, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="Heures de fonctionnement entre deux changements" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <DataGrid ItemsSource="{Binding OperatingHours}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="300">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Vue" Binding="{Binding View}" Width="160"/>
+                                        <DataGridTextColumn Header="Emplacement" Binding="{Binding Location}" Width="*"/>
+                                        <DataGridTextColumn Header="Relevés" Binding="{Binding Changes}" Width="90"/>
+                                        <DataGridTextColumn Header="Durée moyenne" Binding="{Binding AverageText}" Width="140"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ Changement sur encrassement ============ -->
+            <TabItem Header="Encrassement" Visibility="{Binding ShowFouling, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1100" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Changements par année et par variété" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <lvc:CartesianChart Series="{Binding FoulingSeries}" XAxes="{Binding FoulingAxes}" Height="260" LegendPosition="Bottom"/>
+                                <DataGrid ItemsSource="{Binding FoulingYearly}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="260" Margin="0,12,0,0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Variété" Binding="{Binding Label}" Width="*"/>
+                                        <DataGridTextColumn Header="Année" Binding="{Binding Year}" Width="100"/>
+                                        <DataGridTextColumn Header="Changements" Binding="{Binding Changes}" Width="130"/>
+                                        <DataGridTextColumn Header="Quantité" Binding="{Binding Quantity}" Width="110"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Durée de vie réelle (du filtre qui s'encrasse le plus vite au plus lent)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <DataGrid ItemsSource="{Binding FoulingIntervals}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="360">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Filtre" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Variété" Binding="{Binding Group}" Width="160"/>
+                                        <DataGridTextColumn Header="Changements" Binding="{Binding Changes}" Width="110"/>
+                                        <DataGridTextColumn Header="Moyenne" Binding="{Binding AverageText}" Width="90"/>
+                                        <DataGridTextColumn Header="Minimum" Binding="{Binding MinText}" Width="90"/>
+                                        <DataGridTextColumn Header="Maximum" Binding="{Binding MaxText}" Width="90"/>
+                                        <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastText}" Width="140"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Sans changement depuis plus de" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBox Width="60" Margin="8,0,8,0" Text="{Binding FoulingMonths, UpdateSourceTrigger=LostFocus}" HorizontalContentAlignment="Center"/>
+                                    <TextBlock Text="mois (ou jamais changés)" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <DataGrid ItemsSource="{Binding FoulingUnchanged}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="320">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Filtre" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Variété" Binding="{Binding Group}" Width="160"/>
+                                        <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastText}" Width="150"/>
+                                        <DataGridTextColumn Header="Depuis" Binding="{Binding SinceText}" Width="100"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ Courroies ============ -->
+            <TabItem Header="Courroies" Visibility="{Binding ShowBelts, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1100" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Changements par année" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <lvc:CartesianChart Series="{Binding BeltSeries}" XAxes="{Binding BeltAxes}" Height="240" LegendPosition="Bottom"/>
+                                <DataGrid ItemsSource="{Binding BeltYearly}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="240" Margin="0,12,0,0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Année" Binding="{Binding Year}" Width="*"/>
+                                        <DataGridTextColumn Header="Changements" Binding="{Binding Changes}" Width="130"/>
+                                        <DataGridTextColumn Header="Quantité" Binding="{Binding Quantity}" Width="110"/>
+                                        <DataGridTextColumn Header="Soufflage" Binding="{Binding Soufflage}" Width="110"/>
+                                        <DataGridTextColumn Header="Extraction" Binding="{Binding Extraction}" Width="110"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Stock minimum par type de courroie" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                           Text="Règle : 2 changements complets de la centrale qui utilise le plus de courroies de ce type (soufflage et extraction additionnés)."/>
+                                <DataGrid ItemsSource="{Binding BeltStock}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="360">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Type de courroie" Binding="{Binding BeltType}" Width="*"/>
+                                        <DataGridTextColumn Header="Qté max dans une centrale" Binding="{Binding MaxInOneCentrale}" Width="190"/>
+                                        <DataGridTextColumn Header="Centrale" Binding="{Binding Centrale}" Width="*"/>
+                                        <DataGridTextColumn Header="Stock minimum" Binding="{Binding MinimumStock}" Width="130"/>
+                                        <DataGridTextColumn Header="Changées sur 12 mois" Binding="{Binding ChangedLast12Months}" Width="160"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Centrales : nombre de changements et intervalle moyen" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <DataGrid ItemsSource="{Binding BeltIntervals}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="360">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Centrale" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Famille" Binding="{Binding Group}" Width="160"/>
+                                        <DataGridTextColumn Header="Changements" Binding="{Binding Changes}" Width="120"/>
+                                        <DataGridTextColumn Header="Intervalle moyen" Binding="{Binding AverageText}" Width="140"/>
+                                        <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastText}" Width="150"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ Roulements ============ -->
+            <TabItem Header="Roulements" Visibility="{Binding ShowBearings, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="1100" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Changements par année" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <lvc:CartesianChart Series="{Binding BearingSeries}" XAxes="{Binding BearingAxes}" Height="240" LegendPosition="Bottom"/>
+                                <DataGrid ItemsSource="{Binding BearingYearly}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="240" Margin="0,12,0,0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Année" Binding="{Binding Year}" Width="*"/>
+                                        <DataGridTextColumn Header="Changements" Binding="{Binding Changes}" Width="130"/>
+                                        <DataGridTextColumn Header="Avant" Binding="{Binding Avant}" Width="100"/>
+                                        <DataGridTextColumn Header="Arrière" Binding="{Binding Arriere}" Width="100"/>
+                                        <DataGridTextColumn Header="Volute" Binding="{Binding Volute}" Width="100"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Centrales : nombre de changements et intervalle moyen" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <DataGrid ItemsSource="{Binding BearingIntervals}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="360">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Centrale" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Group}" Width="170"/>
+                                        <DataGridTextColumn Header="Changements" Binding="{Binding Changes}" Width="120"/>
+                                        <DataGridTextColumn Header="Intervalle moyen" Binding="{Binding AverageText}" Width="140"/>
+                                        <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastText}" Width="150"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Sans changement depuis plus de" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBox Width="60" Margin="8,0,8,0" Text="{Binding BearingYears, UpdateSourceTrigger=LostFocus}" HorizontalContentAlignment="Center"/>
+                                    <TextBlock Text="ans (ou jamais changés)" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <DataGrid ItemsSource="{Binding BearingUnchanged}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="320">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Centrale" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Group}" Width="170"/>
+                                        <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastText}" Width="150"/>
+                                        <DataGridTextColumn Header="Depuis" Binding="{Binding SinceText}" Width="100"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

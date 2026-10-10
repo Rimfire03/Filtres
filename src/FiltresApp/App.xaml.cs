@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using LiveChartsCore.SkiaSharpView;
+using System.IO;
 using System.Windows;
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Services;
@@ -100,6 +101,7 @@ public partial class App : Application
         mainWindow.Show();
         ShutdownMode = ShutdownMode.OnLastWindowClose;
         StartLicenseRevalidation();
+        ConfigureCharts();
         DatabaseHealth.Start();
         AutoBackup.Start();
 
@@ -109,6 +111,22 @@ public partial class App : Application
         if (Settings.AutoUpdateEnabled) _ = CheckForUpdateOnStartupAsync();
     }
 
+    /// <summary>Initialise LiveCharts2 (rendu SkiaSharp, thème clair) pour l'écran « Statistiques ». Une erreur
+    /// d'initialisation ne doit jamais empêcher le démarrage : seuls les graphiques seraient absents.</summary>
+    private static void ConfigureCharts()
+    {
+        try
+        {
+            LiveChartsCore.LiveCharts.Configure(config => config
+                .AddSkiaSharp()
+                .AddDefaultMappers()
+                .AddLightTheme());
+        }
+        catch
+        {
+            // Graphiques indisponibles.
+        }
+    }
     protected override void OnExit(ExitEventArgs e)
     {
         Db?.Dispose();

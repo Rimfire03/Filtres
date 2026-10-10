@@ -45,6 +45,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// reste du menu par un séparateur.</summary>
     public NavigationItem SettingsItem { get; private set; } = null!;
 
+    /// <summary>Menu « Statistiques » : module libre de licence, épinglé juste au-dessus de « Paramètres »
+    /// (voir MainWindow.xaml). Ouvre une vue d'analyse du site courant (voir <see cref="StatisticsViewModel"/>).</summary>
+    public NavigationItem StatisticsItem { get; private set; } = null!;
+
     /// <summary>Paramètres spécifiques à chaque module (roue dentée à côté de chaque case "Activer le
     /// module..." dans Paramètres, voir SettingsViewModel.OpenFiltreModuleSettingsCommand et consorts) : ni
     /// dans <see cref="NavigationItems"/> ni épinglés, atteints uniquement depuis ce bouton - réutilisent le
@@ -125,6 +129,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         };
 
         SettingsItem = new NavigationItem("Paramètres", "⚙", () => new SettingsViewModel(this));
+        StatisticsItem = new NavigationItem("Statistiques", "📊", () => new StatisticsViewModel());
         FiltreSettingsItem = new NavigationItem("Paramètres du module Filtre", "⚙",
             () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Filtre));
         BeltsSettingsItem = new NavigationItem("Paramètres du module Courroies", "⚙",
@@ -520,6 +525,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             foreach (var child in menu.Item.Children) child.IsSelected = child == value;
         HelpItem.IsSelected = value == HelpItem;
         SettingsItem.IsSelected = value == SettingsItem;
+        StatisticsItem.IsSelected = value == StatisticsItem;
 
         // Serveur de base de données : d'autres postes écrivent en même temps. Le contexte partagé garde les
         // lignes déjà lues telles quelles ; on l'oublie à chaque changement d'écran (rien n'est en attente, les
@@ -541,4 +547,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Sélectionne "Paramètres" (bouton à part, juste au-dessus de "Aide" - voir MainWindow.xaml).</summary>
     [RelayCommand]
     private void ShowSettings() => SelectedItem = SettingsItem;
+
+    /// <summary>Sélectionne « Statistiques » (bouton à part, juste au-dessus de « Paramètres »).</summary>
+    [RelayCommand]
+    private void ShowStatistics() => SelectedItem = StatisticsItem;
 }

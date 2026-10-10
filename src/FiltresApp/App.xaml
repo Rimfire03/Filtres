@@ -37,6 +37,9 @@
             <DataTemplate DataType="{x:Type vm:ModuleSettingsViewModel}">
                 <views:ModuleSettingsView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:StatisticsViewModel}">
+                <views:StatisticsView/>
+            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:HelpViewModel}">
                 <views:HelpView/>
             </DataTemplate>
