@@ -258,8 +258,8 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
             var sheets = new List<StatisticsSheet>();
             if (ShowFilters)
             {
-                sheets.Add(new("Charge mensuelle", ["Mois", "Filtres à changer", "Filtres à laver", "Quantité à fournir", "Réalisés", "Taux de réalisation"],
-                    Workload.Select(r => new object?[] { r.MonthName, r.FiltersDue, r.ToWash, r.QuantityToSupply, r.DoneOfDue, r.CompletionText }).ToList()));
+                sheets.Add(new("Charge mensuelle", ["Mois", "Filtres à changer", "Quantité à fournir", "Filtres à laver", "Réalisés", "Taux de réalisation"],
+                    Workload.Select(r => new object?[] { r.MonthName, r.FiltersDue, r.QuantityToSupply, r.ToWash, r.DoneOfDue, r.CompletionText }).ToList()));
                 sheets.Add(new("Retards", ["Vue", "Emplacement", "Dimension", "Échéance", "Jours de retard", "Quantité"],
                     Overdue.Select(r => new object?[] { r.View, r.Location, r.Dimension, r.MonthText, r.DaysLate, r.Quantity }).ToList()));
                 if (HasOperatingHours)

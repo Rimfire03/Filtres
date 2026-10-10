@@ -68,8 +68,8 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Mois" Binding="{Binding MonthName}" Width="*"/>
                                         <DataGridTextColumn Header="Filtres à changer" Binding="{Binding FiltersDue}" Width="140"/>
-                                        <DataGridTextColumn Header="Filtres à laver" Binding="{Binding ToWash}" Width="130"/>
                                         <DataGridTextColumn Header="Quantité à fournir" Binding="{Binding QuantityToSupply}" Width="140"/>
+                                        <DataGridTextColumn Header="Filtres à laver" Binding="{Binding ToWash}" Width="130"/>
                                         <DataGridTextColumn Header="Réalisés" Binding="{Binding DoneOfDue}" Width="100"/>
                                         <DataGridTextColumn Header="Taux de réalisation" Binding="{Binding CompletionText}" Width="150"/>
                                     </DataGrid.Columns>
