@@ -64,7 +64,7 @@
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Mois consulté (case à cocher) :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
+                    <TextBlock Text="Date du changement :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
                     <ComboBox ItemsSource="{Binding ConsultedMonthOptions}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedConsultedMonth}" Width="160"/>
                     <TextBlock Text="Jour :" VerticalAlignment="Center" Margin="12,0,6,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"
                                ToolTip="Jour du mois utilisé pour la date du changement quand on coche « Réalisé », avec le mois consulté"/>
