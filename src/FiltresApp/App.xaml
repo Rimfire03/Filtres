@@ -10,7 +10,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles/Colors.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/TomLine.UI.Wpf;component/Themes/TomLineTheme.xaml"/>
                 <ResourceDictionary Source="Styles/Controls.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
