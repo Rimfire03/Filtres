@@ -16,10 +16,10 @@ internal class Tu5
     public string D { get; set; } = "";
     public string K { get; set; } = "";
     public DateTime V { get; set; }
+    /// <summary>Plus grand instant observé (serveur ou horloge locale) : détection d'un retour en arrière de l'horloge.</summary>
+    public DateTime? S { get; set; }
     public Vw2? L { get; set; }
 }
-
-internal record Qp6(bool Ok, Vw2? L, string? R, bool Ib = false, string? Bn = null);
 
 public enum LicenseMode { Free, Active, Grace, Blocked, Expired }
 

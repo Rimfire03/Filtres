@@ -1,23 +1,54 @@
+using TomLine.Licensing;
+
 namespace FiltresApp.Core.Services.Licensing;
 
+/// <summary>Façade de licence de FiltresApp : conserve l'API et les textes existants, la logique (validation, grâce
+/// hors-ligne, réponses signées, licence.ini) est portée par le paquet partagé TomLine.Licensing.</summary>
 public static class LicenseManager
 {
-    private const string Pz = "filtre";
+    internal const string ProductSlug = "filtre";
 
-    private static readonly Rc3 Rq = new();
+    private static readonly LicenseOptions Options = new()
+    {
+        ProductSlug = ProductSlug,
+        StoreName = "FiltresApp",   // non utilisé : le stockage est celui de FiltresApp (FiltresLicenseStore)
+        // Clé publique du serveur de licences (vérification seule).
+        PublicKeys = new[] { "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjairPbdPQuYiWSJ6MtVo6xchepZYn9h+JFdSI72MNzuVwmFgTCiYBRuPHJBJT45eC+qloOQbBWZDSZSkZxttvQ==" },
+        RequireSignature = true,
+        // Une licence expirée reste stockée (une prolongation côté serveur la rend valide) ; seules « révoquée » et
+        // « introuvable » l'effacent. Un poste oublié par le serveur est réactivé automatiquement.
+        KeepLicenseOnRecoverableRefusal = true,
+        ReactivateWhenDeviceNotActivated = true
+    };
+
+    private static LicenseClient? _client;
+    private static LicenseService? _svc;
+    private static string? _deviceId;
+
+    private static LicenseService Svc()
+    {
+        if (_svc is not null) return _svc;
+        var device = new WindowsDeviceIdentity();
+        var id = device.DeviceId;
+        var client = new LicenseClient(Options);
+        _svc = new LicenseService(client, device, new FiltresLicenseStore(id), new FiltresBypassFile());
+        _client = client;
+        _deviceId = id;
+        return _svc;
+    }
 
     private static LicenseMode _mode = LicenseMode.Blocked;
+    private static StoredLicense? Cs { get; set; }
+    private static string? _lockReason;
 
     // Une licence mise en grâce hors ligne (serveur injoignable) ne dépasse jamais sa date d'expiration
     // (démo / expiring) : le mode effectif bascule alors tout seul sur Expired, sans attendre une
     // revalidation (qui, hors ligne, ne pourrait de toute façon pas conclure autrement).
     public static LicenseMode Mode
     {
-        get => _mode == LicenseMode.Grace && Cs?.L is { } l && Ex1(l) ? LicenseMode.Expired : _mode;
+        get => _mode == LicenseMode.Grace && Cs is { } l && IsPast(l) ? LicenseMode.Expired : _mode;
         private set => _mode = value;
     }
-
-    private static Tu5? Cs { get; set; }
 
     /// <summary>Déclenché après chaque changement d'état (activation, validation, expiration, démo...). Peut
     /// l'être depuis n'importe quel thread : les abonnés ramènent eux-mêmes sur le thread d'interface.</summary>
@@ -36,7 +67,6 @@ public static class LicenseManager
 
     private static DateTime _lastPing = DateTime.MinValue;
     private static int _pingBusy;
-    private static bool _installTried;
 
     /// <summary>Mode bypass (licence.ini présent) : ping best-effort au démarrage puis toutes les 24 h, en arrière-plan,
     /// timeout 5 s, toute erreur ignorée. Le nom du client est relu dans licence.ini avant chaque ping. Jamais de
@@ -52,32 +82,17 @@ public static class LicenseManager
             var name = await Task.Run(Nf8.F2);
             if (name != BypassName) { BypassName = name; Ch(); }
 
-            var d = Dv();
-            var cmd = await Rq.M6(Pz, d, Environment.MachineName, name);
-            if (cmd == "remove_bypass" && Nf8.Rm1())
+            Svc();
+            var reply = await _client!.BypassPingAsync(_deviceId!, Environment.MachineName, name);
+            if (reply.AllCommands.Contains("remove_bypass", StringComparer.OrdinalIgnoreCase) && Nf8.Rm1())
             {
-                try { await Rq.M7(Pz, d); } catch { }
+                try { await _client.BypassRemovedAsync(_deviceId!); } catch { }
                 BypassName = null;
                 try { BypassRemoved?.Invoke(); } catch { }
             }
         }
         catch { }
         finally { System.Threading.Interlocked.Exchange(ref _pingBusy, 0); }
-    }
-
-    // Ordre "install_bypass" reçu d'un /v1/validate réussi : une seule tentative d'écriture par lancement ;
-    // échec (droits) = licence normale conservée, aucun message. Réussite : ping, puis licence gratuite
-    // immédiatement (la licence stockée n'est pas effacée : ignorée tant que licence.ini existe).
-    private static bool Ib1(Qp6 r)
-    {
-        if (!r.Ib || _installTried || Zq1.K2) return false;
-        _installTried = true;
-        if (!Nf8.W(r.Bn)) return false;
-        BypassName = Nf8.F2();
-        Mode = LicenseMode.Free;
-        Ch();
-        _ = BypassPingAsync();
-        return true;
     }
 
     public static bool IsFreeLicense => Mode == LicenseMode.Free;
@@ -87,14 +102,19 @@ public static class LicenseManager
 
     /// <summary>Vrai pour une démo (type "demo") en cours, pour l'affichage uniquement : l'accès aux modules
     /// ne dépend jamais du type, seulement de license.features (voir <see cref="HasFeature"/>).</summary>
-    public static bool IsDemo => string.Equals(Cs?.L?.T, "demo", StringComparison.OrdinalIgnoreCase);
+    public static bool IsDemo => string.Equals(Cs?.Type, "demo", StringComparison.OrdinalIgnoreCase);
 
     public static string FooterText => Mode switch
     {
         LicenseMode.Free => BypassName is { } n ? $"Licence gratuite — {n}" : "Licence gratuite",
-        LicenseMode.Active => Bt(Cs?.L),
-        LicenseMode.Grace => Bt(Cs?.L) + " (mode hors ligne)",
-        LicenseMode.Expired => "Licence expirée",
+        LicenseMode.Active => Bt(Cs),
+        LicenseMode.Grace => Bt(Cs) + " (mode hors ligne)",
+        LicenseMode.Expired => _lockReason switch
+        {
+            "offline_grace_expired" => "Licence : connexion à Internet requise",
+            "clock_tampered" => "Licence : horloge du poste incorrecte",
+            _ => "Licence expirée"
+        },
         LicenseMode.Blocked => "Aucune licence",
         _ => ""
     };
@@ -106,7 +126,7 @@ public static class LicenseManager
         {
             var m = Mode;
             if (m == LicenseMode.Expired) return true;
-            return (m == LicenseMode.Active || m == LicenseMode.Grace) && IsDemo && Cs?.L?.Ex is { } e && Dj(e) <= 2;
+            return (m == LicenseMode.Active || m == LicenseMode.Grace) && IsDemo && Cs?.ExpiresAt is { } e && Dj(e.UtcDateTime) <= 2;
         }
     }
 
@@ -117,7 +137,7 @@ public static class LicenseManager
         var m = Mode;
         if (m == LicenseMode.Free) return true;
         if (m != LicenseMode.Active && m != LicenseMode.Grace) return false;
-        return Cs?.L?.Ft.Contains(f) ?? false;
+        return Cs?.Features.Contains(f) ?? false;
     }
 
     public static async Task<LicenseCheckOutcome> CheckAtStartupAsync()
@@ -130,15 +150,16 @@ public static class LicenseManager
             return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
         }
 
-        var s = Nf8.L();
-        if (s is null || string.IsNullOrWhiteSpace(s.K))
+        try
+        {
+            return FromState(await Svc().StartAsync());
+        }
+        catch (InvalidOperationException)
         {
             Cs = null;
             Mode = LicenseMode.Blocked;
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Aucune licence active. Saisissez votre clé de licence pour continuer.");
+            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Identifiant du poste indisponible.");
         }
-
-        return await Vs(s);
     }
 
     /// <summary>Revalidation de la licence stockée (périodique, ou bouton "Réessayer" d'une licence expirée).
@@ -151,16 +172,7 @@ public static class LicenseManager
             return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
         }
 
-        var s = Nf8.L();
-        if (s is null || string.IsNullOrWhiteSpace(s.K))
-        {
-            Cs = null;
-            Mode = LicenseMode.Blocked;
-            Ch();
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Aucune licence active. Saisissez votre clé de licence pour continuer.");
-        }
-
-        return await Vs(s);
+        return FromState(await Svc().RevalidateAsync());
     }
 
     /// <summary>Active une clé saisie. Sert aussi à "changer de licence" : la nouvelle clé est activée
@@ -171,26 +183,26 @@ public static class LicenseManager
         key = key.Trim();
         if (key.Length == 0) return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Merci de saisir une clé de licence.");
 
-        var ex = Nf8.L();
-        var d = Dv();
-
         try
         {
-            var r = await Rq.M1(key, Pz, d, Environment.MachineName);
-            if (r.Ok && r.L is not null)
+            var svc = Svc();
+            var previous = Nf8.L();
+            var state = await svc.ActivateAsync(key);
+            if (state.Status == LicenseStatus.Valid)
             {
-                var s = new Tu5 { D = d, K = key, V = DateTime.UtcNow, L = r.L };
-                Nf8.S(s);
-                Cs = s;
+                Cs = state.License;
+                _lockReason = null;
                 Mode = LicenseMode.Active;
 
-                if (ex is not null && !string.IsNullOrWhiteSpace(ex.K) && ex.K != key)
-                    await Rq.M3(ex.K, Pz, ex.D);
+                if (previous is not null && !string.IsNullOrWhiteSpace(previous.K) && previous.K != key)
+                    await DeactivateRemoteAsync(previous.K, previous.D);
 
                 Ch();
                 return new LicenseCheckOutcome(LicenseMode.Active, FooterText);
             }
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(r.R));
+            if (state.Reason == "network")
+                return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Impossible de contacter le serveur de licences. Vérifiez votre connexion internet et réessayez.");
+            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(state.Reason));
         }
         catch
         {
@@ -205,25 +217,23 @@ public static class LicenseManager
     {
         if (Mode == LicenseMode.Free) return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
 
-        var ex = Nf8.L();
-        var d = Dv();
-
         try
         {
-            var r = await Rq.M5(Pz, d, Environment.MachineName);
-            if (r.Ok && r.L is not null && !string.IsNullOrWhiteSpace(r.L.K))
+            var state = await Svc().RequestDemoAsync();
+            if (state.Status == LicenseStatus.Valid && state.License is { } lic)
             {
-                var s = new Tu5 { D = d, K = r.L.K!, V = DateTime.UtcNow, L = r.L };
-                Nf8.S(s);
-                Cs = s;
+                Cs = lic;
+                _lockReason = null;
                 Mode = LicenseMode.Active;
                 Ch();
-                var info = r.L.Ex is { } e
-                    ? $"Démo activée : tous les modules sont disponibles jusqu'au {Lc(e):dd/MM/yyyy}."
+                var info = lic.ExpiresAt is { } e
+                    ? $"Démo activée : tous les modules sont disponibles jusqu'au {Lc(e.UtcDateTime):dd/MM/yyyy}."
                     : "Démo activée : tous les modules sont disponibles.";
                 return new LicenseCheckOutcome(LicenseMode.Active, FooterText, InfoMessage: info);
             }
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Dm(r.Ok ? null : r.R));
+            if (state.Reason == "network")
+                return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Impossible de joindre le serveur de licences, vérifiez votre connexion.");
+            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Dm(state.Reason));
         }
         catch
         {
@@ -233,124 +243,94 @@ public static class LicenseManager
 
     public static async Task DeactivateAsync()
     {
-        var s = Cs ?? Nf8.L();
-        if (s is not null) await Rq.M3(s.K, Pz, Dv());
-        Nf8.X();
+        Svc();
+        var s = Nf8.L();
+        if (s is not null) await DeactivateRemoteAsync(s.K, _deviceId!);
+        Nf8.X();   // la licence locale est retirée même si le serveur est injoignable
         Cs = null;
         Mode = LicenseMode.Blocked;
         Ch();
     }
 
-    // Une fois activée avec succès au moins une fois, la licence stockée n'est effacée que sur refus
-    // explicite "révoquée" / "introuvable" ; une licence expirée est conservée (une prolongation côté serveur
-    // la rend de nouveau valide : voir RevalidateAsync). Serveur injoignable : grâce hors ligne avec les
-    // dernières informations connues, plafonnée à la date d'expiration (démo / expiring). Un refus explicite
-    // du serveur n'ouvre jamais de grâce.
-    private static async Task<LicenseCheckOutcome> Vs(Tu5 s)
+    private static async Task DeactivateRemoteAsync(string key, string deviceId)
     {
-        Qp6? r;
-        try
-        {
-            r = await Rq.M2(s.K, Pz, Dv());
-            // Licence prolongée après expiration : le serveur peut avoir oublié l'activation de ce poste.
-            if (!r.Ok && r.R == "device_not_activated")
-                r = await Rq.M1(s.K, Pz, Dv(), Environment.MachineName);
-        }
-        catch
-        {
-            r = null;
-        }
+        try { await _client!.DeactivateAsync(key, string.IsNullOrWhiteSpace(deviceId) ? _deviceId! : deviceId); }
+        catch { }
+    }
 
-        if (r is { Ok: true, L: not null })
+    // Traduit l'état du service partagé en mode d'affichage de FiltresApp. Une licence expirée est conservée en
+    // mode Expired (une prolongation côté serveur la rend de nouveau valide : voir RevalidateAsync) ; le serveur
+    // injoignable ouvre la grâce hors ligne (30 jours après la dernière validation, plafonnée à l'échéance).
+    private static LicenseCheckOutcome FromState(LicenseState st)
+    {
+        _lockReason = null;
+        switch (st.Status)
         {
-            // Remplace type, expiresAt, features et customerName par ceux du serveur (prolongation,
-            // changement de modules) ; l'état des modules est recalculé par les abonnés de Changed.
-            s.D = Dv();
-            s.L = r.L;
-            s.V = DateTime.UtcNow;
-            Nf8.S(s);
-            Cs = s;
-            Mode = LicenseMode.Active;
-            Ch();
-            if (Ib1(r)) return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
-            return new LicenseCheckOutcome(LicenseMode.Active, FooterText);
-        }
+            case LicenseStatus.Valid:
+                Cs = st.License;
+                Mode = LicenseMode.Active;
+                Ch();
+                return new LicenseCheckOutcome(LicenseMode.Active, FooterText);
 
-        if (r is not null)
-        {
-            if (r.R == "license_expired")
-            {
-                Cs = s;
+            case LicenseStatus.OfflineGrace:
+                Cs = st.License;
+                Mode = LicenseMode.Grace;
+                Ch();
+                if (Mode == LicenseMode.Expired)
+                    return new LicenseCheckOutcome(LicenseMode.Expired, FooterText, "Licence expirée. Impossible de joindre le serveur de licences, vérifiez votre connexion.");
+                return new LicenseCheckOutcome(LicenseMode.Grace, FooterText, IsOfflineGrace: true);
+
+            case LicenseStatus.Bypass:
+                BypassName = Nf8.F2();
+                Mode = LicenseMode.Free;
+                Ch();
+                return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
+
+            case LicenseStatus.Locked when st.License is not null
+                                           && st.Reason is "license_expired" or "offline_grace_expired" or "clock_tampered":
+                _lockReason = st.Reason;
+                Cs = st.License;
                 Mode = LicenseMode.Expired;
                 Ch();
-                return new LicenseCheckOutcome(LicenseMode.Expired, FooterText, Rm(r.R));
-            }
+                return new LicenseCheckOutcome(LicenseMode.Expired, FooterText,
+                    st.Reason == "license_expired" ? Rm(st.Reason) : LicenseReasons.Describe(st.Reason));
 
-            if (r.R is "license_revoked" or "license_not_found")
-            {
-                Nf8.X();
+            case LicenseStatus.Locked:
                 Cs = null;
                 Mode = LicenseMode.Blocked;
                 Ch();
-                return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(r.R));
-            }
+                return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(st.Reason));
 
-            Cs = null;
-            Mode = LicenseMode.Blocked;
-            Ch();
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(r.R));
+            default:
+                Cs = null;
+                Mode = LicenseMode.Blocked;
+                Ch();
+                return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Aucune licence active. Saisissez votre clé de licence pour continuer.");
         }
-
-        Cs = s;
-        Mode = LicenseMode.Grace;
-        Ch();
-        if (Mode == LicenseMode.Expired)
-            return new LicenseCheckOutcome(LicenseMode.Expired, FooterText, "Licence expirée. Impossible de joindre le serveur de licences, vérifiez votre connexion.");
-        return new LicenseCheckOutcome(LicenseMode.Grace, FooterText, IsOfflineGrace: true);
     }
-
-    private static string? _dv;
-
-    /// <summary>Identifiant du poste, identique à chaque appel au serveur (démo, activation, validation,
-    /// désactivation) : SHA-256 hexadécimal de HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid (vue 64 bits).
-    /// Jamais stocké, jamais aléatoire : survit à la suppression de la licence, à la réinstallation et au
-    /// changement de session Windows.</summary>
-#pragma warning disable CA1416 // application Windows uniquement
-    private static string Dv()
-    {
-        if (_dv is not null) return _dv;
-        using var b = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry64);
-        using var k = b.OpenSubKey(@"SOFTWARE\Microsoft\Cryptography");
-        var g = k?.GetValue("MachineGuid") as string;
-        if (string.IsNullOrWhiteSpace(g)) throw new InvalidOperationException("Identifiant du poste indisponible.");
-        _dv = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(g))).ToLowerInvariant();
-        System.Diagnostics.Debug.WriteLine("[licence] deviceId " + _dv[..8]);
-        return _dv;
-    }
-#pragma warning restore CA1416
 
     // Date d'expiration dépassée (démo / expiring ; une licence perpétuelle n'en a pas).
-    private static bool Ex1(Vw2 l) => l.Ex is { } e && e.ToUniversalTime() <= DateTime.UtcNow;
+    private static bool IsPast(StoredLicense l) => l.ExpiresAt is { } e && e.UtcDateTime <= DateTime.UtcNow;
 
     private static DateTime Lc(DateTime e) => e.Kind == DateTimeKind.Utc ? e.ToLocalTime() : e;
 
     // Nombre de jours calendaires restants avant la date d'expiration (0 le jour même ou après).
     private static int Dj(DateTime e) => Math.Max(0, (Lc(e).Date - DateTime.Today).Days);
 
-    private static string Bt(Vw2? l)
+    private static string Bt(StoredLicense? l)
     {
         if (l is null) return "Licence active";
 
-        if (string.Equals(l.T, "demo", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(l.Type, "demo", StringComparison.OrdinalIgnoreCase))
         {
-            if (l.Ex is not { } de) return "Démo";
-            var n = Dj(de);
-            return $"Démo — expire le {Lc(de):dd/MM/yyyy} (dans {n} jour{(n > 1 ? "s" : "")})";
+            if (l.ExpiresAt is not { } de) return "Démo";
+            var n = Dj(de.UtcDateTime);
+            return $"Démo — expire le {Lc(de.UtcDateTime):dd/MM/yyyy} (dans {n} jour{(n > 1 ? "s" : "")})";
         }
 
-        if (l.Ex is { } e) return $"Licence — expire le {Lc(e):dd/MM/yyyy}";
+        if (l.ExpiresAt is { } e) return $"Licence — expire le {Lc(e.UtcDateTime):dd/MM/yyyy}";
 
-        return string.IsNullOrWhiteSpace(l.Cn) ? "Licence active" : $"Licence accordée à {l.Cn}";
+        return string.IsNullOrWhiteSpace(l.CustomerName) ? "Licence active" : $"Licence accordée à {l.CustomerName}";
     }
 
     private static string Rm(string? r) => r switch
