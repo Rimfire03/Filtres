@@ -120,6 +120,53 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+            <TabItem Header="Utilisateurs">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Utilisateurs autorisés en lecture/écriture" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,4"
+                                           Text="Les sessions Windows de la liste de droite peuvent modifier les données ; les autres sont en lecture seule. Tant que la liste est vide, le premier utilisateur qui se connecte y est ajouté. Un nom « @domaine » autorise toutes les sessions de ce domaine."/>
+                                <TextBlock Text="{Binding AccessIdentityText}" Style="{StaticResource SectionText}" Margin="0,0,0,10"/>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Utilisateurs connus" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                                        <ListBox ItemsSource="{Binding KnownUsers}" SelectedItem="{Binding SelectedKnownUser}" Height="240"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,20,12,0">
+                                        <Button Content="Ajouter &gt;&gt;" Style="{StaticResource SecondaryButton}" Command="{Binding AddAccessUserCommand}"
+                                                IsEnabled="{Binding CanEditAccess}" Margin="0,0,0,8"/>
+                                        <Button Content="&lt;&lt; Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding RemoveAccessUserCommand}"
+                                                IsEnabled="{Binding CanEditAccess}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Utilisateurs en lecture/écriture" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                                        <ListBox ItemsSource="{Binding WriterUsers}" SelectedItem="{Binding SelectedWriterUser}" Height="240"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="Ajouter un utilisateur pas encore connecté (nom de session, DOMAINE\nom ou @domaine) :" Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,10">
+                                    <Button DockPanel.Dock="Right" Content="Créer l'utilisateur" Style="{StaticResource SecondaryButton}"
+                                            Command="{Binding CreateAccessUserCommand}" IsEnabled="{Binding CanEditAccess}"/>
+                                    <TextBox Text="{Binding NewUserName, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditAccess}"/>
+                                </DockPanel>
+
+                                <Button Content="Enregistrer les utilisateurs" Style="{StaticResource PrimaryButton}" Command="{Binding SaveAccessCommand}"
+                                        IsEnabled="{Binding CanEditAccess}" HorizontalAlignment="Left"/>
+                                <TextBlock Text="{Binding AccessStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
             <TabItem Header="Exports et logo">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">

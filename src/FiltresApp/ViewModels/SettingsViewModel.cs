@@ -93,6 +93,7 @@ public partial class SettingsViewModel : ObservableObject
         InitializeMenus();
         InitializeLastWrite();
         InitializeRowColors();
+        ReloadAccess();
         LicenseManager.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             OnPropertyChanged(nameof(LicenseStatusText));

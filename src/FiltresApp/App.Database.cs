@@ -108,7 +108,20 @@ public partial class App
     /// (voir <see cref="ServerWriteLock"/>) : même règle du premier connecté.</summary>
     private static void OpenDatabase(DbTarget target)
     {
-        if (target.IsServer)
+        // Liste des utilisateurs autorisés (Paramètres > Utilisateurs) : une session non autorisée reste en lecture
+        // seule, sans même chercher à prendre le verrou d'écriture.
+        AccessAllowed = AccessControl.Evaluate(target).Allowed;
+
+        if (!AccessAllowed)
+        {
+            ReleaseServerLock();
+            _writeLock?.Dispose();
+            _writeLock = null;
+            _writeLockPath = null;
+            IsReadOnly = true;
+            WriteLockOwner = null;
+        }
+        else if (target.IsServer)
         {
             _writeLock?.Dispose();
             _writeLock = null;

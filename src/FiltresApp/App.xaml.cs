@@ -144,12 +144,32 @@ public partial class App : Application
         return false;
     }
 
-    public static string ReadOnlyTitle =>
-        "Données en lecture seule : " + (DbFactory is { IsServer: true } ? "base actuellement utilisée par " : "fichier actuellement utilisé par ") +
-        (WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner);
+    /// <summary>Faux si la session Windows n'est pas dans la liste des utilisateurs autorisés en lecture/écriture
+    /// (Paramètres > Utilisateurs) : le poste est alors en lecture seule, quel que soit le verrou d'écriture.</summary>
+    public static bool AccessAllowed { get; private set; } = true;
 
-    public static string ReadOnlyMessage =>
-        ReadOnlyTitle + ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
+    public static string ReadOnlyTitle => !AccessAllowed
+        ? $"Données en lecture seule : la session « {Core.Services.AccessControl.CurrentIdentity} » n'est pas autorisée à modifier les données"
+        : "Données en lecture seule : " + (DbFactory is { IsServer: true } ? "base actuellement utilisée par " : "fichier actuellement utilisé par ") +
+          (WriteLockOwner is null ? "un autre utilisateur" : "@" + WriteLockOwner);
+
+    public static string ReadOnlyMessage => !AccessAllowed
+        ? ReadOnlyTitle + ". Demandez à un utilisateur autorisé de vous ajouter dans Paramètres > Utilisateurs."
+        : ReadOnlyTitle + ". Fermez puis relancez l'application une fois qu'il l'a quittée pour pouvoir modifier les données.";
+
+    /// <summary>Cadenas du pied de page : vert si la session est autorisée en lecture/écriture, rouge sinon.</summary>
+    public static System.Windows.Media.Brush AccessBrush => Frozen(AccessAllowed ? "#16A34A" : "#DC2626");
+
+    private static System.Windows.Media.Brush Frozen(string hex)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex));
+        brush.Freeze();
+        return brush;
+    }
+
+    public static string AccessTooltip => AccessAllowed
+        ? $"Accès approuvé : la session « {Core.Services.AccessControl.CurrentIdentity} » est autorisée en lecture/écriture."
+        : $"Accès non approuvé : la session « {Core.Services.AccessControl.CurrentIdentity} » est en lecture seule (voir Paramètres > Utilisateurs).";
 
     /// <summary>Déplace le dossier "LatoFont" (copié à côté de l'exécutable par le package NuGet
     /// QuestPDF, via ses contentFiles) dans FiltreData : seul l'exécutable doit rester à la racine du

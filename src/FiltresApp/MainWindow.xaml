@@ -45,6 +45,10 @@
                             </Style>
                         </Ellipse.Style>
                     </Ellipse>
+                    <!-- Cadenas d'accès : vert si la session Windows est autorisée en lecture/écriture, rouge sinon. -->
+                    <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="12" Margin="8,1,0,0" VerticalAlignment="Center"
+                               Foreground="{Binding Source={x:Static app:App.AccessBrush}}"
+                               ToolTip="{Binding Source={x:Static app:App.AccessTooltip}}"/>
                     <TextBlock Text="Connexion à la base perdue" FontSize="11" Foreground="#DC2626" FontWeight="SemiBold" Margin="6,0,0,0"
                                DataContext="{x:Static app:App.DatabaseHealth}"
                                Visibility="{Binding IsDown, Converter={StaticResource BoolToVis}}"/>
