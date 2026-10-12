@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Services;
@@ -16,6 +16,17 @@ public partial class SettingsViewModel
     [ObservableProperty] private string? _selectedWriterUser;
     [ObservableProperty] private string _newUserName = string.Empty;
     [ObservableProperty] private string _accessStatusMessage = string.Empty;
+
+    // Une seule sélection à la fois entre les deux listes : « Supprimer l'utilisateur » agit sans ambiguïté.
+    partial void OnSelectedKnownUserChanged(string? value)
+    {
+        if (value is not null) SelectedWriterUser = null;
+    }
+
+    partial void OnSelectedWriterUserChanged(string? value)
+    {
+        if (value is not null) SelectedKnownUser = null;
+    }
 
     public string AccessIdentityText =>
         $"Session Windows : {AccessControl.CurrentIdentity}" + (App.AccessAllowed ? "  (accès lecture/écriture approuvé)" : "  (accès non approuvé : lecture seule)");
@@ -59,24 +70,47 @@ public partial class SettingsViewModel
     [RelayCommand]
     private void AddAccessUser()
     {
-        if (SelectedKnownUser is not { } user) return;
+        if (!CanChangeAccess() || SelectedKnownUser is not { } user) return;
         KnownUsers.Remove(user);
         Insert(WriterUsers, user);
+        Persist();
     }
 
     /// <summary>Flèche « Supprimer » : retire l'utilisateur autorisé sélectionné (il reste dans les utilisateurs connus).</summary>
     [RelayCommand]
     private void RemoveAccessUser()
     {
-        if (SelectedWriterUser is not { } user) return;
+        if (!CanChangeAccess() || SelectedWriterUser is not { } user) return;
+        if (!ConfirmLeavingWriters(user)) return;
         WriterUsers.Remove(user);
         Insert(KnownUsers, user);
+        Persist();
     }
 
-    /// <summary>Crée un utilisateur pas encore connecté (ou un domaine « @domaine ») : reconnu à sa première connexion.</summary>
+    /// <summary>Supprime définitivement l'utilisateur sélectionné (dans l'une ou l'autre liste). Un utilisateur connu qui
+    /// se reconnecte réapparaît dans les utilisateurs connus.</summary>
+    [RelayCommand]
+    private void DeleteAccessUser()
+    {
+        if (!CanChangeAccess()) return;
+        if (SelectedWriterUser is { } writer)
+        {
+            if (!ConfirmLeavingWriters(writer)) return;
+            WriterUsers.Remove(writer);
+        }
+        else if (SelectedKnownUser is { } known)
+            KnownUsers.Remove(known);
+        else
+            return;
+        Persist();
+    }
+
+    /// <summary>Crée un utilisateur pas encore connecté (ou un domaine « @domaine ») : reconnu à sa première connexion.
+    /// Validé par la touche Entrée ; il est ajouté aux utilisateurs connus, la flèche lui donne l'accès en écriture.</summary>
     [RelayCommand]
     private void CreateAccessUser()
     {
+        if (!CanChangeAccess()) return;
         var name = NewUserName.Trim();
         if (name.Length == 0) return;
         if (name == "@")
@@ -92,30 +126,32 @@ public partial class SettingsViewModel
         Insert(KnownUsers, name);
         SelectedKnownUser = name;
         NewUserName = string.Empty;
-        AccessStatusMessage = $"« {name} » ajouté aux utilisateurs connus : utilisez la flèche pour lui donner l'accès en écriture, puis enregistrez.";
+        Persist($"« {name} » créé : utilisez la flèche « Ajouter » pour lui donner l'accès en écriture.");
     }
 
-    [RelayCommand]
-    private void SaveAccess()
+    private bool CanChangeAccess() => App.GuardWritable() && App.AccessAllowed;
+
+    /// <summary>Retirer sa propre session (ou le dernier utilisateur) de la liste des autorisés est confirmé / refusé.</summary>
+    private bool ConfirmLeavingWriters(string user)
     {
-        if (!App.GuardWritable()) return;
-        if (!App.AccessAllowed) return;
-
-        if (WriterUsers.Count == 0)
+        var remaining = WriterUsers.Where(w => !string.Equals(w, user, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (remaining.Count == 0)
         {
-            AccessStatusMessage = "La liste des utilisateurs autorisés ne peut pas être vide.";
-            return;
+            AccessStatusMessage = "Il doit rester au moins un utilisateur autorisé en lecture/écriture.";
+            return false;
         }
+        if (AccessControl.IsCurrentUserAllowed(remaining)) return true;
+        return App.Dialogs.ShowConfirm("Utilisateurs autorisés",
+            $"Votre session « {AccessControl.CurrentIdentity} » ne sera plus autorisée : vous passerez en lecture seule à la prochaine ouverture.\n\nContinuer ?");
+    }
 
-        if (!AccessControl.IsCurrentUserAllowed(WriterUsers) &&
-            !App.Dialogs.ShowConfirm("Utilisateurs autorisés",
-                $"Votre session « {AccessControl.CurrentIdentity} » n'est plus dans la liste : vous passerez en lecture seule à la prochaine ouverture.\n\nEnregistrer quand même ?"))
-            return;
-
+    /// <summary>Enregistre immédiatement les deux listes dans la base (plus de bouton « Enregistrer »).</summary>
+    private void Persist(string? message = null)
+    {
         try
         {
             AccessControl.Save(App.DbFactory.Target, WriterUsers, KnownUsers.Concat(WriterUsers));
-            AccessStatusMessage = "Utilisateurs enregistrés. Les changements s'appliquent à la prochaine ouverture de l'application sur chaque poste.";
+            AccessStatusMessage = message ?? "Enregistré. Les changements s'appliquent à la prochaine ouverture de l'application sur chaque poste.";
         }
         catch (Exception ex)
         {
