@@ -6,10 +6,31 @@
              d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
-    <ScrollViewer Margin="24">
-        <StackPanel MaxWidth="700" HorizontalAlignment="Left">
+    <DockPanel Margin="24">
+        <!-- En-tête : titre, résumé (même présentation que la page Statistiques). -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <TextBlock Text="Paramètres" Style="{StaticResource HeaderText}"/>
+            <TextBlock Text="Modules, base de données et sauvegardes, exports, mises à jour." Style="{StaticResource SectionText}" Margin="0,4,0,0"/>
+            <UniformGrid Columns="4" Margin="0,12,0,0">
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                        <TextBlock Text="Logiciel" Style="{StaticResource SectionText}"/>
+                        <TextBlock Text="{Binding CurrentVersion, Mode=OneWay}" FontSize="22" FontWeight="SemiBold"/></StackPanel></Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                        <TextBlock Text="Base de données (version)" Style="{StaticResource SectionText}"/>
+                        <TextBlock Text="{Binding DatabaseVersion, Mode=OneWay}" FontSize="22" FontWeight="SemiBold"/></StackPanel></Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                        <TextBlock Text="Taille de la base" Style="{StaticResource SectionText}"/>
+                        <TextBlock Text="{Binding DatabaseSizeDisplay, Mode=OneWay}" FontSize="22" FontWeight="SemiBold"/></StackPanel></Border>
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,8,0"><StackPanel>
+                        <TextBlock Text="Canal de mise à jour" Style="{StaticResource SectionText}"/>
+                        <TextBlock Text="{Binding UpdateChannel, Mode=OneWay}" FontSize="22" FontWeight="SemiBold"/></StackPanel></Border>
+            </UniformGrid>
+        </StackPanel>
 
+        <TabControl>
+            <TabItem Header="Modules">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">
             <!-- Modules activables (barre latérale) : la roue dentée à côté de chaque case ouvre les
                  réglages propres à ce module (voir ModuleSettingsView.xaml). En premier dans la page :
                  c'est le réglage le plus consulté. -->
@@ -38,7 +59,6 @@
                     </DockPanel>
                 </StackPanel>
             </Border>
-
             <!-- Licence : masquée en licence gratuite (flag de build ou licence.ini), rien à déconnecter. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16" Visibility="{Binding ShowLicenseCard, Converter={StaticResource BoolToVis}}">
                 <StackPanel>
@@ -52,10 +72,12 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-
-            <!-- ==================== Général (commun à tous les modules) ==================== -->
-            <TextBlock Text="Général" FontSize="16" FontWeight="Bold" Foreground="{StaticResource BrushPrimary}" Margin="0,4,0,12"/>
-
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Base de données">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">
             <!-- Base de données : versions, taille, et les deux chemins enregistrés ensemble. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
@@ -97,7 +119,12 @@
                     <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
-
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Exports et logo">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">
             <!-- Export PDF / Excel : dossier de destination des exports. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
@@ -111,7 +138,6 @@
                     <TextBlock Text="{Binding PdfStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
-
             <!-- Logo de l'entreprise (base de données, commun à tous les postes). -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
@@ -129,7 +155,12 @@
                     <TextBlock Text="{Binding LogoStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
-
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Mises à jour">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">
             <!-- Mises à jour : réglage automatique + action manuelle + statut. -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
@@ -152,7 +183,6 @@
                     <TextBlock Text="{Binding UpdateStatusMessage}" TextWrapping="Wrap" Margin="0,10,0,0" Foreground="{StaticResource BrushPrimary}"/>
                 </StackPanel>
             </Border>
-
             <!-- Contrat de licence utilisateur final : relecture seule (accepté au premier lancement, voir App.Eula.cs). -->
             <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
@@ -161,7 +191,9 @@
                     <Button Content="Lire le contrat de licence (CLUF)" Style="{StaticResource SecondaryButton}" Command="{Binding ShowEulaCommand}" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Border>
-
-        </StackPanel>
-    </ScrollViewer>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </UserControl>
