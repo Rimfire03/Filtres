@@ -10,27 +10,16 @@ public partial class App
 
     /// <summary>Version courante de l'application (définie par &lt;Version&gt; dans le .csproj),
     /// comparée à la dernière release GitHub par <see cref="Updater"/>.</summary>
-    public static string CurrentVersion
-    {
-        get
-        {
-            var v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            return v is null ? "0.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
-        }
-    }
+    public static string CurrentVersion => TomLine.AppInfo.AppVersion.Current(System.Reflection.Assembly.GetExecutingAssembly());
 
     /// <summary>Version affichée à l'utilisateur : <see cref="CurrentVersion"/> suivie de « -dev » pour une build
     /// publiée sur le canal Dev (métadonnée ReleaseChannel posée par tools\Release.ps1).</summary>
-    public static string DisplayVersion => string.IsNullOrWhiteSpace(BuildChannel) ? CurrentVersion : $"{CurrentVersion}-{BuildChannel}";
+    public static string DisplayVersion => TomLine.AppInfo.AppVersion.Text(CurrentVersion, BuildChannel);
 
     /// <summary>Canal de la build en cours (« dev » pour une release de la branche dev), vide pour une build Main.</summary>
-    public static string BuildChannel =>
-        System.Reflection.Assembly.GetExecutingAssembly()
-            .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
-            .OfType<System.Reflection.AssemblyMetadataAttribute>()
-            .FirstOrDefault(a => a.Key == "ReleaseChannel")?.Value ?? "";
+    public static string BuildChannel => TomLine.AppInfo.AppVersion.Channel(System.Reflection.Assembly.GetExecutingAssembly());
 
-    public static bool IsDevBuild => string.Equals(BuildChannel, "dev", StringComparison.OrdinalIgnoreCase);
+    public static bool IsDevBuild => TomLine.AppInfo.AppVersion.IsDev(BuildChannel);
 
     /// <summary>Vérification selon le canal choisi dans les Paramètres ; depuis une build Dev, un retour sur Main est
     /// proposé si la dernière version Main partage la version de base de données du logiciel.</summary>

@@ -104,31 +104,24 @@ public static class LicenseManager
     /// ne dépend jamais du type, seulement de license.features (voir <see cref="HasFeature"/>).</summary>
     public static bool IsDemo => string.Equals(Cs?.Type, "demo", StringComparison.OrdinalIgnoreCase);
 
-    public static string FooterText => Mode switch
+    // Texte et alerte du pied de page : présentation commune des applications (LicenseFooter, TomLine.Licensing).
+    private static FooterInfo Footer()
     {
-        LicenseMode.Free => BypassName is { } n ? $"Licence gratuite — {n}" : "Licence gratuite",
-        LicenseMode.Active => Bt(Cs),
-        LicenseMode.Grace => Bt(Cs) + " (mode hors ligne)",
-        LicenseMode.Expired => _lockReason switch
+        var state = Mode switch
         {
-            "offline_grace_expired" => "Licence : connexion à Internet requise",
-            "clock_tampered" => "Licence : horloge du poste incorrecte",
-            _ => "Licence expirée"
-        },
-        LicenseMode.Blocked => "Aucune licence",
-        _ => ""
-    };
+            LicenseMode.Free => new LicenseState(LicenseStatus.Bypass),
+            LicenseMode.Active => new LicenseState(LicenseStatus.Valid, Cs),
+            LicenseMode.Grace => new LicenseState(LicenseStatus.OfflineGrace, Cs),
+            LicenseMode.Expired => new LicenseState(LicenseStatus.Locked, Cs, _lockReason ?? "license_expired"),
+            _ => new LicenseState(LicenseStatus.NoLicense)
+        };
+        return LicenseFooter.Describe(state, DateTimeOffset.UtcNow, BypassName);
+    }
+
+    public static string FooterText => Footer().Text;
 
     /// <summary>Statut à afficher en couleur d'alerte : licence expirée, ou démo à 2 jours de la fin ou moins.</summary>
-    public static bool FooterIsAlert
-    {
-        get
-        {
-            var m = Mode;
-            if (m == LicenseMode.Expired) return true;
-            return (m == LicenseMode.Active || m == LicenseMode.Grace) && IsDemo && Cs?.ExpiresAt is { } e && Dj(e.UtcDateTime) <= 2;
-        }
-    }
+    public static bool FooterIsAlert => Footer().IsAlert;
 
     /// <summary>Un module n'est disponible que s'il figure dans license.features (licence valide) : aucune
     /// règle spéciale selon le type (une démo reçoit simplement la liste complète du serveur).</summary>
@@ -313,25 +306,6 @@ public static class LicenseManager
     private static bool IsPast(StoredLicense l) => l.ExpiresAt is { } e && e.UtcDateTime <= DateTime.UtcNow;
 
     private static DateTime Lc(DateTime e) => e.Kind == DateTimeKind.Utc ? e.ToLocalTime() : e;
-
-    // Nombre de jours calendaires restants avant la date d'expiration (0 le jour même ou après).
-    private static int Dj(DateTime e) => Math.Max(0, (Lc(e).Date - DateTime.Today).Days);
-
-    private static string Bt(StoredLicense? l)
-    {
-        if (l is null) return "Licence active";
-
-        if (string.Equals(l.Type, "demo", StringComparison.OrdinalIgnoreCase))
-        {
-            if (l.ExpiresAt is not { } de) return "Démo";
-            var n = Dj(de.UtcDateTime);
-            return $"Démo — expire le {Lc(de.UtcDateTime):dd/MM/yyyy} (dans {n} jour{(n > 1 ? "s" : "")})";
-        }
-
-        if (l.ExpiresAt is { } e) return $"Licence — expire le {Lc(e.UtcDateTime):dd/MM/yyyy}";
-
-        return string.IsNullOrWhiteSpace(l.CustomerName) ? "Licence active" : $"Licence accordée à {l.CustomerName}";
-    }
 
     private static string Rm(string? r) => r switch
     {
