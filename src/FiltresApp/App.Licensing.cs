@@ -32,10 +32,20 @@ public partial class App
         // la boucle de messages ne tourne (OnStartup). Sans ce Task.Run, l'application se fige
         // définitivement dès qu'une licence est déjà stockée (donc dès le second lancement).
         var o = System.Threading.Tasks.Task.Run(() => LicenseManager.CheckAtStartupAsync()).GetAwaiter().GetResult();
-        if (o.Mode is not (LicenseMode.Blocked or LicenseMode.Expired)) return true;
+        if (o.Mode is not (LicenseMode.Blocked or LicenseMode.Expired)) { ShowProfileIfRequired(); return true; }
 
         var w = new LicenseActivationWindow(o.BlockedMessage, o.Mode);
-        return w.ShowDialog() == true && w.ActivationSucceeded;
+        var ok = w.ShowDialog() == true && w.ActivationSucceeded;
+        if (ok) ShowProfileIfRequired();
+        return ok;
+    }
+
+    /// <summary>Informations client demandées par le serveur : jamais bloquant, une seule fois par lancement, jamais en
+    /// licence.ini (aucune demande dans ce mode).</summary>
+    private static void ShowProfileIfRequired()
+    {
+        try { TomLine.UI.Wpf.Controls.LicenseProfilePrompt.ShowIfRequired(LicenseManager.Service, Current?.MainWindow, "Filtres"); }
+        catch { }
     }
 
     /// <summary>"Changer de licence" depuis Paramètres : la nouvelle clé est activée avant que l'ancienne soit
@@ -57,7 +67,7 @@ public partial class App
         _licenseTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMinutes(15) };
         _licenseTimer.Tick += async (_, _) =>
         {
-            try { await LicenseManager.RevalidateAsync(); } catch { }
+            try { await LicenseManager.RevalidateAsync(); ShowProfileIfRequired(); } catch { }
         };
         _licenseTimer.Start();
     }

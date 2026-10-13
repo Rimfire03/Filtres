@@ -25,6 +25,9 @@ public static class LicenseManager
     private static LicenseService? _svc;
     private static string? _deviceId;
 
+    /// <summary>Service de licence partagé (informations client demandées par le serveur : ProfileRequest, SubmitProfileAsync).</summary>
+    public static LicenseService Service => Svc();
+
     private static LicenseService Svc()
     {
         if (_svc is not null) return _svc;
