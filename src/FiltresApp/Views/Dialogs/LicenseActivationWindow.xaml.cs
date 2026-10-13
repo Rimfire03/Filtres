@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Input;
 using FiltresApp.Core.Services.Licensing;
+using TomLine.Licensing;
+using TomLine.UI.Wpf.Controls;
 
 namespace FiltresApp.Views.Dialogs;
 
@@ -95,11 +97,18 @@ public partial class LicenseActivationWindow : Window
 
     // Démo automatique : le serveur crée et active la démo pour ce poste, la clé n'est jamais montrée.
     // Appel asynchrone (timeout 5 s dans le client) : l'interface reste réactive, bouton désactivé.
+    private DemoRequestProfile? _demoProfile;
+
     private async void Qj(object sender, RoutedEventArgs e)
     {
+        // Formulaire du demandeur (civilité, nom, e-mail…) : envoyé au serveur et enregistré avec la démo.
+        var form = new DemoRequestWindow("Filtres", _demoProfile) { Owner = this };
+        if (form.ShowDialog() != true || form.Profile is not { } profile) return;
+        _demoProfile = profile;
+
         Busy("Demande de démo en cours...");
 
-        var outcome = await LicenseManager.RequestDemoAsync();
+        var outcome = await LicenseManager.RequestDemoAsync(profile);
         if (outcome.Mode == LicenseMode.Active)
         {
             MessageBox.Show(this, outcome.InfoMessage ?? "Démo activée.", "Démo activée", MessageBoxButton.OK, MessageBoxImage.Information);

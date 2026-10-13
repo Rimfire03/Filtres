@@ -206,13 +206,13 @@ public static class LicenseManager
     /// <summary>Démo de 7 jours demandée au serveur, sans clé à saisir : le serveur crée et active la démo
     /// pour ce poste, la clé reçue est stockée directement (jamais affichée, copiée ni journalisée) et
     /// n'a pas à être activée ensuite. Exige une connexion (pas de grâce sans validation préalable).</summary>
-    public static async Task<LicenseCheckOutcome> RequestDemoAsync()
+    public static async Task<LicenseCheckOutcome> RequestDemoAsync(DemoRequestProfile profile)
     {
         if (Mode == LicenseMode.Free) return new LicenseCheckOutcome(LicenseMode.Free, FooterText);
 
         try
         {
-            var state = await Svc().RequestDemoAsync();
+            var state = await Svc().RequestDemoAsync(profile);
             if (state.Status == LicenseStatus.Valid && state.License is { } lic)
             {
                 Cs = lic;
@@ -322,6 +322,7 @@ public static class LicenseManager
         "license_expired" => "La démo de ce poste est terminée. Saisissez une clé de licence.",
         "license_revoked" => "Cette démo a été désactivée. Saisissez une clé de licence.",
         "product_not_found" => "Produit introuvable sur le serveur de licences.",
+        "profile_invalid" => "Le formulaire de demande est incomplet ou invalide : vérifiez vos informations.",
         _ => "La démo n'a pas pu être activée."
     };
 }
