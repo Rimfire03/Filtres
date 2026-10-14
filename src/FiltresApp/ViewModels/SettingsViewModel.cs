@@ -26,6 +26,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _showBeltsModule;
     [ObservableProperty] private bool _showBearingsModule;
     [ObservableProperty] private bool _showFiltresModule;
+    [ObservableProperty] private bool _showZacModule;
 
     /// <summary>Les cases "Activer le module..." ne sont modifiables que si la licence couvre la
     /// fonctionnalité correspondante - sinon l'utilisateur ne peut même pas activer un module auquel il
@@ -33,6 +34,7 @@ public partial class SettingsViewModel : ObservableObject
     public bool CanToggleFiltresModule => LicenseManager.HasFeature("filtres");
     public bool CanToggleBeltsModule => LicenseManager.HasFeature("courroies");
     public bool CanToggleBearingsModule => LicenseManager.HasFeature("roulements");
+    public bool CanToggleZacModule => LicenseManager.HasFeature("zac");
 
     public string CurrentVersion => App.DisplayVersion;
     public int DatabaseVersion => App.DatabaseVersion;
@@ -85,6 +87,7 @@ public partial class SettingsViewModel : ObservableObject
         _showBeltsModule = App.Settings.ShowBeltsModule;
         _showBearingsModule = App.Settings.ShowBearingsModule;
         _showFiltresModule = App.Settings.ShowFiltresModule;
+        _showZacModule = App.Settings.ShowZacModule;
         _showMultiSiteModule = App.Settings.MultiSiteEnabled;
         LoadSites();
         LoadHistoryYears();
@@ -101,6 +104,7 @@ public partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(CanToggleFiltresModule));
             OnPropertyChanged(nameof(CanToggleBeltsModule));
             OnPropertyChanged(nameof(CanToggleBearingsModule));
+            OnPropertyChanged(nameof(CanToggleZacModule));
             OnPropertyChanged(nameof(CanToggleMultiSiteModule));
             OnPropertyChanged(nameof(MultiSiteToolTip));
             OnPropertyChanged(nameof(ShowMultiSiteNotLicensed));
@@ -134,6 +138,13 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnShowBearingsModuleChanged(bool value)
     {
         App.Settings.ShowBearingsModule = value;
+        App.Settings.Save();
+        App.RaiseModuleVisibilityChanged();
+    }
+
+    partial void OnShowZacModuleChanged(bool value)
+    {
+        App.Settings.ShowZacModule = value;
         App.Settings.Save();
         App.RaiseModuleVisibilityChanged();
     }

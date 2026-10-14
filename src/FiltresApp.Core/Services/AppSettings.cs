@@ -55,6 +55,9 @@ public class AppSettings
     /// "Courroies" et "Roulements". Persistés (contrairement à <see cref="AllowFilterVarietyCreation"/>
     /// ci-dessus) : une fois activé, un module le reste d'une session à l'autre.</summary>
     public bool ShowBeltsModule { get; set; } = false;
+
+    /// <summary>Module « Suivi ZAC » (fonctionnalité de licence « zac ») : désactivé par défaut.</summary>
+    public bool ShowZacModule { get; set; } = false;
     public bool ShowBearingsModule { get; set; } = false;
 
     /// <summary>Module « MultiSite » (nécessite la fonctionnalité de licence « multisite ») : plusieurs sites aux données séparées, seuls les Paramètres sont communs.</summary>

@@ -1,0 +1,22 @@
+<UserControl x:Class="FiltresApp.Views.ZacView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance vm:ZacViewModel}" mc:Ignorable="d">
+    <DockPanel Margin="24">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+            <TextBlock Text="Module en cours de construction." Style="{StaticResource SectionText}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Border Style="{StaticResource CardBorder}" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="700">
+            <StackPanel>
+                <TextBlock Text="Suivi ZAC" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap"
+                           Text="Ce module est activé. Son contenu sera ajouté prochainement."/>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</UserControl>

@@ -50,6 +50,10 @@
                         <CheckBox DockPanel.Dock="Left" Content="Activer le module « Roulements »" IsChecked="{Binding ShowBearingsModule}" IsEnabled="{Binding CanToggleBearingsModule}" VerticalAlignment="Center"
                                   ToolTip="Nécessite une licence couvrant ce module"/>
                     </DockPanel>
+                    <DockPanel Margin="0,0,0,4" LastChildFill="False">
+                        <CheckBox DockPanel.Dock="Left" Content="Activer le module « Suivi ZAC »" IsChecked="{Binding ShowZacModule}" IsEnabled="{Binding CanToggleZacModule}" VerticalAlignment="Center"
+                                  ToolTip="Nécessite une licence couvrant ce module"/>
+                    </DockPanel>
                     <DockPanel LastChildFill="False">
                         <CheckBox DockPanel.Dock="Left" Content="Activer le module « MultiSite » (plusieurs sites aux données séparées)" IsChecked="{Binding ShowMultiSiteModule}" IsEnabled="{Binding CanToggleMultiSiteModule}" VerticalAlignment="Center"
                                   ToolTip="{Binding MultiSiteToolTip}" ToolTipService.ShowOnDisabled="True"/>

@@ -90,6 +90,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <see cref="RefreshModuleVisibility"/>.</summary>
     private readonly NavigationItem _beltsItem = new("Courroies", "➰", () => new BeltListViewModel());
     private readonly NavigationItem _bearingsItem = new("Roulements", "⚙", () => new BearingListViewModel());
+    private readonly NavigationItem _zacItem = new("Suivi ZAC", "🏗", () => new ZacViewModel());
     private readonly NavigationItem _modulesSeparatorBefore = NavigationItem.Separator();
     private readonly NavigationItem _modulesSeparatorBetween = NavigationItem.Separator();
     private readonly NavigationItem _modulesSeparatorAfter = NavigationItem.Separator();
@@ -234,16 +235,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         Sync(_beltsItem, App.Settings.ShowBeltsModule);
         Sync(_bearingsItem, App.Settings.ShowBearingsModule);
+        Sync(_zacItem, App.Settings.ShowZacModule);
 
         // Repli final si le module Filtre vient d'être masqué pendant qu'un de ses écrans était affiché :
         // fait après Sync (Courroies / Roulements peuvent maintenant être la meilleure option disponible).
         if (SelectedItem is null) SelectedItem = FirstSelectableItem();
 
-        var anyModuleVisible = NavigationItems.Contains(_beltsItem) || NavigationItems.Contains(_bearingsItem);
+        var anyModuleVisible = NavigationItems.Contains(_beltsItem) || NavigationItems.Contains(_bearingsItem) || NavigationItems.Contains(_zacItem);
         var beforePresent = NavigationItems.Contains(_modulesSeparatorBefore);
         if (anyModuleVisible && !beforePresent)
         {
-            var firstModuleIndex = NavigationItems.IndexOf(NavigationItems.First(i => i == _beltsItem || i == _bearingsItem));
+            var firstModuleIndex = NavigationItems.IndexOf(NavigationItems.First(i => i == _beltsItem || i == _bearingsItem || i == _zacItem));
             NavigationItems.Insert(firstModuleIndex, _modulesSeparatorBefore);
             NavigationItems.Add(_modulesSeparatorAfter);
         }
@@ -285,6 +287,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _beltsItem.IsLicensed = LicenseManager.HasFeature("courroies");
         _bearingsItem.IsLicensed = LicenseManager.HasFeature("roulements");
+        _zacItem.IsLicensed = LicenseManager.HasFeature("zac");
 
         // Écran d'un module qui vient de devenir non autorisé (expiration, modules retirés) : repli sur
         // Paramètres, où se trouve la carte Licence.
