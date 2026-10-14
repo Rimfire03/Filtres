@@ -1,0 +1,138 @@
+<UserControl x:Class="FiltresApp.Views.Filtres.ZacView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FiltresApp.Services"
+             xmlns:vm="clr-namespace:FiltresApp.ViewModels.Filtres"
+             xmlns:app="clr-namespace:FiltresApp"
+             d:DataContext="{d:DesignInstance vm:ZacListViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+    <UserControl.Resources>
+        <!-- Pièces regroupées par type de ZAC (famille) : un bandeau titre par type (même style que les autres écrans). -->
+        <CollectionViewSource x:Key="GroupedZac" Source="{Binding Rows}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="FamilyGroupLabel"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
+            <Button Grid.Column="1" Content="{Binding EditModeButtonLabel}" Command="{Binding ToggleEditModeCommand}"
+                    Style="{StaticResource EditModeButtonStyle}"/>
+        </Grid>
+
+        <!-- Module non couvert par la licence (perte du droit pendant l'exécution) : aucun écran ni commande. -->
+        <Border Grid.Row="1" Grid.RowSpan="3" Style="{StaticResource CardBorder}" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="700" Margin="0,12,0,0"
+                Visibility="{Binding IsNotLicensed, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding NotLicensedMessage}" TextWrapping="Wrap"/>
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12"
+                    Visibility="{Binding IsLicensed, Converter={StaticResource BoolToVis}}">
+            <Button Content="+ Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Modifier" Style="{StaticResource SecondaryButton}" Command="{Binding EditCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Dupliquer" Style="{StaticResource SecondaryButton}" Command="{Binding DuplicateCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+            <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource BrushPrimary}"/>
+        </StackPanel>
+
+        <Border Grid.Row="2" Background="{StaticResource BrushSurface}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,0,14"
+                Visibility="{Binding IsLicensed, Converter={StaticResource BoolToVis}}">
+            <WrapPanel>
+                <TextBlock Text="Type de ZAC :" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="{StaticResource BrushTextSecondary}"/>
+                <ComboBox ItemsSource="{Binding FamilyOptions}" SelectedItem="{Binding SelectedFamily}"
+                          DisplayMemberPath="Label" Width="200" VerticalContentAlignment="Center"/>
+                <Button Content="+ Nouveau type" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                        Command="{Binding AddFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Renommer le type" Style="{StaticResource SecondaryButton}"
+                        Command="{Binding RenameFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Supprimer le type" Style="{StaticResource SecondaryButton}"
+                        Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                <Button Content="Réinitialiser la recherche" Style="{StaticResource SecondaryButton}" Command="{Binding ResetNameSearchCommand}" Margin="24,0,0,0"
+                        ToolTip="Vide le champ de recherche sous « Nom de la pièce »"/>
+
+                <!-- Alerte d'ouverture de l'application : orange à l'approche du prochain contrôle, rouge s'il est dépassé. -->
+                <CheckBox Content="Alerte à l'ouverture" IsChecked="{Binding AlertEnabled}" VerticalAlignment="Center" Margin="24,0,0,0"
+                          ToolTip="Affiche une fenêtre d'alerte au démarrage de l'application"/>
+                <TextBlock Text="Orange à" VerticalAlignment="Center" Margin="10,0,6,0" Foreground="{StaticResource BrushTextSecondary}"/>
+                <TextBox Text="{Binding AlertDays, UpdateSourceTrigger=LostFocus}" Width="50" MaxLength="3" HorizontalContentAlignment="Center"
+                         VerticalAlignment="Center" ToolTip="Nombre de jours avant le prochain contrôle à partir duquel l'alerte orange apparaît"/>
+                <TextBlock Text="jours" VerticalAlignment="Center" Margin="6,0,0,0" Foreground="{StaticResource BrushTextSecondary}"/>
+            </WrapPanel>
+        </Border>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedZac}}"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="{Binding Title}" SelectedItem="{Binding SelectedRow}" IsReadOnly="True"
+                  AutoGenerateColumns="False" ColumnHeaderStyle="{StaticResource WrappingColumnHeaderStyle}" CellStyle="{StaticResource FlashingCellStyle}" ContextMenuOpening="Grid_ContextMenuOpening"
+                  Visibility="{Binding IsLicensed, Converter={StaticResource BoolToVis}}">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                    <Setter Property="Background" Value="{Binding RowColorBrush}"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Consulter l'historique..." Command="{Binding ShowHistoryCommand}"/>
+                                <MenuItem Header="Pièces jointes..." Command="{Binding ShowAttachmentsCommand}"/>
+                                <MenuItem Header="Couleur" IsEnabled="{x:Static app:App.IsWritable}"/>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nom de la pièce" Binding="{Binding Location}" SortMemberPath="Location" Width="1.9*" ElementStyle="{StaticResource BoldWrappingCellStyle}" HeaderTemplate="{StaticResource NameSearchHeaderTemplate}"/>
+                <!-- Type de ZAC = famille : le choix dans la liste est enregistré tout de suite. -->
+                <DataGridTemplateColumn Header="Type de ZAC" Width="1.3*" SortMemberPath="FamilyGroupLabel">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox Margin="2" VerticalAlignment="Center"
+                                      ItemsSource="{Binding DataContext.FamilyQuickChoices, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      SelectedItem="{Binding FamilyChoiceLabel, Mode=OneWay}"
+                                      IsEnabled="{x:Static app:App.IsWritable}"
+                                      SelectionChanged="FamilyCombo_SelectionChanged"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Dernier contrôle" Binding="{Binding LastControlDate, StringFormat='dd/MM/yyyy', TargetNullValue='-'}" Width="110" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn Header="Prochain contrôle" Binding="{Binding NextControlDate, StringFormat='dd/MM/yyyy', TargetNullValue='-'}" Width="110" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Orange à l'approche de l'échéance (délai paramétrable ci-dessus), rouge si dépassée. -->
+                <DataGridTemplateColumn Header="État" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- Choisir une date ouvre la fenêtre de contrôle (commentaire, fichiers joints par glisser-déposer)
+                     puis enregistre le contrôle (le champ se vide ensuite). -->
+                <DataGridTemplateColumn Header="Saisie du contrôle" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding NewChangeDate, UpdateSourceTrigger=PropertyChanged}"
+                                        svc:DatePickerAutoClear.Enabled="True"
+                                        IsEnabled="{x:Static app:App.IsWritable}" BorderThickness="0" HorizontalAlignment="Center" HorizontalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="1.3*" ElementStyle="{StaticResource WrappingCellStyle}"/>
+            </DataGrid.Columns>
+            <DataGrid.GroupStyle>
+                <GroupStyle HeaderTemplate="{StaticResource GroupHeaderTemplate}"/>
+            </DataGrid.GroupStyle>
+        </DataGrid>
+    </Grid>
+</UserControl>

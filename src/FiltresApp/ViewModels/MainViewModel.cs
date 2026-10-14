@@ -90,7 +90,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <see cref="RefreshModuleVisibility"/>.</summary>
     private readonly NavigationItem _beltsItem = new("Courroies", "➰", () => new BeltListViewModel());
     private readonly NavigationItem _bearingsItem = new("Roulements", "⚙", () => new BearingListViewModel());
-    private readonly NavigationItem _zacItem = new("Suivi ZAC", "🏗", () => new ZacViewModel())
+    private readonly NavigationItem _zacItem = new("Suivi ZAC", "🏗", () => new ZacListViewModel())
     {
         NotLicensedMessage = LicenseFeatures.SuiviZacNotIncludedMessage
     };
@@ -162,6 +162,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     private readonly Action _onLogoChanged, _onSitesChanged, _onModulesChanged, _onLicenseChanged;
+
+    /// <summary>Ouvre le module « Suivi ZAC » (bouton de la fenêtre d'alerte de démarrage) s'il est visible et couvert
+    /// par la licence.</summary>
+    public void ShowZacModule()
+    {
+        if (NavigationItems.Contains(_zacItem) && _zacItem.IsLicensed) SelectedItem = _zacItem;
+    }
 
     /// <summary>Se détache des événements globaux : à appeler quand ce modèle de vue est remplacé (changement de site, voir App.SwitchSite), sinon l'ancien continuerait à réagir.</summary>
     public void Dispose()

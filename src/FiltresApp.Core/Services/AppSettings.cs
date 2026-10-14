@@ -58,6 +58,11 @@ public class AppSettings
 
     /// <summary>Module « Suivi ZAC » (fonctionnalité de licence « zac ») : désactivé par défaut.</summary>
     public bool ShowZacModule { get; set; } = false;
+
+    /// <summary>Module « Suivi ZAC » : fenêtre d'alerte à l'ouverture de l'application, et délai (en jours avant le
+    /// prochain contrôle) à partir duquel l'alerte orange apparaît.</summary>
+    public bool ZacAlertEnabled { get; set; } = true;
+    public int ZacAlertDays { get; set; } = 30;
     public bool ShowBearingsModule { get; set; } = false;
 
     /// <summary>Module « MultiSite » (nécessite la fonctionnalité de licence « multisite ») : plusieurs sites aux données séparées, seuls les Paramètres sont communs.</summary>

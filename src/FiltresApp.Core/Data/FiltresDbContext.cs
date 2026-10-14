@@ -49,6 +49,10 @@ public class FiltresDbContext : DbContext
     public DbSet<BearingUnit> BearingUnits => Set<BearingUnit>();
     public DbSet<BearingReplacement> BearingReplacements => Set<BearingReplacement>();
     public DbSet<BearingFamily> BearingFamilies => Set<BearingFamily>();
+    public DbSet<ZacFamily> ZacFamilies => Set<ZacFamily>();
+    public DbSet<ZacItem> ZacItems => Set<ZacItem>();
+    public DbSet<ZacControl> ZacControls => Set<ZacControl>();
+    public DbSet<ZacAttachment> ZacAttachments => Set<ZacAttachment>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -198,6 +202,24 @@ public class FiltresDbContext : DbContext
             .HasMany(b => b.Replacements)
             .WithOne(r => r.BearingUnit)
             .HasForeignKey(r => r.BearingUnitId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ZacItem>()
+            .HasOne(i => i.Family)
+            .WithMany()
+            .HasForeignKey(i => i.ZacFamilyId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<ZacItem>()
+            .HasMany(i => i.Controls)
+            .WithOne(c => c.ZacItem)
+            .HasForeignKey(c => c.ZacItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ZacControl>()
+            .HasMany(c => c.Attachments)
+            .WithOne(a => a.ZacControl)
+            .HasForeignKey(a => a.ZacControlId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // MultiSite : chaque table propre à un site est limitée au site courant du contexte.

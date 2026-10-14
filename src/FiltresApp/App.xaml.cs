@@ -108,6 +108,8 @@ public partial class App : Application
         if (IsReadOnly)
             MessageBox.Show(mainWindow, ReadOnlyMessage, "Données en lecture seule", MessageBoxButton.OK, MessageBoxImage.Information);
 
+        ShowZacAlertsIfAny();
+
         if (Settings.AutoUpdateEnabled) _ = CheckForUpdateOnStartupAsync();
     }
 
