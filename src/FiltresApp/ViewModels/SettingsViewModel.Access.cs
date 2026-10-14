@@ -38,6 +38,7 @@ public partial class SettingsViewModel
     {
         OnPropertyChanged(nameof(CanEditAccess));
         OnPropertyChanged(nameof(AccessIdentityText));
+        OnPropertyChanged(nameof(ShowSelfEnroll));
         if (_loadingAccess) return;
 
         if (!CanToggleAccess || !App.GuardWritable())
@@ -125,6 +126,36 @@ public partial class SettingsViewModel
         var index = 0;
         while (index < target.Count && string.Compare(target[index], value, StringComparison.CurrentCultureIgnoreCase) < 0) index++;
         target.Insert(index, value);
+    }
+
+    /// <summary>Le bouton « S'ajouter par mot de passe » n'apparaît que si la fonction est active et que cette session n'est
+    /// pas (encore) autorisée.</summary>
+    public bool ShowSelfEnroll => AccessEnabled && !App.AccessAllowed;
+
+    /// <summary>Permet à la session courante de se déclarer utilisateur lecture/écriture en saisissant le mot de passe.</summary>
+    [RelayCommand]
+    private void SelfEnrollWithPassword()
+    {
+        var window = new FiltresApp.Views.Dialogs.PasswordPromptWindow(
+            "Accès en lecture/écriture",
+            $"Saisissez le mot de passe pour autoriser la session « {AccessControl.CurrentIdentity} » à modifier les données.",
+            AccessControl.VerifySelfEnrollPassword)
+        { Owner = System.Windows.Application.Current.MainWindow };
+        if (window.ShowDialog() != true) return;
+
+        try
+        {
+            AccessControl.EnrollCurrentUser(App.DbFactory.Target);
+            ReloadAccess();
+            AccessStatusMessage = $"« {AccessControl.CurrentIdentity} » est maintenant autorisé en lecture/écriture.";
+            if (App.Dialogs.ShowConfirm("Accès en lecture/écriture",
+                    "Votre session est autorisée. Redémarrer l'application maintenant pour pouvoir modifier les données ?"))
+                App.Restart();
+        }
+        catch (Exception ex)
+        {
+            AccessStatusMessage = "Ajout impossible : " + ex.Message;
+        }
     }
 
     /// <summary>Flèche « Ajouter » : déplace l'utilisateur connu sélectionné vers les utilisateurs autorisés.</summary>

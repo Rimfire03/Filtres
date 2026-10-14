@@ -132,6 +132,9 @@
                                           IsChecked="{Binding AccessEnabled}" IsEnabled="{Binding CanToggleAccess}" Margin="0,0,0,8"
                                           ToolTip="À l'activation, si la liste de droite est vide, la session courante en devient le premier utilisateur"/>
                                 <TextBlock Text="{Binding AccessIdentityText}" Style="{StaticResource SectionText}" Margin="0,0,0,10"/>
+                                <Button Content="S'ajouter en utilisateur lecture/écriture (mot de passe)..." Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding SelfEnrollWithPasswordCommand}" HorizontalAlignment="Left" Margin="0,0,0,10"
+                                        Visibility="{Binding ShowSelfEnroll, Converter={StaticResource BoolToVis}}"/>
 
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
