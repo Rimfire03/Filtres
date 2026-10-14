@@ -17,7 +17,7 @@
     <PackageReference Include="QuestPDF" Version="2024.10.3" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- Système de licence partagé (dépôt privé TomLine-core, GitHub Packages : voir nuget.config). -->
-    <PackageReference Include="TomLine.Licensing" Version="1.5.0" />
+    <PackageReference Include="TomLine.Licensing" Version="1.6.0" />
     <PackageReference Include="TomLine.AppInfo" Version="1.0.0" />
   </ItemGroup>
 

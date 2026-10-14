@@ -88,6 +88,8 @@ public partial class LicenseActivationWindow : Window
         var outcome = await LicenseManager.ActivateAsync(key);
         if (outcome.Mode == LicenseMode.Active)
         {
+            if (!string.IsNullOrEmpty(outcome.InfoMessage))
+                MessageBox.Show(this, outcome.InfoMessage, "Licence activÃ©e", MessageBoxButton.OK, MessageBoxImage.Information);
             Done();
             return;
         }

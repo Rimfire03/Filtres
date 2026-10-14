@@ -171,7 +171,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     /// <summary>Pied de page (à gauche) : statut de la licence, en couleur d'alerte pour une licence expirée
     /// ou une démo à 2 jours de la fin ou moins. Mis à jour à chaque changement d'état de la licence.</summary>
-    public string LicenseFooter => LicenseManager.FooterText;
+    public string LicenseFooter => LicenseManager.FooterTextWithPosts;
 
     public System.Windows.Media.Brush LicenseFooterBrush => LicenseManager.FooterIsAlert
         ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF8, 0x71, 0x71))

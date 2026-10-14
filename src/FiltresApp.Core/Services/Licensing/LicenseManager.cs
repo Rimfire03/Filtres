@@ -123,6 +123,12 @@ public static class LicenseManager
 
     public static string FooterText => Footer().Text;
 
+    /// <summary>Compteur de postes (Â« Postes : 2/5 Â»), ou null quand le serveur ne l'a pas renvoyÃ©.</summary>
+    public static string? PostsText => Footer().PostsLine;
+
+    /// <summary>Texte d'Ã©tat avec le compteur de postes quand il est connu (Â« Licence active  Â·  Postes : 2/5 Â»).</summary>
+    public static string FooterTextWithPosts => Footer() is { PostsLine: { } p } f ? f.Text + "  Â·  " + p : FooterText;
+
     /// <summary>Statut à afficher en couleur d'alerte : licence expirée, ou démo à 2 jours de la fin ou moins.</summary>
     public static bool FooterIsAlert => Footer().IsAlert;
 
@@ -194,11 +200,14 @@ public static class LicenseManager
                     await DeactivateRemoteAsync(previous.K, previous.D);
 
                 Ch();
-                return new LicenseCheckOutcome(LicenseMode.Active, FooterText);
+                // Compteur de postes connu : Â« Licence activÃ©e (poste 2/5) Â» (rien de plus avec un ancien serveur).
+                return new LicenseCheckOutcome(LicenseMode.Active, FooterText,
+                    InfoMessage: state.License?.ActivationsText is not null ? LicenseFooter.ActivationMessage(state) : null);
             }
             if (state.Reason == "network")
                 return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, "Impossible de contacter le serveur de licences. Vérifiez votre connexion internet et réessayez.");
-            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText, Rm(state.Reason));
+            return new LicenseCheckOutcome(LicenseMode.Blocked, FooterText,
+                state.Reason == "activation_limit_reached" ? LicenseReasons.DescribeRefusal(state) : Rm(state.Reason));
         }
         catch
         {

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -165,7 +165,7 @@ public partial class SettingsViewModel : ObservableObject
     public bool ShowLicenseCard => true;
     /// <summary>Boutons "Changer de licence" / "Se déconnecter" : jamais en licence gratuite (bypass).</summary>
     public bool ShowLicenseButtons => !LicenseManager.IsFreeLicense;
-    public string LicenseStatusText => LicenseManager.FooterText;
+    public string LicenseStatusText => LicenseManager.FooterTextWithPosts;
 
     /// <summary>"Changer de licence" (par exemple passer d'une démo à une vraie licence) : la nouvelle clé est
     /// activée d'abord, l'ancienne désactivée ensuite ; en cas d'échec ou d'annulation, l'ancienne reste en

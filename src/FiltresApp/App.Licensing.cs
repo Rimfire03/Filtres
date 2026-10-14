@@ -72,6 +72,6 @@ public partial class App
         _licenseTimer.Start();
     }
 
-    public static string LicenseFooterText => LicenseManager.FooterText;
+    public static string LicenseFooterText => LicenseManager.FooterTextWithPosts;
     public static bool IsLicenseOfflineGrace => LicenseManager.IsOfflineGrace;
 }
