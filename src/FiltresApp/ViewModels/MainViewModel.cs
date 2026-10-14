@@ -90,7 +90,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <see cref="RefreshModuleVisibility"/>.</summary>
     private readonly NavigationItem _beltsItem = new("Courroies", "➰", () => new BeltListViewModel());
     private readonly NavigationItem _bearingsItem = new("Roulements", "⚙", () => new BearingListViewModel());
-    private readonly NavigationItem _zacItem = new("Suivi ZAC", "🏗", () => new ZacViewModel());
+    private readonly NavigationItem _zacItem = new("Suivi ZAC", "🏗", () => new ZacViewModel())
+    {
+        NotLicensedMessage = LicenseFeatures.SuiviZacNotIncludedMessage
+    };
     private readonly NavigationItem _modulesSeparatorBefore = NavigationItem.Separator();
     private readonly NavigationItem _modulesSeparatorBetween = NavigationItem.Separator();
     private readonly NavigationItem _modulesSeparatorAfter = NavigationItem.Separator();
@@ -287,7 +290,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _beltsItem.IsLicensed = LicenseManager.HasFeature("courroies");
         _bearingsItem.IsLicensed = LicenseManager.HasFeature("roulements");
-        _zacItem.IsLicensed = LicenseManager.HasFeature("zac");
+        _zacItem.IsLicensed = LicenseManager.HasFeature(LicenseFeatures.SuiviZac);
 
         // Écran d'un module qui vient de devenir non autorisé (expiration, modules retirés) : repli sur
         // Paramètres, où se trouve la carte Licence.

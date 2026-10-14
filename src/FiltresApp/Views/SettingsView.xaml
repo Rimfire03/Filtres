@@ -52,7 +52,7 @@
                     </DockPanel>
                     <DockPanel Margin="0,0,0,4" LastChildFill="False">
                         <CheckBox DockPanel.Dock="Left" Content="Activer le module « Suivi ZAC »" IsChecked="{Binding ShowZacModule}" IsEnabled="{Binding CanToggleZacModule}" VerticalAlignment="Center"
-                                  ToolTip="Nécessite une licence couvrant ce module"/>
+                                  ToolTip="Module Suivi ZAC : nécessite la fonctionnalité « suivi-zac » dans votre licence" ToolTipService.ShowOnDisabled="True"/>
                     </DockPanel>
                     <DockPanel LastChildFill="False">
                         <CheckBox DockPanel.Dock="Left" Content="Activer le module « MultiSite » (plusieurs sites aux données séparées)" IsChecked="{Binding ShowMultiSiteModule}" IsEnabled="{Binding CanToggleMultiSiteModule}" VerticalAlignment="Center"

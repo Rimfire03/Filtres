@@ -267,7 +267,7 @@
                                                     <Setter Property="IsHitTestVisible" Value="False"/>
                                                     <Setter Property="Focusable" Value="False"/>
                                                     <Setter Property="Opacity" Value="0.4"/>
-                                                    <Setter TargetName="Bd" Property="ToolTip" Value="Nécessite une licence : module non couvert par votre licence actuelle."/>
+                                                    <Setter TargetName="Bd" Property="ToolTip" Value="{Binding NotLicensedMessage}"/>
                                                 </DataTrigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>

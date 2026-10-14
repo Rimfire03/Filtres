@@ -34,7 +34,7 @@ public partial class SettingsViewModel : ObservableObject
     public bool CanToggleFiltresModule => LicenseManager.HasFeature("filtres");
     public bool CanToggleBeltsModule => LicenseManager.HasFeature("courroies");
     public bool CanToggleBearingsModule => LicenseManager.HasFeature("roulements");
-    public bool CanToggleZacModule => LicenseManager.HasFeature("zac");
+    public bool CanToggleZacModule => LicenseManager.HasFeature(LicenseFeatures.SuiviZac);
 
     public string CurrentVersion => App.DisplayVersion;
     public int DatabaseVersion => App.DatabaseVersion;

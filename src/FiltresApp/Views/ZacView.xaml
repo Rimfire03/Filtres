@@ -8,15 +8,48 @@
     <DockPanel Margin="24">
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
             <TextBlock Text="{Binding Title}" Style="{StaticResource HeaderText}"/>
-            <TextBlock Text="Module en cours de construction." Style="{StaticResource SectionText}" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,6,0,0" Foreground="{StaticResource BrushPrimary}"/>
         </StackPanel>
 
-        <Border Style="{StaticResource CardBorder}" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="700">
-            <StackPanel>
-                <TextBlock Text="Suivi ZAC" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap"
-                           Text="Ce module est activé. Son contenu sera ajouté prochainement."/>
-            </StackPanel>
+        <!-- Module non couvert par la licence (perte du droit pendant l'exécution) : aucun écran ni commande. -->
+        <Border Style="{StaticResource CardBorder}" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="700"
+                Visibility="{Binding IsNotLicensed, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{Binding NotLicensedMessage}" TextWrapping="Wrap"/>
         </Border>
+
+        <Grid Visibility="{Binding IsLicensed, Converter={StaticResource BoolToVis}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="320"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*" MinWidth="280"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Liste -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" LastChildFill="False">
+                        <TextBlock DockPanel.Dock="Left" Text="Éléments" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button DockPanel.Dock="Right" Content="Ajouter" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}"/>
+                    </DockPanel>
+                    <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False"
+                              IsReadOnly="True" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- Détail -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Text="Détail" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Sélectionnez un élément dans la liste pour afficher son détail."/>
+                    <Button Content="Ouvrir le détail" Style="{StaticResource SecondaryButton}" Command="{Binding OpenDetailCommand}"
+                            HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </DockPanel>
 </UserControl>

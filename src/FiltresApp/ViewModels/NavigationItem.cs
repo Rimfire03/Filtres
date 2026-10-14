@@ -31,6 +31,10 @@ public partial class NavigationItem : ObservableObject
     /// MainWindow.xaml - jamais juste masquée, pour que l'utilisateur comprenne qu'une licence est requise.</summary>
     [ObservableProperty] private bool _isLicensed = true;
 
+    /// <summary>Info-bulle affichée quand l'entrée est grisée faute de licence (voir MainWindow.xaml) ; un module
+    /// peut préciser son propre message.</summary>
+    public string NotLicensedMessage { get; init; } = "Nécessite une licence : module non couvert par votre licence actuelle.";
+
     public NavigationItem(string title, string icon, Func<object>? factory, int? varietyId = null, bool isSeparator = false)
     {
         _title = title;
