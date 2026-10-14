@@ -23,8 +23,6 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
 
     public ZacListViewModel()
     {
-        _alertEnabled = App.Settings.ZacAlertEnabled;
-        _alertDays = Math.Max(0, App.Settings.ZacAlertDays);
         _onLicenseChanged = () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(RefreshLicense);
         LicenseManager.Changed += _onLicenseChanged;
         SeedIsoTypes();
@@ -79,22 +77,9 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
 
     // ---- Alerte de démarrage ----
 
-    [ObservableProperty] private bool _alertEnabled;
-    [ObservableProperty] private int _alertDays;
-
-    partial void OnAlertEnabledChanged(bool value)
-    {
-        App.Settings.ZacAlertEnabled = value;
-        App.Settings.Save();
-    }
-
-    partial void OnAlertDaysChanged(int value)
-    {
-        if (value < 0) { AlertDays = 0; return; }
-        App.Settings.ZacAlertDays = value;
-        App.Settings.Save();
-        foreach (var row in Rows) row.RefreshZac();
-    }
+    /// <summary>Délai (jours avant le prochain contrôle) de l'alerte orange, réglé dans Paramètres, module « Suivi ZAC »
+    /// (roue dentée) : lu à chaque calcul d'état.</summary>
+    public int AlertDays => Math.Max(0, App.Settings.ZacAlertDays);
 
     // ---- Données ----
 

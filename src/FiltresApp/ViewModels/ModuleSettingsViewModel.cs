@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace FiltresApp.ViewModels;
 
-public enum ModuleSettingsScope { Filtre, Belts, Bearings, MultiSite }
+public enum ModuleSettingsScope { Filtre, Belts, Bearings, MultiSite, Zac }
 
 /// <summary>Écran "Paramètres du module..." atteint via la roue dentée à côté de chaque case "Activer le
 /// module..." de l'écran Paramètres (voir SettingsView.xaml, carte "Modules") : regroupe les réglages
@@ -29,6 +29,7 @@ public partial class ModuleSettingsViewModel : ObservableObject
         ModuleSettingsScope.Belts => "Paramètres du module « Courroies »",
         ModuleSettingsScope.Bearings => "Paramètres du module « Roulements »",
         ModuleSettingsScope.MultiSite => "Paramètres du module « MultiSite »",
+        ModuleSettingsScope.Zac => "Paramètres du module « Suivi ZAC »",
         _ => "Paramètres du module"
     };
 
@@ -36,6 +37,7 @@ public partial class ModuleSettingsViewModel : ObservableObject
     /// affichent un message d'attente) - voir ModuleSettingsView.xaml.</summary>
     public bool IsFiltre => Scope == ModuleSettingsScope.Filtre;
     public bool IsMultiSite => Scope == ModuleSettingsScope.MultiSite;
+    public bool IsZac => Scope == ModuleSettingsScope.Zac;
     public bool IsOther => Scope is ModuleSettingsScope.Belts or ModuleSettingsScope.Bearings;
 
     /// <summary>"← Retour aux Paramètres" (en haut de l'écran).</summary>

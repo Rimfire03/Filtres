@@ -16,6 +16,25 @@
             <TextBlock Text="Aucun réglage spécifique pour ce module pour l'instant." Style="{StaticResource SectionText}" Margin="0,12,0,0"
                        Visibility="{Binding IsOther, Converter={StaticResource BoolToVis}}"/>
 
+            <!-- Suivi ZAC : alerte affichée à l'ouverture de l'application (orange à l'approche du prochain contrôle,
+                 rouge s'il est dépassé) et délai de l'alerte orange. -->
+            <StackPanel Visibility="{Binding IsZac, Converter={StaticResource BoolToVis}}">
+                <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Alerte à l'ouverture de l'application" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                   Text="À l'ouverture de l'application, une fenêtre signale les pièces dont le prochain contrôle approche (alerte orange) ou dont la date est dépassée (alerte rouge). Le réglage est propre à ce poste."/>
+                        <CheckBox Content="Afficher l'alerte à l'ouverture de l'application" IsChecked="{Binding Settings.ZacAlertEnabled}" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Alerte orange à partir de" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox Text="{Binding Settings.ZacAlertDays, UpdateSourceTrigger=LostFocus}" Width="60" MaxLength="3"
+                                     HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="jours avant le prochain contrôle" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
             <!-- MultiSite : gestion des sites (création, renommage, suppression avec nettoyage, site par défaut). -->
             <StackPanel Visibility="{Binding IsMultiSite, Converter={StaticResource BoolToVis}}">
                 <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0" IsEnabled="{Binding Settings.CanToggleMultiSiteModule}"

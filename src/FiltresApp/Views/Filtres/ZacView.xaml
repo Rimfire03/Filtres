@@ -63,14 +63,6 @@
                         Command="{Binding DeleteFamilyCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
                 <Button Content="Réinitialiser la recherche" Style="{StaticResource SecondaryButton}" Command="{Binding ResetNameSearchCommand}" Margin="24,0,0,0"
                         ToolTip="Vide le champ de recherche sous « Nom de la pièce »"/>
-
-                <!-- Alerte d'ouverture de l'application : orange à l'approche du prochain contrôle, rouge s'il est dépassé. -->
-                <CheckBox Content="Alerte à l'ouverture" IsChecked="{Binding AlertEnabled}" VerticalAlignment="Center" Margin="24,0,0,0"
-                          ToolTip="Affiche une fenêtre d'alerte au démarrage de l'application"/>
-                <TextBlock Text="Orange à" VerticalAlignment="Center" Margin="10,0,6,0" Foreground="{StaticResource BrushTextSecondary}"/>
-                <TextBox Text="{Binding AlertDays, UpdateSourceTrigger=LostFocus}" Width="50" MaxLength="3" HorizontalContentAlignment="Center"
-                         VerticalAlignment="Center" ToolTip="Nombre de jours avant le prochain contrôle à partir duquel l'alerte orange apparaît"/>
-                <TextBlock Text="jours" VerticalAlignment="Center" Margin="6,0,0,0" Foreground="{StaticResource BrushTextSecondary}"/>
             </WrapPanel>
         </Border>
 
@@ -108,7 +100,7 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Dernier contrôle" Binding="{Binding LastControlDate, StringFormat='dd/MM/yyyy', TargetNullValue='-'}" Width="110" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Prochain contrôle" Binding="{Binding NextControlDate, StringFormat='dd/MM/yyyy', TargetNullValue='-'}" Width="110" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <!-- Orange à l'approche de l'échéance (délai paramétrable ci-dessus), rouge si dépassée. -->
+                <!-- Orange à l'approche de l'échéance (délai réglé dans Paramètres, roue dentée du module), rouge si dépassée. -->
                 <DataGridTemplateColumn Header="État" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

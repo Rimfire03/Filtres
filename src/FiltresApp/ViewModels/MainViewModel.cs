@@ -58,6 +58,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public NavigationItem BeltsSettingsItem { get; private set; } = null!;
     public NavigationItem BearingsSettingsItem { get; private set; } = null!;
     public NavigationItem MultiSiteSettingsItem { get; private set; } = null!;
+    public NavigationItem ZacSettingsItem { get; private set; } = null!;
 
     /// <summary>Année consultée, partagée par tous les écrans de suivi de filtres (remplace l'ancienne
     /// remise à zéro annuelle : changer l'année ne supprime rien, l'historique reste consultable).</summary>
@@ -140,6 +141,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Belts));
         BearingsSettingsItem = new NavigationItem("Paramètres du module Roulements", "⚙",
             () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Bearings));
+        ZacSettingsItem = new NavigationItem("Paramètres du module Suivi ZAC", "⚙",
+            () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.Zac));
         MultiSiteSettingsItem = new NavigationItem("Paramètres du module MultiSite", "⚙",
             () => new ModuleSettingsViewModel((SettingsViewModel)SettingsItem.GetOrCreateViewModel()!, this, ModuleSettingsScope.MultiSite));
 
