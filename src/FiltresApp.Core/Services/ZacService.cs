@@ -25,11 +25,14 @@ public static class ZacService
         ".zip", ".7z", ".rar", ".gz", ".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".docx", ".xlsx", ".pptx", ".mp3", ".mp4", ".mkv"
     };
 
-    /// <summary>Désignations proposées à la saisie d'une valeur (la désignation reste libre).</summary>
+    /// <summary>Désignations proposées à la saisie d'une valeur (la désignation reste libre). Les comptages
+    /// particulaires ont un seuil ISO 14644-1 (voir <see cref="ZacIsoLimits"/>).</summary>
     public static readonly string[] SuggestedMeasurements =
     {
-        "Comptage particulaire ≥ 0,5 µm", "Comptage particulaire ≥ 5 µm", "Pression différentielle", "Température",
-        "Hygrométrie", "Vitesse d'air", "Taux de renouvellement d'air", "Intégrité filtre HEPA (fuite)", "Temps de récupération"
+        "Comptage particulaire ≥ 0,1 µm", "Comptage particulaire ≥ 0,2 µm", "Comptage particulaire ≥ 0,3 µm",
+        "Comptage particulaire ≥ 0,5 µm", "Comptage particulaire ≥ 1 µm", "Comptage particulaire ≥ 5 µm",
+        "Pression différentielle", "Température", "Hygrométrie", "Vitesse d'air", "Taux de renouvellement d'air",
+        "Intégrité filtre HEPA (fuite)", "Temps de récupération"
     };
 
     public static ZacAlertLevel Level(DateOnly? next, DateOnly today, int alertDays)

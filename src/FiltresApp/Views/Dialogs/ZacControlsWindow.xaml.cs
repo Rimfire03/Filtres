@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -11,12 +12,14 @@ using Microsoft.Win32;
 namespace FiltresApp.Views.Dialogs;
 
 /// <summary>Contrôles d'une pièce du module « Suivi ZAC » : ajout de documents (glisser-déposer) et saisie des valeurs
-/// mesurées <b>après</b> l'enregistrement du contrôle.</summary>
+/// mesurées <b>après</b> l'enregistrement du contrôle. Pour les comptages particulaires, le seuil ISO 14644-1 de la
+/// classe de la pièce est affiché à côté de la valeur et la conformité est calculée ; la case « Validé manuellement »
+/// permet de valider une valeur à la main.</summary>
 public partial class ZacControlsWindow : Window
 {
     private const long MaxFileBytes = 50L * 1024 * 1024;
 
-    private sealed record ControlRow(int Id, DateOnly? Date, string? Comment, int FileCount, int ValueCount)
+    private sealed record ControlRow(int Id, DateOnly? Date, string? Comment, int FileCount, int ValueCount, string Conformity)
     {
         public string DateText => Date?.ToString("dd/MM/yyyy") ?? "-";
     }
@@ -27,15 +30,71 @@ public partial class ZacControlsWindow : Window
         public string StorageText => Compressed ? "Compressé" : "Tel quel";
     }
 
+    /// <summary>Ligne de la grille « Valeurs » : seuil et résultat se recalculent à chaque modification.</summary>
+    private sealed class ValueRow : INotifyPropertyChanged
+    {
+        private readonly string? _typeName;
+        private string _name = string.Empty;
+        private decimal? _value;
+        private string? _unit;
+        private bool _manual;
+
+        public ValueRow(string? typeName) => _typeName = typeName;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value ?? string.Empty;
+                // Unité par défaut d'un comptage particulaire.
+                if (string.IsNullOrWhiteSpace(_unit) && ZacIsoLimits.SizeFromMeasurementName(_name) is not null)
+                {
+                    _unit = "particules/m³";
+                    Raise(nameof(Unit));
+                }
+                Refresh();
+            }
+        }
+
+        public decimal? Value { get => _value; set { _value = value; Refresh(); } }
+        public string? Unit { get => _unit; set { _unit = value; Raise(nameof(Unit)); } }
+        public bool ManualValidation { get => _manual; set { _manual = value; Refresh(); } }
+
+        public long? Limit => ZacIsoLimits.LimitFor(_typeName, _name);
+        public string LimitText => ZacIsoLimits.LimitText(Limit);
+        public ZacConformity Auto => ZacIsoLimits.Evaluate(Limit, _value);
+        public string ResultText => ZacIsoLimits.StatusText(Auto, _manual);
+
+        private void Refresh()
+        {
+            Raise(nameof(Name));
+            Raise(nameof(Value));
+            Raise(nameof(LimitText));
+            Raise(nameof(ResultText));
+            Raise(nameof(ManualValidation));
+        }
+
+        private void Raise(string property) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+    }
+
     private readonly int _itemId;
+    private readonly string _typeName;
     private int? _controlId;
 
+    /// <param name="typeName">Type de ZAC de la pièce (« ISO 7 »...) : donne la classe pour les seuils.</param>
     /// <param name="selectControlId">Contrôle à sélectionner à l'ouverture (celui qui vient d'être enregistré).</param>
-    public ZacControlsWindow(int itemId, string itemName, int? selectControlId = null)
+    public ZacControlsWindow(int itemId, string itemName, string typeName, int? selectControlId = null)
     {
         InitializeComponent();
         _itemId = itemId;
+        _typeName = typeName;
         HeaderText.Text = $"Contrôles - « {itemName} »";
+        ClassText.Text = ZacIsoLimits.ClassFromTypeName(typeName) is { } c
+            ? $"Classe de la pièce : ISO {c}. Le seuil ISO 14644-1 s'affiche pour les comptages particulaires et la conformité est calculée ; cochez « Validé manuellement » pour valider une valeur à la main."
+            : "Cette pièce n'est pas rattachée à une classe ISO (type « ISO 5 » à « ISO 9 ») : aucun seuil n'est calculé, les valeurs se valident manuellement.";
         LoadControls(selectControlId);
     }
 
@@ -44,10 +103,27 @@ public partial class ZacControlsWindow : Window
     private void LoadControls(int? selectId)
     {
         // Projection sans le contenu des fichiers : lus seulement à l'ouverture / l'enregistrement.
-        var rows = App.Db.ZacControls.AsNoTracking().Where(c => c.ZacItemId == _itemId)
+        var controls = App.Db.ZacControls.AsNoTracking().Where(c => c.ZacItemId == _itemId)
             .OrderByDescending(c => c.DateChanged)
-            .Select(c => new ControlRow(c.Id, c.DateChanged, c.Comment, c.Attachments.Count, c.Measurements.Count))
+            .Select(c => new { c.Id, c.DateChanged, c.Comment, Files = c.Attachments.Count })
             .ToList();
+        var measurements = App.Db.ZacMeasurements.AsNoTracking().Where(m => m.ZacControl!.ZacItemId == _itemId)
+            .Select(m => new { m.ZacControlId, m.Name, m.Value, m.ManualValidation })
+            .ToList()
+            .ToLookup(m => m.ZacControlId);
+
+        var rows = controls.Select(c =>
+        {
+            var values = measurements[c.Id].ToList();
+            var evaluated = values
+                .Select(v => (Auto: ZacIsoLimits.Evaluate(ZacIsoLimits.LimitFor(_typeName, v.Name), v.Value), Manual: v.ManualValidation == true))
+                .ToList();
+            var conformity = values.Count == 0 ? "-"
+                : evaluated.Any(e => e.Auto == ZacConformity.NonConform && !e.Manual) ? "Non conforme"
+                : evaluated.Any(e => e.Auto != ZacConformity.Unknown || e.Manual) ? "Conforme" : "-";
+            return new ControlRow(c.Id, c.DateChanged, c.Comment, c.Files, values.Count, conformity);
+        }).ToList();
+
         ControlsGrid.ItemsSource = rows;
         ControlsGrid.SelectedItem = rows.FirstOrDefault(r => r.Id == selectId) ?? rows.FirstOrDefault();
     }
@@ -59,11 +135,7 @@ public partial class ZacControlsWindow : Window
         LoadValues();
     }
 
-    private void KeepSelection()
-    {
-        var id = _controlId;
-        LoadControls(id);
-    }
+    private void KeepSelection() => LoadControls(_controlId);
 
     // ---- Documents ----
 
@@ -155,22 +227,24 @@ public partial class ZacControlsWindow : Window
 
     // ---- Valeurs ----
 
-    private List<ZacMeasurement> _values = new();
+    private List<ValueRow> _values = new();
 
     private void LoadValues()
     {
         _values = _controlId is int id
             ? App.Db.ZacMeasurements.AsNoTracking().Where(m => m.ZacControlId == id).OrderBy(m => m.Id).ToList()
-            : new List<ZacMeasurement>();
+                .Select(m => new ValueRow(_typeName) { Name = m.Name, Value = m.Value, Unit = m.Unit, ManualValidation = m.ManualValidation == true })
+                .ToList()
+            : new List<ValueRow>();
         ValuesGrid.ItemsSource = null;
         ValuesGrid.ItemsSource = _values;
     }
 
     private void OnAddValue(object sender, RoutedEventArgs e)
     {
-        if (_controlId is not int controlId) return;
+        if (_controlId is null) return;
         ValuesGrid.CommitEdit(DataGridEditingUnit.Row, true);
-        _values.Add(new ZacMeasurement { ZacControlId = controlId });
+        _values.Add(new ValueRow(_typeName));
         ValuesGrid.ItemsSource = null;
         ValuesGrid.ItemsSource = _values;
         ValuesGrid.SelectedItem = _values[^1];
@@ -179,9 +253,9 @@ public partial class ZacControlsWindow : Window
 
     private void OnDeleteValue(object sender, RoutedEventArgs e)
     {
-        if (ValuesGrid.SelectedItem is not ZacMeasurement m) return;
+        if (ValuesGrid.SelectedItem is not ValueRow row) return;
         ValuesGrid.CommitEdit(DataGridEditingUnit.Row, true);
-        _values.Remove(m);
+        _values.Remove(row);
         ValuesGrid.ItemsSource = null;
         ValuesGrid.ItemsSource = _values;
     }
@@ -199,7 +273,7 @@ public partial class ZacControlsWindow : Window
             App.Db.ZacMeasurements.Add(new ZacMeasurement
             {
                 ZacControlId = controlId, Name = v.Name.Trim(), Value = v.Value,
-                Unit = string.IsNullOrWhiteSpace(v.Unit) ? null : v.Unit.Trim(), IsConform = v.IsConform
+                Unit = string.IsNullOrWhiteSpace(v.Unit) ? null : v.Unit.Trim(), ManualValidation = v.ManualValidation
             });
         App.Db.SaveChanges();
         KeepSelection();

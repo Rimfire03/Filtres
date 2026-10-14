@@ -90,8 +90,11 @@ public class ZacMeasurement : ISiteScoped
     public decimal? Value { get; set; }
     public string? Unit { get; set; }
 
-    /// <summary>Conforme (vrai), non conforme (faux) ou non renseigné (null).</summary>
-    public bool? IsConform { get; set; }
+    /// <summary>Validation manuelle de la valeur (case à cocher) : la conformité est calculée automatiquement d'après le
+    /// seuil ISO de la pièce ; la validation manuelle l'emporte (valeur acceptée malgré le calcul, ou validée quand il
+    /// n'existe pas de seuil). Colonne « IsConform » en base.</summary>
+    [System.ComponentModel.DataAnnotations.Schema.Column("IsConform")]
+    public bool? ManualValidation { get; set; }
 }
 
 /// <summary>Fichier joint à un contrôle, stocké dans la base (compressé quand c'est utile).</summary>

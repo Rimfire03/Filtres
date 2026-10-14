@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
 using FiltresApp.Core.Services;
@@ -138,7 +138,7 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
 
         // Documents et valeurs peuvent être ajoutés après l'enregistrement du contrôle.
         if (window.OpenDetailsAfter)
-            new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location, control.Id)
+            new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location, item.FamilyGroupLabel, control.Id)
             { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
         return true;
     }
@@ -208,7 +208,7 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
     public void ShowAttachments(ZacItem item)
     {
         if (!EnsureLicensed()) return;
-        new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
+        new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location, item.FamilyGroupLabel) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
         Reload();
     }
 
