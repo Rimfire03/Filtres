@@ -17,7 +17,7 @@
             <TextBox x:Name="CommentBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" MaxHeight="100" VerticalScrollBarVisibility="Auto"/>
         </StackPanel>
 
-        <TextBlock Grid.Row="1" Text="Fichiers joints (facultatif) : glissez-déposez des fichiers ci-dessous"
+        <TextBlock Grid.Row="1" Text="Documents (facultatif, ils peuvent aussi être ajoutés après l'enregistrement du contrôle) : glissez-déposez ci-dessous"
                    Style="{StaticResource SectionText}" Margin="0,0,0,4"/>
 
         <!-- Zone de dépôt : glisser-déposer de fichiers depuis l'Explorateur. -->
@@ -36,6 +36,8 @@
             <Button DockPanel.Dock="Left" Content="Retirer" Style="{StaticResource SecondaryButton}" Click="OnRemove" Margin="8,0,0,0"/>
             <Button DockPanel.Dock="Right" Content="Annuler" Style="{StaticResource SecondaryButton}" IsCancel="True" Margin="8,0,0,0"/>
             <Button DockPanel.Dock="Right" Content="Enregistrer le contrôle" Style="{StaticResource PrimaryButton}" IsDefault="False" Click="OnOk"/>
+            <Button DockPanel.Dock="Right" Content="Enregistrer, puis documents et valeurs..." Style="{StaticResource SecondaryButton}" Click="OnOkThenDetails"
+                    ToolTip="Enregistre le contrôle puis ouvre la fenêtre pour ajouter des documents et saisir les valeurs"/>
         </DockPanel>
     </Grid>
 </Window>

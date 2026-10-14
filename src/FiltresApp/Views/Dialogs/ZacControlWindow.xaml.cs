@@ -77,5 +77,14 @@ public partial class ZacControlWindow : Window
         DropHint.Visibility = _files.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    /// <summary>Vrai si l'utilisateur a choisi d'enregistrer puis de saisir documents et valeurs.</summary>
+    public bool OpenDetailsAfter { get; private set; }
+
     private void OnOk(object sender, RoutedEventArgs e) => DialogResult = true;
+
+    private void OnOkThenDetails(object sender, RoutedEventArgs e)
+    {
+        OpenDetailsAfter = true;
+        DialogResult = true;
+    }
 }

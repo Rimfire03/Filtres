@@ -135,6 +135,11 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
         item.Controls = tracked.Controls.Select(c => new ZacControl { Id = c.Id, ZacItemId = c.ZacItemId, DateChanged = c.DateChanged, Comment = c.Comment }).ToList();
         item.NextControlDate = tracked.NextControlDate;
         Rows.FirstOrDefault(r => r.Id == item.Id)?.RefreshZac();
+
+        // Documents et valeurs peuvent être ajoutés après l'enregistrement du contrôle.
+        if (window.OpenDetailsAfter)
+            new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location, control.Id)
+            { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
         return true;
     }
 
@@ -198,11 +203,13 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
             DateColumnWidth: 1.2, DetailColumnWidth: 1.6), controls);
     }
 
-    /// <summary>« Pièces jointes... » : liste des fichiers de tous les contrôles de la pièce.</summary>
+    /// <summary>« Documents et valeurs... » : contrôles de la pièce, avec ajout de documents et saisie des valeurs
+    /// mesurées après l'enregistrement d'un contrôle.</summary>
     public void ShowAttachments(ZacItem item)
     {
         if (!EnsureLicensed()) return;
-        new FiltresApp.Views.Dialogs.ZacAttachmentsWindow(item.Id, item.Location) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
+        new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location) { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
+        Reload();
     }
 
     // ---- Familles = types de ZAC (partie commune : TrackedItemListViewModel.Families.cs) ----

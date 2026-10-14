@@ -1,0 +1,93 @@
+<Window x:Class="FiltresApp.Views.Dialogs.ZacControlsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="clr-namespace:FiltresApp.Core.Services;assembly=FiltresApp.Core"
+        Title="Contrôles, documents et valeurs" Width="900" Height="640" MinWidth="720" MinHeight="520"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="HeaderText" Grid.Row="0" Style="{StaticResource HeaderText}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+
+        <!-- Contrôles de la pièce : documents et valeurs se rattachent au contrôle sélectionné. -->
+        <DataGrid x:Name="ControlsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                  SelectionMode="Single" Height="150" Margin="0,0,0,12" SelectionChanged="OnControlSelected">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Contrôle du" Binding="{Binding DateText}" Width="120"/>
+                <DataGridTextColumn Header="Commentaire" Binding="{Binding Comment}" Width="*"/>
+                <DataGridTextColumn Header="Documents" Binding="{Binding FileCount}" Width="100"/>
+                <DataGridTextColumn Header="Valeurs" Binding="{Binding ValueCount}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TabControl Grid.Row="2" x:Name="DetailTabs">
+            <!-- Documents : glisser-déposer des fichiers sur la liste. -->
+            <TabItem Header="Documents">
+                <DockPanel Margin="0,10,0,0">
+                    <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" LastChildFill="False">
+                        <Button DockPanel.Dock="Left" Content="Ajouter des documents..." Style="{StaticResource PrimaryButton}" Click="OnAddFiles"/>
+                        <Button DockPanel.Dock="Left" Content="Ouvrir" Style="{StaticResource SecondaryButton}" Click="OnOpenFile"/>
+                        <Button DockPanel.Dock="Left" Content="Enregistrer sous..." Style="{StaticResource SecondaryButton}" Click="OnSaveFile"/>
+                        <Button DockPanel.Dock="Left" Content="Supprimer" Style="{StaticResource DangerButton}" Click="OnDeleteFile" Margin="8,0,0,0"/>
+                    </DockPanel>
+                    <Border x:Name="DropZone" AllowDrop="True" BorderThickness="2" CornerRadius="8" Padding="4"
+                            BorderBrush="{StaticResource BrushBorder}" DragEnter="OnDragEnter" DragLeave="OnDragLeave" DragOver="OnDragOver" Drop="OnDrop">
+                        <Grid>
+                            <DataGrid x:Name="FilesGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                                      SelectionMode="Single" MouseDoubleClick="OnOpenFile" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Fichier" Binding="{Binding FileName}" Width="*"/>
+                                    <DataGridTextColumn Header="Taille" Binding="{Binding SizeText}" Width="100"/>
+                                    <DataGridTextColumn Header="Stockage" Binding="{Binding StorageText}" Width="110"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock x:Name="DropHint" Text="Glissez-déposez des fichiers ici" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Foreground="{StaticResource BrushTextSecondary}" IsHitTestVisible="False"/>
+                        </Grid>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Valeurs mesurées : une ligne par mesure, saisie après l'enregistrement du contrôle. -->
+            <TabItem Header="Valeurs">
+                <DockPanel Margin="0,10,0,0">
+                    <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" LastChildFill="False">
+                        <Button DockPanel.Dock="Left" Content="Ajouter une valeur" Style="{StaticResource SecondaryButton}" Click="OnAddValue"/>
+                        <Button DockPanel.Dock="Left" Content="Supprimer la ligne" Style="{StaticResource SecondaryButton}" Click="OnDeleteValue"/>
+                        <Button DockPanel.Dock="Right" Content="Enregistrer les valeurs" Style="{StaticResource PrimaryButton}" Click="OnSaveValues"/>
+                    </DockPanel>
+                    <DataGrid x:Name="ValuesGrid" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Désignation" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox IsEditable="True" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                  ItemsSource="{x:Static core:ZacService.SuggestedMeasurements}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Valeur" Binding="{Binding Value, TargetNullValue=''}" Width="120"/>
+                            <DataGridTextColumn Header="Unité" Binding="{Binding Unit}" Width="100"/>
+                            <DataGridCheckBoxColumn Header="Conforme" Binding="{Binding IsConform}" IsThreeState="True" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+
+        <DockPanel Grid.Row="3" Margin="0,12,0,0" LastChildFill="False">
+            <TextBlock x:Name="StatusText" DockPanel.Dock="Left" VerticalAlignment="Center" Foreground="{StaticResource BrushPrimary}"/>
+            <Button DockPanel.Dock="Right" Content="Fermer" Style="{StaticResource SecondaryButton}" IsCancel="True"/>
+        </DockPanel>
+    </Grid>
+</Window>

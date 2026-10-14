@@ -69,8 +69,29 @@ public class ZacControl : IDatedReplacement, ISiteScoped
 
     public List<ZacAttachment> Attachments { get; set; } = new();
 
+    /// <summary>Valeurs mesurées lors du contrôle, saisies après l'enregistrement du contrôle.</summary>
+    public List<ZacMeasurement> Measurements { get; set; } = new();
+
     [NotMapped]
     public int AttachmentCount => Attachments.Count;
+}
+
+/// <summary>Valeur mesurée lors d'un contrôle (comptage particulaire, pression différentielle...) : désignation libre
+/// (des propositions sont faites, voir <c>ZacService.SuggestedMeasurements</c>), valeur, unité et conformité.</summary>
+public class ZacMeasurement : ISiteScoped
+{
+    public int SiteId { get; set; }
+
+    public int Id { get; set; }
+    public int ZacControlId { get; set; }
+    public ZacControl? ZacControl { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+    public decimal? Value { get; set; }
+    public string? Unit { get; set; }
+
+    /// <summary>Conforme (vrai), non conforme (faux) ou non renseigné (null).</summary>
+    public bool? IsConform { get; set; }
 }
 
 /// <summary>Fichier joint à un contrôle, stocké dans la base (compressé quand c'est utile).</summary>

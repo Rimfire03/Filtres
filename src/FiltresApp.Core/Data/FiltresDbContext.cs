@@ -53,6 +53,7 @@ public class FiltresDbContext : DbContext
     public DbSet<ZacItem> ZacItems => Set<ZacItem>();
     public DbSet<ZacControl> ZacControls => Set<ZacControl>();
     public DbSet<ZacAttachment> ZacAttachments => Set<ZacAttachment>();
+    public DbSet<ZacMeasurement> ZacMeasurements => Set<ZacMeasurement>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -220,6 +221,12 @@ public class FiltresDbContext : DbContext
             .HasMany(c => c.Attachments)
             .WithOne(a => a.ZacControl)
             .HasForeignKey(a => a.ZacControlId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ZacControl>()
+            .HasMany(c => c.Measurements)
+            .WithOne(m => m.ZacControl)
+            .HasForeignKey(m => m.ZacControlId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // MultiSite : chaque table propre à un site est limitée au site courant du contexte.

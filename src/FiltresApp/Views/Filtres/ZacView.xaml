@@ -85,7 +85,7 @@
                         <Setter.Value>
                             <ContextMenu>
                                 <MenuItem Header="Consulter l'historique..." Command="{Binding ShowHistoryCommand}"/>
-                                <MenuItem Header="Pièces jointes..." Command="{Binding ShowAttachmentsCommand}"/>
+                                <MenuItem Header="Documents et valeurs..." Command="{Binding ShowAttachmentsCommand}"/>
                                 <MenuItem Header="Couleur" IsEnabled="{x:Static app:App.IsWritable}"/>
                             </ContextMenu>
                         </Setter.Value>
