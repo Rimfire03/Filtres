@@ -63,6 +63,10 @@ public class AppSettings
     /// prochain contrôle) à partir duquel l'alerte orange apparaît.</summary>
     public bool ZacAlertEnabled { get; set; } = true;
     public int ZacAlertDays { get; set; } = 30;
+
+    /// <summary>Date (aaaa-MM-jj) à laquelle la fenêtre d'alerte « Suivi ZAC » a été affichée pour la dernière fois sur
+    /// ce poste : elle ne s'ouvre qu'une fois par jour.</summary>
+    public string? ZacAlertLastShown { get; set; }
     public bool ShowBearingsModule { get; set; } = false;
 
     /// <summary>Module « MultiSite » (nécessite la fonctionnalité de licence « multisite ») : plusieurs sites aux données séparées, seuls les Paramètres sont communs.</summary>

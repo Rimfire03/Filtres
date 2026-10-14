@@ -19,8 +19,16 @@ public partial class App
             if (!Settings.ShowZacModule || !Settings.ZacAlertEnabled) return;
             if (!LicenseManager.HasFeature(LicenseFeatures.SuiviZac)) return;
 
-            var alerts = ZacService.Alerts(Db, DateOnly.FromDateTime(DateTime.Today), Math.Max(0, Settings.ZacAlertDays));
+            // Une seule ouverture par jour et par poste.
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var todayText = today.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            if (Settings.ZacAlertLastShown == todayText) return;
+
+            var alerts = ZacService.Alerts(Db, today, Math.Max(0, Settings.ZacAlertDays));
             if (alerts.Count == 0) return;
+
+            Settings.ZacAlertLastShown = todayText;
+            Settings.Save();
 
             var window = new ZacAlertWindow(alerts) { Owner = Current.MainWindow };
             window.ShowDialog();
