@@ -91,7 +91,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <see cref="RefreshModuleVisibility"/>.</summary>
     private readonly NavigationItem _beltsItem = new("Courroies", "➰", () => new BeltListViewModel());
     private readonly NavigationItem _bearingsItem = new("Roulements", "⚙", () => new BearingListViewModel());
-    private readonly NavigationItem _zacItem = new("Suivi ZAC", "🏗", () => new ZacListViewModel())
+    private readonly NavigationItem _zacItem = new("Suivi ZAC", "💨", () => new ZacListViewModel())
     {
         NotLicensedMessage = LicenseFeatures.SuiviZacNotIncludedMessage
     };
