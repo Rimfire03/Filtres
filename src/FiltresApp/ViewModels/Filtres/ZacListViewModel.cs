@@ -27,7 +27,26 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
         _alertDays = Math.Max(0, App.Settings.ZacAlertDays);
         _onLicenseChanged = () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(RefreshLicense);
         LicenseManager.Changed += _onLicenseChanged;
+        SeedIsoTypes();
         Initialize();
+    }
+
+    /// <summary>Types de ZAC proposés par défaut : classes de propreté particulaire ISO 14644-1 utilisables en pratique
+    /// (ISO 5 à ISO 9). Créés une seule fois, seulement quand aucun type n'existe sur le site ; d'autres types se
+    /// créent à la main (« + Nouveau type »).</summary>
+    private void SeedIsoTypes()
+    {
+        try
+        {
+            if (!IsLicensed || !App.IsWritable || App.Db.ZacFamilies.Any()) return;
+            foreach (var cls in new[] { 5, 6, 7, 8, 9 })
+                App.Db.ZacFamilies.Add(new ZacFamily { Nom = $"ISO {cls}" });
+            App.Db.SaveChanges();
+        }
+        catch
+        {
+            // Types par défaut : confort uniquement, jamais bloquant pour l'ouverture du module.
+        }
     }
 
     public void Dispose() => LicenseManager.Changed -= _onLicenseChanged;
