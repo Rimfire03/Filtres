@@ -90,6 +90,7 @@ public partial class App : Application
             return;
         }
 
+        EmptyDataGridLayout.Register();
         Dialogs = new DialogService();
         Printer = new PrintService();
         PdfExport = new PdfExportService();
