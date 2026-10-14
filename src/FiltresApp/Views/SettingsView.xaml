@@ -128,6 +128,9 @@
                                 <TextBlock Text="Utilisateurs autorisés en lecture/écriture" FontWeight="SemiBold" Margin="0,0,0,4"/>
                                 <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,4"
                                            Text="Les sessions Windows de la liste de droite peuvent modifier les données ; les autres sont en lecture seule. Les changements sont enregistrés immédiatement. Tant que la liste est vide, le premier utilisateur qui se connecte y est ajouté. Un nom « @domaine » autorise toutes les sessions de ce domaine."/>
+                                <CheckBox Content="Activer la gestion des utilisateurs (désactivée par défaut : tout le monde peut modifier les données)"
+                                          IsChecked="{Binding AccessEnabled}" IsEnabled="{Binding CanToggleAccess}" Margin="0,0,0,8"
+                                          ToolTip="À l'activation, si la liste de droite est vide, la session courante en devient le premier utilisateur"/>
                                 <TextBlock Text="{Binding AccessIdentityText}" Style="{StaticResource SectionText}" Margin="0,0,0,10"/>
 
                                 <Grid Margin="0,0,0,10">

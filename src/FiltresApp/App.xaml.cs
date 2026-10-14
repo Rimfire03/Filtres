@@ -148,6 +148,10 @@ public partial class App : Application
     /// (Paramètres > Utilisateurs) : le poste est alors en lecture seule, quel que soit le verrou d'écriture.</summary>
     public static bool AccessAllowed { get; private set; } = true;
 
+    /// <summary>La gestion des utilisateurs est-elle activée (Paramètres > Utilisateurs) ? Désactivée par défaut :
+    /// aucun contrôle, et le cadenas du pied de page est masqué.</summary>
+    public static bool AccessEnabled { get; private set; }
+
     public static string ReadOnlyTitle => !AccessAllowed
         ? $"Données en lecture seule : la session « {Core.Services.AccessControl.CurrentIdentity} » n'est pas autorisée à modifier les données"
         : "Données en lecture seule : " + (DbFactory is { IsServer: true } ? "base actuellement utilisée par " : "fichier actuellement utilisé par ") +

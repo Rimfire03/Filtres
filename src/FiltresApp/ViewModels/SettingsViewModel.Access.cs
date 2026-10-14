@@ -28,11 +28,69 @@ public partial class SettingsViewModel
         if (value is not null) SelectedKnownUser = null;
     }
 
-    public string AccessIdentityText =>
-        $"Session Windows : {AccessControl.CurrentIdentity}" + (App.AccessAllowed ? "  (accès lecture/écriture approuvé)" : "  (accès non approuvé : lecture seule)");
+    /// <summary>Gestion des utilisateurs activée (case à cocher, commune à tous les postes). Désactivée par défaut :
+    /// tout le monde peut alors modifier les données.</summary>
+    [ObservableProperty] private bool _accessEnabled;
 
-    /// <summary>Seul un utilisateur autorisé et non en lecture seule peut modifier la liste.</summary>
-    public bool CanEditAccess => App.IsWritable && App.AccessAllowed;
+    private bool _loadingAccess;
+
+    partial void OnAccessEnabledChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanEditAccess));
+        OnPropertyChanged(nameof(AccessIdentityText));
+        if (_loadingAccess) return;
+
+        if (!CanToggleAccess || !App.GuardWritable())
+        {
+            SetAccessEnabledSilently(!value);
+            return;
+        }
+
+        try
+        {
+            if (value)
+            {
+                var current = AccessControl.Load(App.DbFactory.Target);
+                if (current.Writers.Count > 0 && !AccessControl.IsCurrentUserAllowed(current.Writers) &&
+                    !App.Dialogs.ShowConfirm("Utilisateurs autorisés",
+                        $"Votre session « {AccessControl.CurrentIdentity} » n'est pas dans la liste des utilisateurs autorisés : vous passerez en lecture seule à la prochaine ouverture.\n\nActiver quand même ?"))
+                {
+                    SetAccessEnabledSilently(false);
+                    return;
+                }
+            }
+
+            var wasEmpty = AccessControl.Load(App.DbFactory.Target).Writers.Count == 0;
+            AccessControl.SetEnabled(App.DbFactory.Target, value);
+            ReloadAccess();
+            AccessStatusMessage = value
+                ? (wasEmpty ? $"Activée : « {AccessControl.CurrentIdentity} » est le premier utilisateur autorisé en lecture/écriture. " : "Activée. ")
+                  + "S'applique à la prochaine ouverture de l'application sur chaque poste."
+                : "Désactivée : tous les utilisateurs peuvent modifier les données (à la prochaine ouverture de chaque poste).";
+        }
+        catch (Exception ex)
+        {
+            SetAccessEnabledSilently(!value);
+            AccessStatusMessage = "Changement impossible : " + ex.Message;
+        }
+    }
+
+    private void SetAccessEnabledSilently(bool value)
+    {
+        _loadingAccess = true;
+        try { AccessEnabled = value; }
+        finally { _loadingAccess = false; }
+    }
+
+    public string AccessIdentityText => !AccessEnabled
+        ? "Gestion des utilisateurs désactivée : toutes les sessions Windows peuvent modifier les données."
+        : $"Session Windows : {AccessControl.CurrentIdentity}" + (App.AccessAllowed ? "  (accès lecture/écriture approuvé)" : "  (accès non approuvé : lecture seule)");
+
+    /// <summary>Seul un utilisateur autorisé et non en lecture seule peut activer/désactiver la fonction.</summary>
+    public bool CanToggleAccess => App.IsWritable && App.AccessAllowed;
+
+    /// <summary>La liste n'est modifiable que si la fonction est activée.</summary>
+    public bool CanEditAccess => CanToggleAccess && AccessEnabled;
 
     [RelayCommand]
     private void ReloadAccess()
@@ -44,6 +102,9 @@ public partial class SettingsViewModel
                 .Where(k => !lists.Writers.Contains(k, StringComparer.OrdinalIgnoreCase));
             Fill(KnownUsers, known);
             Fill(WriterUsers, lists.Writers);
+            SetAccessEnabledSilently(lists.Enabled);
+            OnPropertyChanged(nameof(CanEditAccess));
+            OnPropertyChanged(nameof(AccessIdentityText));
             AccessStatusMessage = string.Empty;
         }
         catch (Exception ex)

@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace FiltresApp.Core.Services;
 
 /// <summary>Résultat du contrôle d'accès au démarrage : <see cref="Allowed"/> = la session Windows peut écrire.</summary>
-public sealed record AccessState(bool Allowed, bool FirstUser);
+public sealed record AccessState(bool Allowed, bool FirstUser, bool Enabled);
 
 /// <summary>Contenu des listes d'accès : utilisateurs autorisés en lecture/écriture et utilisateurs connus.</summary>
-public sealed record AccessLists(List<string> Writers, List<string> Known);
+public sealed record AccessLists(List<string> Writers, List<string> Known, bool Enabled);
 
 /// <summary>
 /// Utilisateurs autorisés à modifier les données (lecture/écriture). Les autres sont en lecture seule.
@@ -19,13 +19,15 @@ public sealed record AccessLists(List<string> Writers, List<string> Known);
 /// <item>« DOMAINE\jean » ou « jean@domaine » : cette session précise ;</item>
 /// <item>« @domaine » : toutes les sessions de ce domaine.</item>
 /// </list>
-/// Liste vide : le premier utilisateur qui se connecte y est ajouté et obtient les droits d'écriture.
+/// La fonction est désactivée par défaut (clé <c>AccessEnabled</c>) : tout le monde peut alors écrire. À l'activation, si la
+/// liste des autorisés est vide, la session qui active y est ajoutée et obtient les droits d'écriture.
 /// En cas d'erreur de lecture, l'accès est accordé (on ne verrouille jamais l'application sur un incident technique).
 /// </summary>
 public static class AccessControl
 {
     private const string WritersKey = "AccessWriters";
     private const string KnownKey = "AccessKnown";
+    private const string EnabledKey = "AccessEnabled";
 
     public static string CurrentUser => Environment.UserName;
     public static string CurrentDomain => Environment.UserDomainName;
@@ -67,11 +69,14 @@ public static class AccessControl
     {
         try
         {
-            if (!target.IsServer && !File.Exists(target.FilePath)) return new AccessState(true, true);
+            if (!target.IsServer && !File.Exists(target.FilePath)) return new AccessState(true, true, false);
 
             using var ctx = new FiltresDbContext(target, false);
             ServerSql.EnsureDbInfo(ctx);
             var lists = Read(ctx);
+
+            // Fonction désactivée : aucun contrôle, tout le monde peut modifier les données.
+            if (!lists.Enabled) return new AccessState(true, false, false);
 
             var firstUser = lists.Writers.Count == 0;
             if (firstUser)
@@ -86,11 +91,11 @@ public static class AccessControl
                 Write(ctx, KnownKey, lists.Known);
             }
 
-            return new AccessState(IsCurrentUserAllowed(lists.Writers), firstUser);
+            return new AccessState(IsCurrentUserAllowed(lists.Writers), firstUser, true);
         }
         catch
         {
-            return new AccessState(true, false);
+            return new AccessState(true, false, false);
         }
     }
 
@@ -99,6 +104,27 @@ public static class AccessControl
         using var ctx = new FiltresDbContext(target, false);
         ServerSql.EnsureDbInfo(ctx);
         return Read(ctx);
+    }
+
+    /// <summary>Active ou désactive la fonction pour tous les postes. À l'activation, si la liste des autorisés est vide,
+    /// la session courante y est ajoutée (et aux utilisateurs connus). Retourne les listes à jour.</summary>
+    public static AccessLists SetEnabled(DbTarget target, bool enabled)
+    {
+        using var ctx = new FiltresDbContext(target, false);
+        ServerSql.EnsureDbInfo(ctx);
+        var lists = Read(ctx);
+        if (enabled && lists.Writers.Count == 0)
+        {
+            lists.Writers.Add(CurrentIdentity);
+            Write(ctx, WritersKey, lists.Writers);
+            if (!lists.Known.Any(k => string.Equals(k, CurrentIdentity, StringComparison.OrdinalIgnoreCase)))
+            {
+                lists.Known.Add(CurrentIdentity);
+                Write(ctx, KnownKey, lists.Known);
+            }
+        }
+        ServerSql.SetInfo(ctx, EnabledKey, enabled ? "1" : "0");
+        return lists with { Enabled = enabled };
     }
 
     public static void Save(DbTarget target, IEnumerable<string> writers, IEnumerable<string> known)
@@ -110,7 +136,8 @@ public static class AccessControl
     }
 
     private static AccessLists Read(FiltresDbContext ctx) =>
-        new(Parse(ServerSql.GetInfo(ctx, WritersKey)), Parse(ServerSql.GetInfo(ctx, KnownKey)));
+        new(Parse(ServerSql.GetInfo(ctx, WritersKey)), Parse(ServerSql.GetInfo(ctx, KnownKey)),
+            ServerSql.GetInfo(ctx, EnabledKey) == "1");
 
     private static void Write(FiltresDbContext ctx, string key, List<string> values) =>
         ServerSql.SetInfo(ctx, key, JsonSerializer.Serialize(values));

@@ -110,7 +110,9 @@ public partial class App
     {
         // Liste des utilisateurs autorisés (Paramètres > Utilisateurs) : une session non autorisée reste en lecture
         // seule, sans même chercher à prendre le verrou d'écriture.
-        AccessAllowed = AccessControl.Evaluate(target).Allowed;
+        var access = AccessControl.Evaluate(target);
+        AccessAllowed = access.Allowed;
+        AccessEnabled = access.Enabled;
 
         if (!AccessAllowed)
         {
