@@ -96,7 +96,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         NotLicensedMessage = LicenseFeatures.SuiviZacNotIncludedMessage
     };
     private readonly NavigationItem _modulesSeparatorBefore = NavigationItem.Separator();
-    private readonly NavigationItem _modulesSeparatorBetween = NavigationItem.Separator();
     private readonly NavigationItem _modulesSeparatorAfter = NavigationItem.Separator();
 
     /// <summary>Module "Filtre" (activable comme Courroies / Roulements, voir AppSettings.ShowFiltresModule) :
@@ -266,21 +265,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             NavigationItems.Remove(_modulesSeparatorBefore);
             NavigationItems.Remove(_modulesSeparatorAfter);
-        }
-
-        // Séparateur entre "Courroies" et "Roulements" eux-mêmes, uniquement quand les deux sont affichés
-        // (quel que soit leur ordre, qui dépend de l'ordre d'activation).
-        var beltsPresent = NavigationItems.Contains(_beltsItem);
-        var bearingsPresent = NavigationItems.Contains(_bearingsItem);
-        var betweenPresent = NavigationItems.Contains(_modulesSeparatorBetween);
-        if (beltsPresent && bearingsPresent && !betweenPresent)
-        {
-            var firstIndex = Math.Min(NavigationItems.IndexOf(_beltsItem), NavigationItems.IndexOf(_bearingsItem));
-            NavigationItems.Insert(firstIndex + 1, _modulesSeparatorBetween);
-        }
-        else if (!(beltsPresent && bearingsPresent) && betweenPresent)
-        {
-            NavigationItems.Remove(_modulesSeparatorBetween);
         }
 
         RefreshLicenseGating();
