@@ -58,7 +58,10 @@ public static class ZacIsoLimits
     /// d'après le seuil ISO 14644-1 des comptages particulaires de la classe du type de ZAC.</summary>
     public static ZacConformity Auto(string? typeName, string? measurementName, decimal? value, string? textValue, string? specification) =>
         !string.IsNullOrWhiteSpace(specification)
-            ? ZacSpecification.Evaluate(specification, value, textValue)
+            // Pression différentielle « positive ou négative » : c'est la valeur absolue qui est comparée à la spécification.
+            ? ZacSpecification.Evaluate(specification,
+                measurementName is not null && measurementName.StartsWith("Pression diff", StringComparison.OrdinalIgnoreCase) && value is { } v ? Math.Abs(v) : value,
+                textValue)
             : Evaluate(LimitFor(typeName, measurementName), value);
 
     public static ZacConformity Evaluate(long? limit, decimal? value)

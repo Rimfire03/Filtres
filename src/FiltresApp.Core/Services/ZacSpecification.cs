@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace FiltresApp.Core.Services;
@@ -58,9 +58,23 @@ public static class ZacSpecification
             return ZacConformity.Conform;
         }
 
-        // Texte : égalité (sans tenir compte de la casse).
+        // Valeur recherchée sans tolérance chiffrée (« ≈ 0,5 ») : à valider manuellement.
+        if (spec.StartsWith('≈')) return ZacConformity.Unknown;
+
+        // Texte : égalité (sans tenir compte de la casse), ou l'une des variantes d'une spécification « A ou B ».
         if (string.IsNullOrWhiteSpace(textValue)) return ZacConformity.Unknown;
-        return string.Equals(Normalize(spec), Normalize(textValue), StringComparison.OrdinalIgnoreCase)
+        var result = Normalize(textValue);
+        var alternatives = Regex.Split(Normalize(spec), @"\s+ou\s+", RegexOptions.IgnoreCase);
+        if (alternatives.Length > 1)
+        {
+            // « Flux d'air unidirectionnel ou non unidirectionnel » : la seconde variante est complétée par le début de la
+            // première (« Flux d'air non unidirectionnel »).
+            var first = alternatives[0];
+            var head = first[..(first.LastIndexOf(' ') + 1)];
+            var variants = alternatives.Select((a, i) => i == 0 || a.StartsWith(head, StringComparison.OrdinalIgnoreCase) ? a : head + a).ToList();            return variants.Any(v => string.Equals(v, result, StringComparison.OrdinalIgnoreCase))
+                ? ZacConformity.Conform : ZacConformity.NonConform;
+        }
+        return string.Equals(Normalize(spec), result, StringComparison.OrdinalIgnoreCase)
             ? ZacConformity.Conform : ZacConformity.NonConform;
     }
 
