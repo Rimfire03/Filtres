@@ -165,6 +165,10 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         }
     }
 
+    /// <summary>La case « Tout réalisé » est-elle affichée ? Réglage du module « Filtre » (Paramètres, roue dentée),
+    /// relu à chaque ouverture de la vue.</summary>
+    public bool ShowAllDoneCheckbox => App.Settings.AllDoneCheckboxEnabled;
+
     /// <summary>Appelé par une ligne dont la case « Réalisé » ou la date vient de changer.</summary>
     public void NotifyDoneChanged() => OnPropertyChanged(nameof(AllVisibleDone));
 
@@ -202,6 +206,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// Inventaire (puce verte / rouge) se modifie depuis l'écran Commande.</summary>
     public void Reload()
     {
+        OnPropertyChanged(nameof(ShowAllDoneCheckbox));
         // Tant que l'utilisateur n'a pas saisi de jour, la valeur par défaut suit la date du jour (l'application
         // peut rester ouverte plusieurs jours).
         if (_dayIsDefault && _selectedDay != DateTime.Today.Day)

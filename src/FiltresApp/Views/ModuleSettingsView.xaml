@@ -70,6 +70,15 @@
             </StackPanel>
 
             <StackPanel Visibility="{Binding IsFiltre, Converter={StaticResource BoolToVis}}">
+                <!-- Changement de filtre périodique : case « Tout réalisé » dans le titre de la colonne « Réalisé ». -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Colonne « Réalisé » (changement de filtre périodique)" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                   Text="Affiche dans le titre de la colonne une case « Tout réalisé » qui coche ou décoche d'un coup tous les filtres affichés pour le mois du changement choisi. Le réglage s'applique à l'ouverture de la vue."/>
+                        <CheckBox Content="Activer la case « Tout réalisé »" IsChecked="{Binding Settings.AllDoneCheckboxEnabled}"/>
+                    </StackPanel>
+                </Border>
                 <!-- Titres, icônes et état plié / déplié par défaut des menus dépliants, des vues « Changement
                      filtre périodique » et des variétés « Changement sur encrassement » (SettingsViewModel.Menus.cs). -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">

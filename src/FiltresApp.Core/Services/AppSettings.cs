@@ -59,6 +59,10 @@ public class AppSettings
     /// <summary>Module « Suivi ZAC » (fonctionnalité de licence « zac ») : désactivé par défaut.</summary>
     public bool ShowZacModule { get; set; } = false;
 
+    /// <summary>Module « Filtre » : case « Tout réalisé » dans le titre de la colonne « Réalisé » des vues de changement
+    /// de filtre périodique (activée par défaut).</summary>
+    public bool AllDoneCheckboxEnabled { get; set; } = true;
+
     /// <summary>Module « Suivi ZAC » : fenêtre d'alerte à l'ouverture de l'application, et délai (en jours avant le
     /// prochain contrôle) à partir duquel l'alerte orange apparaît.</summary>
     public bool ZacAlertEnabled { get; set; } = true;
