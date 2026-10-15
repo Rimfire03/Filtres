@@ -131,29 +131,19 @@
                 <DataGridTemplateColumn Header="Réalisé" Width="62" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <Grid>
-                                <!-- Case « Tout réalisé » (réglage du module Filtre : Paramètres, roue dentée). -->
-                                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="10" Padding="2,0,0,0"
+                            <!-- Le titre de la colonne reste « Réalisé » ; la case « Tout réalisé » est sur la ligne du
+                                 dessous (réglage du module Filtre : Paramètres, roue dentée). -->
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Réalisé" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                <CheckBox HorizontalAlignment="Center" Margin="0,2,0,0" FontWeight="SemiBold" FontSize="9" Padding="2,0,0,0"
+                                          VerticalContentAlignment="Center"
                                           Visibility="{Binding DataContext.ShowAllDoneCheckbox, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVis}}"
                                           IsChecked="{Binding DataContext.AllVisibleDone, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
                                           IsEnabled="{x:Static app:App.IsWritable}"
                                           ToolTip="Coche (ou décoche) « Réalisé » sur tous les filtres affichés, pour le mois du changement choisi">
-                                    <TextBlock Text="Tout réalisé" TextWrapping="Wrap" TextAlignment="Left" MaxWidth="38"/>
+                                    <TextBlock Text="Tout réalisé" TextWrapping="Wrap" TextAlignment="Left" MaxWidth="36"/>
                                 </CheckBox>
-                                <!-- Case désactivée dans les paramètres du module : simple titre. -->
-                                <TextBlock Text="Réalisé" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DataContext.ShowAllDoneCheckbox, RelativeSource={RelativeSource AncestorType=DataGrid}}" Value="False">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
+                            </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                 </DataGridTemplateColumn>
