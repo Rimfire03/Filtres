@@ -390,9 +390,14 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             return;
         }
 
-        if (!App.Dialogs.ShowConfirm("Tout décocher",
-                $"Retirer « Réalisé » sur {done.Count} filtre(s) affiché(s) pour {consulted.Label} ?\n\nLes dates enregistrées pour ce mois seront supprimées."))
-            return;
+        // Avertissement à valider (icône d'alerte, « Non » par défaut) : l'action supprime des dates enregistrées.
+        var answer = System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow,
+            $"ATTENTION : vous allez retirer « Réalisé » sur {done.Count} filtre(s) affiché(s) pour {consulted.Label}.\n\n" +
+            "Les dates de changement enregistrées pour ce mois seront SUPPRIMÉES et ne pourront pas être restaurées automatiquement.\n\n" +
+            "Voulez-vous vraiment tout décocher ?",
+            "Tout décocher : confirmation", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning,
+            System.Windows.MessageBoxResult.No);
+        if (answer != System.Windows.MessageBoxResult.Yes) return;
 
         foreach (var row in done)
         {
