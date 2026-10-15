@@ -136,8 +136,37 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     partial void OnMonthFilterChanged(int? value)
     {
         MonthFilterLabel = value.HasValue ? ConsultedMonthOption.MonthLabels[value.Value - 1] : "Tous les mois";
+
+        // Par défaut, le mois filtré devient aussi le mois du changement réalisé (colonnes « Réalisé » / « Date du
+        // changement ») : même mois, de l'année choisie. Le sélecteur « Date du changement » reste modifiable ensuite.
+        if (value.HasValue && ConsultedMonthOptions.FirstOrDefault(o => o.Month == value.Value && o.Year == YearContext.Year) is { } option)
+            SelectedConsultedMonth = option;
+
         ApplyFilters();
     }
+
+    /// <summary>Case « Tout réalisé » de l'en-tête de la colonne « Réalisé » : cochée si tous les filtres affichés sont
+    /// réalisés pour le mois consulté, indéterminée si une partie seulement. Cocher les marque tous (avec
+    /// confirmation) ; décocher retire « Réalisé » et supprime les dates du mois (avec avertissement).</summary>
+    public bool? AllVisibleDone
+    {
+        get
+        {
+            if (Filters.Count == 0) return false;
+            var done = Filters.Count(r => r.IsDoneForConsultedMonth);
+            return done == Filters.Count ? true : done == 0 ? false : null;
+        }
+        set
+        {
+            if (value == true) CheckAllVisible();
+            else UncheckAllVisible();
+            // Resynchronise la case (confirmation refusée ou résultat partiel).
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(() => OnPropertyChanged(nameof(AllVisibleDone)));
+        }
+    }
+
+    /// <summary>Appelé par une ligne dont la case « Réalisé » ou la date vient de changer.</summary>
+    public void NotifyDoneChanged() => OnPropertyChanged(nameof(AllVisibleDone));
 
     // ---- Filtres placés sous les titres de colonnes ----
 
@@ -160,11 +189,13 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         Filters = new ObservableCollection<PeriodicFilterRowViewModel>(
             filtered.OrderBy(f => f.DimensionFamilyRank).ThenBy(f => f.Location, NaturalStringComparer.Instance)
                 .Select(f => new PeriodicFilterRowViewModel(f, this, _linkedLines.GetValueOrDefault(f.Id))));
+        OnPropertyChanged(nameof(AllVisibleDone));
     }
 
     private void RefreshRows()
     {
         foreach (var row in Filters) row.RefreshAll();
+        OnPropertyChanged(nameof(AllVisibleDone));
     }
 
     /// <summary>Rechargé à chaque ouverture de l'écran : le rattachement aux lignes de Commande /
@@ -351,7 +382,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// affichés (selon le filtre de mois, le nom et la dimension) qui ne le sont pas déjà. Même enregistrement que la
     /// case de chaque ligne (date = jour choisi) ; les lignes déjà cochées gardent leur date. Pour une vue avec compteur
     /// d'heures, le relevé n'est pas demandé : il se saisit ensuite ligne par ligne si besoin.</summary>
-    [RelayCommand]
     private void CheckAllVisible()
     {
         if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
@@ -378,7 +408,6 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
 
     /// <summary>Bouton « Tout décocher » : retire « Réalisé » (et la date) sur tous les filtres actuellement affichés qui
     /// le sont pour le mois consulté. Même effet que décocher chaque case, après confirmation.</summary>
-    [RelayCommand]
     private void UncheckAllVisible()
     {
         if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;

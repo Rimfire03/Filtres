@@ -1,4 +1,4 @@
-<UserControl x:Class="FiltresApp.Views.Filtres.PeriodicFilterView"
+﻿<UserControl x:Class="FiltresApp.Views.Filtres.PeriodicFilterView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:svc="clr-namespace:FiltresApp.Services"
@@ -49,13 +49,6 @@
             <Button Content="Déplacer vers..." Style="{StaticResource SecondaryButton}" Command="{Binding MoveFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding ShowMoveButton, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
-            <!-- Coche « Réalisé » (mois et jour choisis ci-dessous) sur tous les filtres actuellement affichés. -->
-            <Button Content="Tout cocher « Réalisé »" Style="{StaticResource SecondaryButton}" Command="{Binding CheckAllVisibleCommand}"
-                    IsEnabled="{x:Static app:App.IsWritable}"
-                    ToolTip="Marque comme réalisés tous les filtres affichés (après filtres de mois, de nom et de dimension), pour le mois et le jour choisis"/>
-            <Button Content="Tout décocher" Style="{StaticResource SecondaryButton}" Command="{Binding UncheckAllVisibleCommand}"
-                    IsEnabled="{x:Static app:App.IsWritable}"
-                    ToolTip="Retire « Réalisé » (et la date) sur tous les filtres affichés, pour le mois choisi"/>
             <!-- Distinct du bouton « Mode édition » (qui ne concerne que les filtres de cette vue) : ouvre la page
                  de gestion des vues elles-mêmes (créer / modifier / supprimer), sinon inatteignable. -->
             <Button Content="Gérer les vues" Style="{StaticResource SecondaryButton}" Command="{Binding ManageViewsCommand}" Margin="24,0,0,0"
@@ -134,7 +127,17 @@
                 <DataGridTextColumn Header="Périodicité" Binding="{Binding PeriodicityDisplay}" Width="1.04*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="1.06*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastDoneDate, StringFormat='dd/MM/yyyy'}" Width="93" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTemplateColumn Header="Réalisé" Width="62" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}"/>
+                <!-- Case « Tout réalisé » dans le titre : coche / décoche tous les filtres affichés pour le mois consulté. -->
+                <DataGridTemplateColumn Header="Réalisé" Width="92" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="Tout réalisé" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"
+                                      IsChecked="{Binding DataContext.AllVisibleDone, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
+                                      IsEnabled="{x:Static app:App.IsWritable}"
+                                      ToolTip="Coche (ou décoche) « Réalisé » sur tous les filtres affichés, pour le mois du changement choisi"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Date du changement" Width="94">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

@@ -95,6 +95,7 @@ public partial class PeriodicFilterRowViewModel : LinkedFilterRowViewModel
             OnPropertyChanged(nameof(DateDoneForConsultedMonth));
             OnPropertyChanged(nameof(NextDueDate));
             OnPropertyChanged(nameof(LastDoneDate));
+            _owner.NotifyDoneChanged();
         }
     }
 
@@ -108,6 +109,7 @@ public partial class PeriodicFilterRowViewModel : LinkedFilterRowViewModel
             OnPropertyChanged(nameof(IsDoneForConsultedMonth));
             OnPropertyChanged(nameof(NextDueDate));
             OnPropertyChanged(nameof(LastDoneDate));
+            _owner.NotifyDoneChanged();
         }
     }
 
