@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -30,12 +30,14 @@ public partial class ZacControlsWindow : Window
         public string StorageText => Compressed ? "Compressé" : "Tel quel";
     }
 
-    /// <summary>Ligne de la grille « Valeurs » : seuil et résultat se recalculent à chaque modification.</summary>
+    /// <summary>Ligne de la grille « Valeurs » : seuil et résultat se recalculent à chaque modification. Le résultat est
+    /// numérique (« 52,4 ») ou texte (« ISO 5 »), la spécification vient d'un rapport importé.</summary>
     private sealed class ValueRow : INotifyPropertyChanged
     {
         private readonly string? _typeName;
         private string _name = string.Empty;
         private decimal? _value;
+        private string? _textValue;
         private string? _unit;
         private bool _manual;
 
@@ -59,19 +61,48 @@ public partial class ZacControlsWindow : Window
             }
         }
 
-        public decimal? Value { get => _value; set { _value = value; Refresh(); } }
+        public decimal? Value => _value;
+        public string? TextValue => _textValue;
+        public string? Specification { get; set; }
+
+        /// <summary>Valeur affichée et saisie : un nombre est enregistré comme valeur numérique, tout autre texte comme résultat texte.</summary>
+        public string ValueText
+        {
+            get => _value is { } v ? v.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture) : _textValue ?? string.Empty;
+            set
+            {
+                var text = value?.Trim() ?? string.Empty;
+                if (text.Length == 0) { _value = null; _textValue = null; }
+                else if (decimal.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.CurrentCulture, out var n)
+                         || decimal.TryParse(text.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out n))
+                { _value = n; _textValue = null; }
+                else { _value = null; _textValue = text; }
+                Refresh();
+            }
+        }
+
+        public void SetResult(decimal? value, string? textValue)
+        {
+            _value = value;
+            _textValue = textValue;
+            Refresh();
+        }
+
         public string? Unit { get => _unit; set { _unit = value; Raise(nameof(Unit)); } }
         public bool ManualValidation { get => _manual; set { _manual = value; Refresh(); } }
 
-        public long? Limit => ZacIsoLimits.LimitFor(_typeName, _name);
-        public string LimitText => ZacIsoLimits.LimitText(Limit);
-        public ZacConformity Auto => ZacIsoLimits.Evaluate(Limit, _value);
+        /// <summary>Spécification du rapport si elle existe, sinon seuil ISO 14644-1 des comptages particulaires.</summary>
+        public string LimitText => !string.IsNullOrWhiteSpace(Specification)
+            ? Specification!
+            : ZacIsoLimits.LimitText(ZacIsoLimits.LimitFor(_typeName, _name));
+
+        public ZacConformity Auto => ZacIsoLimits.Auto(_typeName, _name, _value, _textValue, Specification);
         public string ResultText => ZacIsoLimits.StatusText(Auto, _manual);
 
         private void Refresh()
         {
             Raise(nameof(Name));
-            Raise(nameof(Value));
+            Raise(nameof(ValueText));
             Raise(nameof(LimitText));
             Raise(nameof(ResultText));
             Raise(nameof(ManualValidation));
@@ -79,7 +110,6 @@ public partial class ZacControlsWindow : Window
 
         private void Raise(string property) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
-
     private readonly int _itemId;
     private readonly string _typeName;
     private int? _controlId;
@@ -108,7 +138,7 @@ public partial class ZacControlsWindow : Window
             .Select(c => new { c.Id, c.DateChanged, c.Comment, Files = c.Attachments.Count })
             .ToList();
         var measurements = App.Db.ZacMeasurements.AsNoTracking().Where(m => m.ZacControl!.ZacItemId == _itemId)
-            .Select(m => new { m.ZacControlId, m.Name, m.Value, m.ManualValidation })
+            .Select(m => new { m.ZacControlId, m.Name, m.Value, m.TextValue, m.Specification, m.ManualValidation })
             .ToList()
             .ToLookup(m => m.ZacControlId);
 
@@ -116,7 +146,7 @@ public partial class ZacControlsWindow : Window
         {
             var values = measurements[c.Id].ToList();
             var evaluated = values
-                .Select(v => (Auto: ZacIsoLimits.Evaluate(ZacIsoLimits.LimitFor(_typeName, v.Name), v.Value), Manual: v.ManualValidation == true))
+                .Select(v => (Auto: ZacIsoLimits.Auto(_typeName, v.Name, v.Value, v.TextValue, v.Specification), Manual: v.ManualValidation == true))
                 .ToList();
             var conformity = values.Count == 0 ? "-"
                 : evaluated.Any(e => e.Auto == ZacConformity.NonConform && !e.Manual) ? "Non conforme"
@@ -233,11 +263,78 @@ public partial class ZacControlsWindow : Window
     {
         _values = _controlId is int id
             ? App.Db.ZacMeasurements.AsNoTracking().Where(m => m.ZacControlId == id).OrderBy(m => m.Id).ToList()
-                .Select(m => new ValueRow(_typeName) { Name = m.Name, Value = m.Value, Unit = m.Unit, ManualValidation = m.ManualValidation == true })
+                .Select(m =>
+                {
+                    var row = new ValueRow(_typeName) { Name = m.Name, Unit = m.Unit, Specification = m.Specification, ManualValidation = m.ManualValidation == true };
+                    row.SetResult(m.Value, m.TextValue);
+                    return row;
+                })
                 .ToList()
             : new List<ValueRow>();
         ValuesGrid.ItemsSource = null;
         ValuesGrid.ItemsSource = _values;
+    }
+
+    /// <summary>« Préremplir depuis un rapport PDF... » : lit le tableau de synthèse d'un rapport de qualification (modèle
+    /// APAVE, NF S 90-351), ajoute ou remplace les valeurs reconnues (résultat, unité, spécification), puis propose de
+    /// joindre le rapport au contrôle. Rien n'est enregistré avant « Enregistrer les valeurs ».</summary>
+    private void OnImportReport(object sender, RoutedEventArgs e)
+    {
+        if (_controlId is null) return;
+        var dialog = new OpenFileDialog { Title = "Rapport de qualification (PDF)", Filter = "Rapport PDF (*.pdf)|*.pdf" };
+        if (dialog.ShowDialog(this) != true) return;
+
+        ReportImportResult? result;
+        try
+        {
+            result = ZacReportImporter.Import(dialog.FileName);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, "Le fichier n'a pas pu être lu :\n" + ex.Message, "Rapport PDF", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (result is null)
+        {
+            MessageBox.Show(this,
+                "Aucun tableau de synthèse n'a été reconnu dans ce fichier.\n\n" +
+                "Le rapport doit contenir une page « Tableau de synthèse » (annexe « Détail des mesures », modèle NF S 90-351) avec une " +
+                "couche texte. Un PDF scanné (image) n'est pas lisible : saisissez alors les valeurs à la main.",
+                "Rapport PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        ValuesGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        foreach (var item in result.Measurements)
+        {
+            var row = _values.FirstOrDefault(v => string.Equals(v.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+            if (row is null)
+            {
+                row = new ValueRow(_typeName) { Name = item.Name };
+                _values.Add(row);
+            }
+            row.Unit = item.Unit;
+            row.Specification = item.Specification;
+            row.SetResult(item.Value, item.TextValue);
+        }
+        ValuesGrid.ItemsSource = null;
+        ValuesGrid.ItemsSource = _values;
+
+        var info = new List<string> { $"{result.Measurements.Count} valeur(s) reconnue(s) (page {result.Page})." };
+        if (result.InterventionDate is { } d) info.Add($"Date d'intervention : {d:dd/MM/yyyy}.");
+        if (result.Conditions is { } c) info.Add($"Conditions d'occupation : {c}.");
+        if (result.RiskClassObtained is { } r) info.Add($"Classe de risque obtenue : {r}.");
+        StatusText.Text = string.Join(" ", info) + " Vérifiez puis cliquez sur « Enregistrer les valeurs ».";
+
+        if (MessageBox.Show(this, "Joindre aussi ce rapport aux documents du contrôle ?", "Rapport PDF", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        {
+            var values = _values.ToList(); // la liste affichée n'est pas enregistrée : on la conserve après le rechargement
+            AddFiles(new[] { dialog.FileName });
+            _values = values;
+            ValuesGrid.ItemsSource = null;
+            ValuesGrid.ItemsSource = _values;
+        }
     }
 
     private void OnAddValue(object sender, RoutedEventArgs e)
@@ -272,7 +369,7 @@ public partial class ZacControlsWindow : Window
         foreach (var v in kept)
             App.Db.ZacMeasurements.Add(new ZacMeasurement
             {
-                ZacControlId = controlId, Name = v.Name.Trim(), Value = v.Value,
+                ZacControlId = controlId, Name = v.Name.Trim(), Value = v.Value, TextValue = v.TextValue, Specification = v.Specification,
                 Unit = string.IsNullOrWhiteSpace(v.Unit) ? null : v.Unit.Trim(), ManualValidation = v.ManualValidation
             });
         App.Db.SaveChanges();

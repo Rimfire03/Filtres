@@ -88,7 +88,17 @@ public class ZacMeasurement : ISiteScoped
 
     public string Name { get; set; } = string.Empty;
     public decimal? Value { get; set; }
+
+    /// <summary>Résultat non numérique (classe « ISO 5 », régime « Flux d'air unidirectionnel »...). Vide pour une valeur
+    /// numérique (<see cref="Value"/>).</summary>
+    public string? TextValue { get; set; }
+
     public string? Unit { get; set; }
+
+    /// <summary>Spécification (valeur attendue) relevée dans le rapport, sous forme canonique : « ≥ 15 », « &gt; 6 »,
+    /// « 0,25 – 0,35 », « 15 ± 5 », « ≤ 5 », « ISO 5 » ou un texte. Voir <c>ZacSpecification</c>. Vide : seuil ISO 14644-1
+    /// des comptages particulaires, le cas échéant.</summary>
+    public string? Specification { get; set; }
 
     /// <summary>Validation manuelle de la valeur (case à cocher) : la conformité est calculée automatiquement d'après le
     /// seuil ISO de la pièce ; la validation manuelle l'emporte (valeur acceptée malgré le calcul, ou validée quand il

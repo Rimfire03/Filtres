@@ -55,7 +55,35 @@ internal static class DatabaseMigrations
         (29, "Module MultiSite : table des sites et rattachement des données à un site", AddSites),
         (30, "Module Suivi ZAC : pièces, contrôles et fichiers joints", AddZacSchema),
         (31, "Module Suivi ZAC : valeurs mesurées d'un contrôle", AddZacMeasurements),
+        (32, "Module Suivi ZAC : spécification et résultat texte des valeurs (import de rapport)", AddZacMeasurementSpecification),
     };
+
+    /// <summary>Colonnes « Specification » et « TextValue » des valeurs mesurées (import d'un rapport de qualification).
+    /// Idempotent.</summary>
+    private static void AddZacMeasurementSpecification(FiltresDbContext ctx)
+    {
+        var columns = SchemaInspector.GetColumns(ctx, "ZacMeasurements");
+        if (!columns.Contains("Specification"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "ZacMeasurements" ADD COLUMN "Specification" TEXT NULL;""");
+        if (!columns.Contains("TextValue"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "ZacMeasurements" ADD COLUMN "TextValue" TEXT NULL;""");
+    }
+
+    /// <summary>Équivalent serveur de <see cref="AddZacMeasurementSpecification"/>. Idempotent.</summary>
+    private static void AddZacMeasurementSpecificationServer(FiltresDbContext ctx)
+    {
+        var p = ctx.Provider;
+        foreach (var column in new[] { "Specification", "TextValue" })
+        {
+            if (ServerSql.ColumnExists(ctx, "ZacMeasurements", column)) continue;
+            ctx.Database.ExecuteSqlRaw(p switch
+            {
+                DatabaseProvider.PostgreSql => $"""ALTER TABLE "ZacMeasurements" ADD COLUMN "{column}" text NULL;""",
+                DatabaseProvider.MariaDb => $"ALTER TABLE `ZacMeasurements` ADD COLUMN `{column}` longtext NULL;",
+                _ => $"ALTER TABLE [ZacMeasurements] ADD [{column}] nvarchar(max) NULL;"
+            });
+        }
+    }
 
     /// <summary>Tables dont les lignes appartiennent à un site (module MultiSite, voir <see cref="ISiteScoped"/>).</summary>
     internal static readonly string[] SiteScopedTables =
@@ -96,6 +124,7 @@ internal static class DatabaseMigrations
         (29, "Module MultiSite : table des sites et rattachement des données à un site", AddSitesServer),
         (30, "Module Suivi ZAC : pièces, contrôles et fichiers joints", AddZacSchemaServer),
         (31, "Module Suivi ZAC : valeurs mesurées d'un contrôle", AddZacMeasurementsServer),
+        (32, "Module Suivi ZAC : spécification et résultat texte des valeurs (import de rapport)", AddZacMeasurementSpecificationServer),
     };
 
     /// <summary>Valeurs mesurées d'un contrôle du module « Suivi ZAC ». Idempotent.</summary>

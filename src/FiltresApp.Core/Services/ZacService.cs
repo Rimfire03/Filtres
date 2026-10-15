@@ -32,7 +32,11 @@ public static class ZacService
         "Comptage particulaire ≥ 0,1 µm", "Comptage particulaire ≥ 0,2 µm", "Comptage particulaire ≥ 0,3 µm",
         "Comptage particulaire ≥ 0,5 µm", "Comptage particulaire ≥ 1 µm", "Comptage particulaire ≥ 5 µm",
         "Pression différentielle", "Température", "Hygrométrie", "Vitesse d'air", "Taux de renouvellement d'air",
-        "Intégrité filtre HEPA (fuite)", "Temps de récupération"
+        "Intégrité filtre HEPA (fuite)", "Temps de récupération",
+        // Désignations relevées par l'import d'un rapport de qualification (voir ZacReportImporter).
+        "Régime d'écoulement de l'air", "Classe de propreté particulaire (sous flux)", "Classe de propreté particulaire (hors flux)",
+        "Cinétique d'élimination des particules", "Classe de propreté microbiologique (sous flux)", "Taux de brassage",
+        "Vitesse sous flux unidirectionnel", "Taux d'air neuf"
     };
 
     public static ZacAlertLevel Level(DateOnly? next, DateOnly today, int alertDays)

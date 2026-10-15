@@ -54,6 +54,13 @@ public static class ZacIsoLimits
     public static string LimitText(long? limit) =>
         limit is { } l ? "≤ " + l.ToString("N0", CultureInfo.CurrentCulture) + " /m³" : "-";
 
+    /// <summary>Conformité calculée d'une valeur : d'après la spécification relevée dans le rapport si elle existe, sinon
+    /// d'après le seuil ISO 14644-1 des comptages particulaires de la classe du type de ZAC.</summary>
+    public static ZacConformity Auto(string? typeName, string? measurementName, decimal? value, string? textValue, string? specification) =>
+        !string.IsNullOrWhiteSpace(specification)
+            ? ZacSpecification.Evaluate(specification, value, textValue)
+            : Evaluate(LimitFor(typeName, measurementName), value);
+
     public static ZacConformity Evaluate(long? limit, decimal? value)
     {
         if (limit is not { } l || value is not { } v) return ZacConformity.Unknown;
