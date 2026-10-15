@@ -122,9 +122,23 @@ public partial class ZacListViewModel : TrackedItemListViewModel<ZacItem, ZacFam
         Rows.FirstOrDefault(r => r.Id == item.Id)?.RefreshZac();
 
         // Documents et valeurs peuvent être ajoutés après l'enregistrement du contrôle.
-        if (window.OpenDetailsAfter)
+        // Un PDF joint qui est un rapport de qualification reconnu ouvre directement la fenêtre des valeurs, préremplie.
+        string? reportPath = null;
+        foreach (var path in window.FilePaths.Where(p => p.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)))
+        {
+            try
+            {
+                if (ZacReportImporter.Import(path) is not null) { reportPath = path; break; }
+            }
+            catch
+            {
+                // PDF illisible : simple document.
+            }
+        }
+
+        if (window.OpenDetailsAfter || reportPath is not null)
             new FiltresApp.Views.Dialogs.ZacControlsWindow(item.Id, item.Location, item.FamilyGroupLabel, control.Id)
-            { Owner = System.Windows.Application.Current.MainWindow }.ShowDialog();
+            { Owner = System.Windows.Application.Current.MainWindow, PendingReportPath = reportPath }.ShowDialog();
         return true;
     }
 

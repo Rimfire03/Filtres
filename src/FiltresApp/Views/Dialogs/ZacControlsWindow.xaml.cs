@@ -126,6 +126,7 @@ public partial class ZacControlsWindow : Window
             ? $"Classe de la pièce : ISO {c}. Le seuil ISO 14644-1 s'affiche pour les comptages particulaires et la conformité est calculée ; cochez « Validé manuellement » pour valider une valeur à la main."
             : "Cette pièce n'est pas rattachée à une classe ISO (type « ISO 5 » à « ISO 9 ») : aucun seuil n'est calculé, les valeurs se valident manuellement.";
         LoadControls(selectControlId);
+        Loaded += (_, _) => AnalysePendingReport();
     }
 
     private ControlRow? SelectedControl => ControlsGrid.SelectedItem as ControlRow;
@@ -178,10 +179,13 @@ public partial class ZacControlsWindow : Window
         DropHint.Visibility = FilesGrid.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void AddFiles(IEnumerable<string> paths)
+    /// <summary>Ajoute des documents au contrôle. Un PDF ajouté est analysé : s'il s'agit d'un rapport de qualification
+    /// reconnu, ses valeurs préremplissent l'onglet « Valeurs » et la date de qualification est proposée.</summary>
+    private void AddFiles(IEnumerable<string> paths, bool analyse = true)
     {
         if (_controlId is not int controlId || !App.GuardWritable()) return;
         var refused = new List<string>();
+        var pdfs = new List<string>();
         var added = 0;
         foreach (var path in paths)
         {
@@ -191,12 +195,43 @@ public partial class ZacControlsWindow : Window
             attachment.ZacControlId = controlId;
             App.Db.ZacAttachments.Add(attachment);
             added++;
+            if (path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) pdfs.Add(path);
         }
         if (added > 0) App.Db.SaveChanges();
         KeepSelection();
         StatusText.Text = added > 0 ? $"{added} document(s) ajouté(s)." : string.Empty;
         if (refused.Count > 0)
             MessageBox.Show(this, "Fichiers non ajoutés :\n" + string.Join("\n", refused), "Documents", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+        if (analyse && pdfs.Count > 0) TryAnalysePdfs(pdfs);
+    }
+
+    /// <summary>Cherche un rapport de qualification parmi les PDF ajoutés (le premier reconnu est appliqué). Les autres
+    /// PDF restent de simples documents.</summary>
+    private void TryAnalysePdfs(IEnumerable<string> pdfs)
+    {
+        foreach (var pdf in pdfs)
+        {
+            ReportImportResult? result;
+            try { result = ZacReportImporter.Import(pdf); }
+            catch { continue; }
+            if (result is null) continue;
+
+            ApplyReport(result, pdf, offerAttach: false);
+            return;
+        }
+        StatusText.Text += " Aucun rapport de qualification reconnu dans le PDF ajouté : il est enregistré comme simple document.";
+    }
+
+    /// <summary>Ouverture depuis la saisie d'un contrôle : rapport joint au moment de l'enregistrement, analysé dès que la
+    /// fenêtre est affichée.</summary>
+    public string? PendingReportPath { get; set; }
+
+    private void AnalysePendingReport()
+    {
+        if (PendingReportPath is not { } path) return;
+        PendingReportPath = null;
+        TryAnalysePdfs(new[] { path });
     }
 
     private void OnAddFiles(object sender, RoutedEventArgs e)
@@ -305,6 +340,14 @@ public partial class ZacControlsWindow : Window
             return;
         }
 
+        ApplyReport(result, dialog.FileName, offerAttach: true);
+    }
+
+    /// <summary>Applique un rapport reconnu : valeurs, informations générales, date de qualification et, si demandé,
+    /// jonction du rapport aux documents. Appelé par « Préremplir depuis un rapport PDF... » et à l'ajout d'un PDF.</summary>
+    private void ApplyReport(ReportImportResult result, string path, bool offerAttach)
+    {
+        DetailTabs.SelectedIndex = 1; // onglet « Valeurs »
         ValuesGrid.CommitEdit(DataGridEditingUnit.Row, true);
         foreach (var item in result.Measurements)
         {
@@ -345,10 +388,10 @@ public partial class ZacControlsWindow : Window
             }
         }
 
-        if (MessageBox.Show(this, "Joindre aussi ce rapport aux documents du contrôle ?", "Rapport PDF", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        if (offerAttach && MessageBox.Show(this, "Joindre aussi ce rapport aux documents du contrôle ?", "Rapport PDF", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             var values = _values.ToList(); // la liste affichée n'est pas enregistrée : on la conserve après le rechargement
-            AddFiles(new[] { dialog.FileName });
+            AddFiles(new[] { path }, analyse: false);
             _values = values;
             ValuesGrid.ItemsSource = null;
             ValuesGrid.ItemsSource = _values;
