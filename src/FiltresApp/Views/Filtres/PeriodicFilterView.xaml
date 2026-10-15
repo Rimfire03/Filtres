@@ -49,6 +49,10 @@
             <Button Content="Déplacer vers..." Style="{StaticResource SecondaryButton}" Command="{Binding MoveFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding ShowMoveButton, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Supprimer" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteFilterCommand}" IsEnabled="{x:Static app:App.IsWritable}" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}"/>
             <Button Content="Imprimer" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+            <!-- Coche « Réalisé » (mois et jour choisis ci-dessous) sur tous les filtres actuellement affichés. -->
+            <Button Content="Tout cocher « Réalisé »" Style="{StaticResource SecondaryButton}" Command="{Binding CheckAllVisibleCommand}"
+                    IsEnabled="{x:Static app:App.IsWritable}"
+                    ToolTip="Marque comme réalisés tous les filtres affichés (après filtres de mois, de nom et de dimension), pour le mois et le jour choisis"/>
             <!-- Distinct du bouton « Mode édition » (qui ne concerne que les filtres de cette vue) : ouvre la page
                  de gestion des vues elles-mêmes (créer / modifier / supprimer), sinon inatteignable. -->
             <Button Content="Gérer les vues" Style="{StaticResource SecondaryButton}" Command="{Binding ManageViewsCommand}" Margin="24,0,0,0"

@@ -347,6 +347,35 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         SaveConsultedMonthReplacement(filter, DateForConsultedMonth(), refreshQuantity: true, hours, setHours: true);
     }
 
+    /// <summary>Bouton « Tout cocher » : marque comme réalisés, pour le mois consulté, tous les filtres actuellement
+    /// affichés (selon le filtre de mois, le nom et la dimension) qui ne le sont pas déjà. Même enregistrement que la
+    /// case de chaque ligne (date = jour choisi) ; les lignes déjà cochées gardent leur date. Pour une vue avec compteur
+    /// d'heures, le relevé n'est pas demandé : il se saisit ensuite ligne par ligne si besoin.</summary>
+    [RelayCommand]
+    private void CheckAllVisible()
+    {
+        if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
+
+        var pending = Filters.Where(r => !r.IsDoneForConsultedMonth).ToList();
+        if (pending.Count == 0)
+        {
+            App.Dialogs.ShowMessage("Tout cocher", "Tous les filtres affichés sont déjà réalisés pour ce mois.");
+            return;
+        }
+
+        var date = DateForConsultedMonth();
+        var tracksHours = App.Db.PeriodicViews.AsNoTracking().Any(v => v.Id == _viewId && v.TracksOperatingHours);
+        var message = $"Marquer {pending.Count} filtre(s) affiché(s) comme réalisé(s) pour {consulted.Label}, au {date:dd/MM/yyyy} ?";
+        if (tracksHours) message += "\n\nLe compteur d'heures de fonctionnement ne sera pas relevé.";
+        if (!App.Dialogs.ShowConfirm("Tout cocher", message)) return;
+
+        foreach (var row in pending)
+        {
+            SaveConsultedMonthReplacement(row.Filter, date, refreshQuantity: true);
+            row.RefreshAll();
+        }
+    }
+
     /// <summary>Date du mois consulté au jour choisi dans le sélecteur "Jour" (aujourd'hui si aucun mois
     /// consulté).</summary>
     private DateOnly DateForConsultedMonth()
