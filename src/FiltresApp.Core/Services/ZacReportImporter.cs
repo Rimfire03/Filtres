@@ -8,8 +8,13 @@ namespace FiltresApp.Core.Services;
 public sealed record ImportedMeasurement(string Name, decimal? Value, string? TextValue, string? Unit, string? Specification);
 
 /// <summary>Résultat de la lecture d'un rapport de qualification.</summary>
+/// <param name="InterventionDate">Date d'intervention du tableau de synthèse (date des mesures).</param>
+/// <param name="QualificationDate">Date de la qualification : fin de la période d'intervention de la page de garde
+/// (« du 24/08/2026 au 24/08/2026 »), à défaut la date d'intervention du tableau de synthèse.</param>
+/// <param name="ReportDate">Date d'émission du rapport (page de garde).</param>
 public sealed record ReportImportResult(
-    List<ImportedMeasurement> Measurements, DateOnly? InterventionDate, string? RiskClassObtained, string? Conditions, int? Page);
+    List<ImportedMeasurement> Measurements, DateOnly? InterventionDate, string? RiskClassObtained, string? Conditions, int? Page,
+    DateOnly? QualificationDate = null, DateOnly? ReportDate = null, string? ReportNumber = null);
 
 /// <summary>
 /// Lecture d'un rapport de qualification des installations de traitement d'air (modèle APAVE, NF S 90-351) : repère la
@@ -70,9 +75,35 @@ public static class ZacReportImporter
                 continue;
 
             var result = ParseSynthesis(text);
-            if (result.Measurements.Count > 0) return result with { Page = i + 1 };
+            if (result.Measurements.Count == 0) continue;
+
+            // Page de garde : période d'intervention (la qualification est datée de la fin des mesures) et date du rapport.
+            var cover = Clean(string.Join(" ", pages.Take(2)));
+            var period = Regex.Match(cover, @"Date\(s\) d.intervention\s*:\s*du\s*(\d{2}/\d{2}/\d{4})\s*au\s*(\d{2}/\d{2}/\d{4})", RegexOptions.IgnoreCase);
+            var qualification = period.Success ? ParseDate(period.Groups[2].Value) : null;
+            var reportDate = Regex.Match(cover, @"N° de rapport[^D]{0,60}?Date\s*:\s*(\d{2}/\d{2}/\d{2,4})", RegexOptions.IgnoreCase) is { Success: true } rd
+                ? ParseDate(rd.Groups[1].Value) : null;
+            var number = Regex.Match(cover, @"N° de rapport\s*[–-]\s*Version\s*:\s*([0-9]+-[0-9]+-[0-9]+)", RegexOptions.IgnoreCase) is { Success: true } nm
+                ? nm.Groups[1].Value : null;
+
+            return result with
+            {
+                Page = i + 1,
+                QualificationDate = qualification ?? result.InterventionDate,
+                ReportDate = reportDate,
+                ReportNumber = number
+            };
         }
         return null;
+    }
+
+    private static DateOnly? ParseDate(string text)
+    {
+        var m = Regex.Match(text, @"(\d{2})/(\d{2})/(\d{2,4})");
+        if (!m.Success) return null;
+        var year = int.Parse(m.Groups[3].Value);
+        if (year < 100) year += 2000;
+        try { return new DateOnly(year, int.Parse(m.Groups[2].Value), int.Parse(m.Groups[1].Value)); } catch { return null; }
     }
 
     private static string Clean(string text) =>

@@ -327,6 +327,24 @@ public partial class ZacControlsWindow : Window
         if (result.RiskClassObtained is { } r) info.Add($"Classe de risque obtenue : {r}.");
         StatusText.Text = string.Join(" ", info) + " Vérifiez puis cliquez sur « Enregistrer les valeurs ».";
 
+        // Date de la qualification relevée dans le rapport : proposée comme date du contrôle (et du prochain contrôle).
+        if (result.QualificationDate is { } qualification && SelectedControl is { } current && current.Date != qualification)
+        {
+            var currentText = current.Date is { } cd ? cd.ToString("dd/MM/yyyy") : "non renseignée";
+            var question = $"Le rapport indique une qualification le {qualification:dd/MM/yyyy}.\n\n" +
+                           $"Mettre à jour la date de ce contrôle (actuellement {currentText}) ?\n" +
+                           "Le prochain contrôle de la pièce sera recalculé à partir de cette date.";
+            if (MessageBox.Show(this, question, "Date de la qualification", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes
+                && App.GuardWritable())
+            {
+                var kept = _values.ToList(); // les valeurs importées ne sont pas encore enregistrées
+                UpdateControlDate(current.Id, qualification);
+                _values = kept;
+                ValuesGrid.ItemsSource = null;
+                ValuesGrid.ItemsSource = _values;
+            }
+        }
+
         if (MessageBox.Show(this, "Joindre aussi ce rapport aux documents du contrôle ?", "Rapport PDF", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             var values = _values.ToList(); // la liste affichée n'est pas enregistrée : on la conserve après le rechargement
@@ -335,6 +353,23 @@ public partial class ZacControlsWindow : Window
             ValuesGrid.ItemsSource = null;
             ValuesGrid.ItemsSource = _values;
         }
+    }
+
+    /// <summary>Change la date d'un contrôle. Si c'est désormais le contrôle le plus récent de la pièce, le prochain
+    /// contrôle est recalculé : date + intervalle en mois de la pièce.</summary>
+    private void UpdateControlDate(int controlId, DateOnly date)
+    {
+        var item = App.Db.ZacItems.Include(i => i.Controls).First(i => i.Id == _itemId);
+        var control = item.Controls.First(c => c.Id == controlId);
+        control.DateChanged = date;
+
+        var latest = item.Controls.Where(c => c.DateChanged.HasValue).Max(c => c.DateChanged!.Value);
+        if (date >= latest) item.NextControlDate = ZacService.NextAfter(date, item.IntervalMonths);
+        App.Db.SaveChanges();
+
+        _controlId = controlId;
+        KeepSelection();
+        StatusText.Text = $"Date du contrôle mise à jour : {date:dd/MM/yyyy}. Prochain contrôle : {item.NextControlDate:dd/MM/yyyy}.";
     }
 
     private void OnAddValue(object sender, RoutedEventArgs e)
