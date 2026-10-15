@@ -376,6 +376,31 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         }
     }
 
+    /// <summary>Bouton « Tout décocher » : retire « Réalisé » (et la date) sur tous les filtres actuellement affichés qui
+    /// le sont pour le mois consulté. Même effet que décocher chaque case, après confirmation.</summary>
+    [RelayCommand]
+    private void UncheckAllVisible()
+    {
+        if (!App.GuardWritable() || SelectedConsultedMonth is not { } consulted) return;
+
+        var done = Filters.Where(r => r.IsDoneForConsultedMonth).ToList();
+        if (done.Count == 0)
+        {
+            App.Dialogs.ShowMessage("Tout décocher", "Aucun filtre affiché n'est réalisé pour ce mois.");
+            return;
+        }
+
+        if (!App.Dialogs.ShowConfirm("Tout décocher",
+                $"Retirer « Réalisé » sur {done.Count} filtre(s) affiché(s) pour {consulted.Label} ?\n\nLes dates enregistrées pour ce mois seront supprimées."))
+            return;
+
+        foreach (var row in done)
+        {
+            SaveConsultedMonthReplacement(row.Filter, null, refreshQuantity: true);
+            row.RefreshAll();
+        }
+    }
+
     /// <summary>Date du mois consulté au jour choisi dans le sélecteur "Jour" (aujourd'hui si aucun mois
     /// consulté).</summary>
     private DateOnly DateForConsultedMonth()

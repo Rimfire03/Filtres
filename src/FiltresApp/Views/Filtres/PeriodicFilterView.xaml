@@ -53,6 +53,9 @@
             <Button Content="Tout cocher « Réalisé »" Style="{StaticResource SecondaryButton}" Command="{Binding CheckAllVisibleCommand}"
                     IsEnabled="{x:Static app:App.IsWritable}"
                     ToolTip="Marque comme réalisés tous les filtres affichés (après filtres de mois, de nom et de dimension), pour le mois et le jour choisis"/>
+            <Button Content="Tout décocher" Style="{StaticResource SecondaryButton}" Command="{Binding UncheckAllVisibleCommand}"
+                    IsEnabled="{x:Static app:App.IsWritable}"
+                    ToolTip="Retire « Réalisé » (et la date) sur tous les filtres affichés, pour le mois choisi"/>
             <!-- Distinct du bouton « Mode édition » (qui ne concerne que les filtres de cette vue) : ouvre la page
                  de gestion des vues elles-mêmes (créer / modifier / supprimer), sinon inatteignable. -->
             <Button Content="Gérer les vues" Style="{StaticResource SecondaryButton}" Command="{Binding ManageViewsCommand}" Margin="24,0,0,0"
