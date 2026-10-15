@@ -128,13 +128,15 @@
                 <DataGridTextColumn Header="Prochaine échéance" Binding="{Binding NextDueDate, StringFormat='MM/yyyy'}" Width="1.06*" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Dernier changement" Binding="{Binding LastDoneDate, StringFormat='dd/MM/yyyy'}" Width="93" IsReadOnly="True" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <!-- Case « Tout réalisé » dans le titre : coche / décoche tous les filtres affichés pour le mois consulté. -->
-                <DataGridTemplateColumn Header="Réalisé" Width="92" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}">
+                <DataGridTemplateColumn Header="Réalisé" Width="62" CellTemplate="{StaticResource DoneCheckBoxCellTemplate}">
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <CheckBox Content="Tout réalisé" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"
+                            <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="10" Padding="2,0,0,0"
                                       IsChecked="{Binding DataContext.AllVisibleDone, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
                                       IsEnabled="{x:Static app:App.IsWritable}"
-                                      ToolTip="Coche (ou décoche) « Réalisé » sur tous les filtres affichés, pour le mois du changement choisi"/>
+                                      ToolTip="Coche (ou décoche) « Réalisé » sur tous les filtres affichés, pour le mois du changement choisi">
+                                <TextBlock Text="Tout réalisé" TextWrapping="Wrap" TextAlignment="Left" MaxWidth="38"/>
+                            </CheckBox>
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
                 </DataGridTemplateColumn>
