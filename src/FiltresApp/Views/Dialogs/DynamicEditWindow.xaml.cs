@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using FiltresApp.Services;
 
@@ -113,18 +113,19 @@ public partial class DynamicEditWindow : Window
                     // Préréglages « 2 x par an », « 3 x par an », « 4 x par an » (au-dessus des mois, à cocher à la main) : une
                     // fenêtre demande le mois de départ et les mois suivants se cochent aussitôt (aperçu en direct) ;
                     // « Annuler » rétablit la sélection d'avant.
-                    var presets = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
-                    presets.Children.Add(new TextBlock { Text = "Préréglages :", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) });
+                    // WrapPanel : les boutons passent à la ligne si la fenêtre est trop étroite (sinon le dernier est coupé).
+                    var presets = new WrapPanel { Margin = new Thickness(0, 0, 0, 8) };
+                    presets.Children.Add(new TextBlock { Text = "Préréglages :", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 4) });
                     foreach (var times in new[] { 2, 3, 4 })
                     {
                         var preset = times;
-                        var button = new Button { Content = $"{preset} x par an", Margin = new Thickness(0, 0, 6, 0), Padding = new Thickness(10, 3, 10, 3) };
+                        var button = new Button { Content = $"{preset} x par an", Margin = new Thickness(0, 0, 6, 4), Padding = new Thickness(8, 3, 8, 3) };
                         if (TryFindResource("SecondaryButton") is Style secondary) button.Style = secondary;
                         button.Click += (_, _) => ApplyMonthsPreset(checkboxes, preset);
                         presets.Children.Add(button);
                     }
                     // « Tous les mois » : les 12 mois d'un coup, sans mois de départ à choisir.
-                    var everyMonth = new Button { Content = "Tous les mois", Margin = new Thickness(0, 0, 6, 0), Padding = new Thickness(10, 3, 10, 3) };
+                    var everyMonth = new Button { Content = "Tous les mois", Margin = new Thickness(0, 0, 6, 4), Padding = new Thickness(8, 3, 8, 3) };
                     if (TryFindResource("SecondaryButton") is Style everyStyle) everyMonth.Style = everyStyle;
                     everyMonth.Click += (_, _) => { foreach (var cb in checkboxes) cb.IsChecked = true; };
                     presets.Children.Add(everyMonth);
