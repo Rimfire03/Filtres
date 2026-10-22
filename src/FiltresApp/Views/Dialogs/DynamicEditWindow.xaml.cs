@@ -121,7 +121,7 @@ public partial class DynamicEditWindow : Window
                         var preset = times;
                         var button = new Button { Content = $"{preset} x par an", Margin = new Thickness(0, 0, 6, 4), Padding = new Thickness(8, 3, 8, 3) };
                         if (TryFindResource("SecondaryButton") is Style secondary) button.Style = secondary;
-                        button.Click += (_, _) => ApplyMonthsPreset(checkboxes, preset);
+                        button.Click += (_, _) => ApplyMonthsPreset(checkboxes, preset, field.MonthLoad);
                         presets.Children.Add(button);
                     }
                     // « Tous les mois » : les 12 mois d'un coup, sans mois de départ à choisir.
@@ -263,13 +263,34 @@ public partial class DynamicEditWindow : Window
 
     /// <summary>Préréglage « N fois par an » : demande le mois de départ dans une petite fenêtre et coche les mois
     /// régulièrement espacés (tous les 12 / N mois) en direct. Annuler rétablit la sélection précédente.</summary>
-    private void ApplyMonthsPreset(List<CheckBox> checkboxes, int timesPerYear)
+    private void ApplyMonthsPreset(List<CheckBox> checkboxes, int timesPerYear, int[]? monthLoad)
     {
         var fullNames = new[] { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
         var before = checkboxes.Select(c => c.IsChecked == true).ToList();
         var interval = 12 / timesPerYear;
 
-        var combo = new ComboBox { ItemsSource = fullNames, SelectedIndex = DateTime.Today.Month - 1, Margin = new Thickness(0, 6, 0, 10) };
+        // Charge des mois (autres filtres de la vue) : chaque mois du sélecteur est coloré (rouge chargé, vert peu chargé) et
+        // le départ proposé par défaut est celui qui répartit le mieux le travail (somme des charges la plus faible).
+        var hasLoad = monthLoad is { Length: 12 } && monthLoad.Max() > 0;
+        var maxLoad = hasLoad ? monthLoad!.Max() : 0;
+        int TotalLoad(int start) => Enumerable.Range(0, timesPerYear).Sum(i => monthLoad![(start + i * interval) % 12]);
+
+        var combo = new ComboBox { Margin = new Thickness(0, 6, 0, 10) };
+        for (var i = 0; i < 12; i++)
+        {
+            var item = new ComboBoxItem { Content = hasLoad ? $"{fullNames[i]}  ({monthLoad![i]} filtre(s))" : fullNames[i] };
+            if (hasLoad)
+            {
+                var ratio = (double)monthLoad![i] / maxLoad;
+                item.Foreground = new System.Windows.Media.SolidColorBrush(ratio >= 0.67 ? System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26)
+                    : ratio <= 0.33 ? System.Windows.Media.Color.FromRgb(0x16, 0xA3, 0x4A) : System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06));
+            }
+            combo.Items.Add(item);
+        }
+        var bestStart = hasLoad
+            ? Enumerable.Range(0, 12).OrderBy(TotalLoad).ThenBy(i => (i - (DateTime.Today.Month - 1) + 12) % 12).First()
+            : DateTime.Today.Month - 1;
+        combo.SelectedIndex = bestStart;
         var info = new TextBlock { TextWrapping = TextWrapping.Wrap };
 
         void Refresh()
@@ -277,7 +298,8 @@ public partial class DynamicEditWindow : Window
             var start = Math.Max(0, combo.SelectedIndex);
             var months = Enumerable.Range(0, timesPerYear).Select(i => (start + i * interval) % 12).OrderBy(m => m).ToList();
             for (var i = 0; i < checkboxes.Count; i++) checkboxes[i].IsChecked = months.Contains(i);
-            info.Text = $"{timesPerYear} x par an, tous les {interval} mois : {string.Join(", ", months.Select(m => fullNames[m]))}.";
+            info.Text = $"{timesPerYear} x par an, tous les {interval} mois : {string.Join(", ", months.Select(m => fullNames[m]))}."
+                        + (hasLoad ? $" Charge cumulée de ces mois : {TotalLoad(start)} filtre(s)" + (start == bestStart ? " (meilleur départ)." : ".") : string.Empty);
         }
 
         var ok = new Button { Content = "Appliquer", IsDefault = true, Width = 100, Margin = new Thickness(0, 0, 8, 0) };
