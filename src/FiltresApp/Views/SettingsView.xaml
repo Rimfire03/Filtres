@@ -153,6 +153,32 @@
                                 </ItemsControl>
                             </StackPanel>
                         </Border>
+
+                        <!-- Coefficient de correction de chaque mois, en % : un mois à 80 % a une capacité réduite. -->
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Coefficient de correction par mois" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                           Text="Chaque mois peut avoir un coefficient en % (100 % par défaut, pas de 5 %). Un mois à 80 % a une capacité réduite : une charge égale à 80 % de la normale y est considérée comme une charge de 100 %. Pris en compte dans les couleurs des mois à l'édition d'un filtre et dans le graphique de charge pondérée du tableau de bord. Enregistré tout de suite, commun à tous les postes."/>
+                                <ItemsControl ItemsSource="{Binding MonthPercents}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,0,0,6" LastChildFill="True" MaxWidth="420" HorizontalAlignment="Left">
+                                                <Button DockPanel.Dock="Right" Content="+" Width="36" FontWeight="Bold" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"
+                                                        Command="{Binding IncreaseCommand}" IsEnabled="{Binding CanIncrease}" ToolTip="Augmenter de 5 %"/>
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding PercentText}" Width="60" TextAlignment="Center" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                                <Button DockPanel.Dock="Right" Content="-" Width="36" FontWeight="Bold" Style="{StaticResource SecondaryButton}"
+                                                        Command="{Binding DecreaseCommand}" IsEnabled="{Binding CanDecrease}" ToolTip="Diminuer de 5 %"/>
+                                                <TextBlock Text="{Binding MonthName}" VerticalAlignment="Center" Width="120"/>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="Remettre tous les mois à 100 %" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                        Command="{Binding ResetMonthPercentsCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

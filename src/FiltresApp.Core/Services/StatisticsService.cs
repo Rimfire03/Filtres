@@ -96,8 +96,11 @@ public static class StatisticsService
         var filters = LoadPeriodicFilters(ctx, year);
         double Coef(PeriodicFilter f) => f.PeriodicViewId is int id && coefficients.TryGetValue(id, out var c) ? c : 1.0;
 
+        // Coefficient de correction de chaque mois (Paramètres, Calcul de charge) : un mois à 80 % a une capacité réduite,
+        // une charge de 80 % de la normale y compte pour 100 %.
+        var percents = WorkloadService.MonthPercents(ctx);
         var loads = Enumerable.Range(1, 12)
-            .Select(m => filters.Where(f => f.GetPeriodicityMonths().Contains(m)).Sum(Coef))
+            .Select(m => WorkloadService.Adjust(filters.Where(f => f.GetPeriodicityMonths().Contains(m)).Sum(Coef), percents[m - 1]))
             .ToList();
         var average = loads.Average();
         return loads.Select((load, i) => new WeightedLoadRow(i + 1, MonthNames[i], Math.Round(load, 2),

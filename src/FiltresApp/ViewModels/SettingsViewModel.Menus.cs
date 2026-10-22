@@ -85,6 +85,7 @@ public partial class SettingsViewModel
         LoadMenuEdits();
         LoadHourCounterViews();
         LoadLoadCoefficients();
+        LoadMonthPercents();
     }
 
     /// <summary>Carte « Comportement » : une case par vue « Changement filtre périodique » pour activer la saisie
