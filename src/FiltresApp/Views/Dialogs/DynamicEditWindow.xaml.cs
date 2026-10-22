@@ -141,13 +141,13 @@ public partial class DynamicEditWindow : Window
                             var cb = checkboxes[i];
                             cb.Foreground = LoadBrush(level);
                             cb.FontWeight = level == 2 ? FontWeights.SemiBold : FontWeights.Normal;
-                            cb.ToolTip = load[i] == 0 ? "Aucun autre filtre ce mois-ci" : $"{load[i]} autre(s) filtre(s) à changer ce mois-ci";
+                            cb.ToolTip = load[i] == 0 ? "Aucun autre filtre ce mois-ci" : $"Charge de ce mois (autres filtres, coefficients appliqués) : {Fmt(load[i])}";
                         }
                         var legend = new TextBlock
                         {
                             TextWrapping = TextWrapping.Wrap, FontSize = 11, Margin = new Thickness(0, 4, 0, 0),
                             Foreground = (System.Windows.Media.Brush)FindResource("BrushTextSecondary"),
-                            Text = "Couleur des mois : rouge = chargé, orange = moyen, vert = peu chargé (autres filtres de cette vue)."
+                            Text = "Couleur des mois : rouge = chargé, orange = moyen, vert = peu chargé (charge de toutes les vues, coefficients de Paramètres > Calcul de charge appliqués)."
                         };
                         container.Children.Add(presets);
                         container.Children.Add(wrap);
@@ -260,7 +260,9 @@ public partial class DynamicEditWindow : Window
     /// <summary>Niveau de charge d'un mois, relatif aux autres mois : 0 = peu chargé (vert), 1 = moyen (orange), 2 = chargé
     /// (rouge). Calculé entre le mois le moins chargé et le plus chargé, de sorte qu'il y a toujours au moins un mois vert
     /// (le moins chargé) et un mois rouge dès que les charges diffèrent ; charges toutes égales : tout est vert.</summary>
-    private static int LoadLevel(int[] load, int month)
+    private static string Fmt(double value) => value.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture);
+
+    private static int LoadLevel(double[] load, int month)
     {
         var min = load.Min();
         var max = load.Max();
@@ -278,7 +280,7 @@ public partial class DynamicEditWindow : Window
 
     /// <summary>Préréglage « N fois par an » : demande le mois de départ dans une petite fenêtre et coche les mois
     /// régulièrement espacés (tous les 12 / N mois) en direct. Annuler rétablit la sélection précédente.</summary>
-    private void ApplyMonthsPreset(List<CheckBox> checkboxes, int timesPerYear, int[]? monthLoad)
+    private void ApplyMonthsPreset(List<CheckBox> checkboxes, int timesPerYear, double[]? monthLoad)
     {
         var fullNames = new[] { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
         var before = checkboxes.Select(c => c.IsChecked == true).ToList();
@@ -287,12 +289,12 @@ public partial class DynamicEditWindow : Window
         // Charge des mois (autres filtres de la vue) : chaque mois du sélecteur est coloré (rouge chargé, vert peu chargé) et
         // le départ proposé par défaut est celui qui répartit le mieux le travail (somme des charges la plus faible).
         var hasLoad = monthLoad is { Length: 12 } && monthLoad.Max() > 0;
-        int TotalLoad(int start) => Enumerable.Range(0, timesPerYear).Sum(i => monthLoad![(start + i * interval) % 12]);
+        double TotalLoad(int start) => Enumerable.Range(0, timesPerYear).Sum(i => monthLoad![(start + i * interval) % 12]);
 
         var combo = new ComboBox { Margin = new Thickness(0, 6, 0, 10) };
         for (var i = 0; i < 12; i++)
         {
-            var item = new ComboBoxItem { Content = hasLoad ? $"{fullNames[i]}  ({monthLoad![i]} filtre(s))" : fullNames[i] };
+            var item = new ComboBoxItem { Content = hasLoad ? $"{fullNames[i]}  (charge {Fmt(monthLoad![i])})" : fullNames[i] };
             if (hasLoad) item.Foreground = LoadBrush(LoadLevel(monthLoad!, i));
             combo.Items.Add(item);
         }
@@ -308,7 +310,7 @@ public partial class DynamicEditWindow : Window
             var months = Enumerable.Range(0, timesPerYear).Select(i => (start + i * interval) % 12).OrderBy(m => m).ToList();
             for (var i = 0; i < checkboxes.Count; i++) checkboxes[i].IsChecked = months.Contains(i);
             info.Text = $"{timesPerYear} x par an, tous les {interval} mois : {string.Join(", ", months.Select(m => fullNames[m]))}."
-                        + (hasLoad ? $" Charge cumulée de ces mois : {TotalLoad(start)} filtre(s)" + (start == bestStart ? " (meilleur départ)." : ".") : string.Empty);
+                        + (hasLoad ? $" Charge cumulée de ces mois : {Fmt(TotalLoad(start))}" + (start == bestStart ? " (meilleur départ)." : ".") : string.Empty);
         }
 
         var ok = new Button { Content = "Appliquer", IsDefault = true, Width = 100, Margin = new Thickness(0, 0, 8, 0) };

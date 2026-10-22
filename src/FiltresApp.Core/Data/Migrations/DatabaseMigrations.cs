@@ -1,4 +1,4 @@
-using FiltresApp.Core.Models;
+﻿using FiltresApp.Core.Models;
 using FiltresApp.Core.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +56,27 @@ internal static class DatabaseMigrations
         (30, "Module Suivi ZAC : pièces, contrôles et fichiers joints", AddZacSchema),
         (31, "Module Suivi ZAC : valeurs mesurées d'un contrôle", AddZacMeasurements),
         (32, "Module Suivi ZAC : spécification et résultat texte des valeurs (import de rapport)", AddZacMeasurementSpecification),
+        (33, "Coefficient de charge par vue de changement de filtre périodique", AddPeriodicViewLoadCoefficient),
     };
+
+    /// <summary>Colonne « LoadCoefficient » des vues de changement de filtre périodique (1 par défaut). Idempotent.</summary>
+    private static void AddPeriodicViewLoadCoefficient(FiltresDbContext ctx)
+    {
+        if (!SchemaInspector.GetColumns(ctx, "PeriodicViews").Contains("LoadCoefficient"))
+            ctx.Database.ExecuteSqlRaw("""ALTER TABLE "PeriodicViews" ADD COLUMN "LoadCoefficient" REAL NOT NULL DEFAULT 1;""");
+    }
+
+    /// <summary>Équivalent serveur de <see cref="AddPeriodicViewLoadCoefficient"/>. Idempotent.</summary>
+    private static void AddPeriodicViewLoadCoefficientServer(FiltresDbContext ctx)
+    {
+        if (ServerSql.ColumnExists(ctx, "PeriodicViews", "LoadCoefficient")) return;
+        ctx.Database.ExecuteSqlRaw(ctx.Provider switch
+        {
+            DatabaseProvider.PostgreSql => """ALTER TABLE "PeriodicViews" ADD COLUMN "LoadCoefficient" double precision NOT NULL DEFAULT 1;""",
+            DatabaseProvider.MariaDb => "ALTER TABLE `PeriodicViews` ADD COLUMN `LoadCoefficient` double NOT NULL DEFAULT 1;",
+            _ => "ALTER TABLE [PeriodicViews] ADD [LoadCoefficient] float NOT NULL DEFAULT 1;"
+        });
+    }
 
     /// <summary>Colonnes « Specification » et « TextValue » des valeurs mesurées (import d'un rapport de qualification).
     /// Idempotent.</summary>
@@ -125,6 +145,7 @@ internal static class DatabaseMigrations
         (30, "Module Suivi ZAC : pièces, contrôles et fichiers joints", AddZacSchemaServer),
         (31, "Module Suivi ZAC : valeurs mesurées d'un contrôle", AddZacMeasurementsServer),
         (32, "Module Suivi ZAC : spécification et résultat texte des valeurs (import de rapport)", AddZacMeasurementSpecificationServer),
+        (33, "Coefficient de charge par vue de changement de filtre périodique", AddPeriodicViewLoadCoefficientServer),
     };
 
     /// <summary>Valeurs mesurées d'un contrôle du module « Suivi ZAC ». Idempotent.</summary>

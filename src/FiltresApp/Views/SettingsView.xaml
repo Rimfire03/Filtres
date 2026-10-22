@@ -125,6 +125,37 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+            <!-- Calcul de charge : coefficient de correction par vue de changement de filtre périodique. -->
+            <TabItem Header="Calcul de charge">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Coefficient de correction par vue" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                           Text="Chaque filtre périodique compte pour le coefficient de sa vue dans la charge des mois : couleurs des mois (rouge chargé, vert peu chargé) à l'édition d'un filtre et charge pondérée des statistiques. Valeur de base 1,0 ; réglable par pas de 0,1 avec + et -. Un coefficient de 1,5 signifie qu'un filtre de cette vue représente une fois et demie le travail d'un filtre à 1,0. Enregistré tout de suite, commun à tous les postes."/>
+                                <ItemsControl ItemsSource="{Binding LoadCoefficients}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                                                <Button DockPanel.Dock="Right" Content="Remettre à 1,0" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"
+                                                        Command="{Binding ResetCommand}" IsEnabled="{x:Static app:App.IsWritable}"/>
+                                                <Button DockPanel.Dock="Right" Content="+" Width="36" FontWeight="Bold" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"
+                                                        Command="{Binding IncreaseCommand}" IsEnabled="{Binding CanIncrease}" ToolTip="Augmenter de 0,1"/>
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding CoefficientText}" Width="48" TextAlignment="Center" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                                <Button DockPanel.Dock="Right" Content="-" Width="36" FontWeight="Bold" Style="{StaticResource SecondaryButton}"
+                                                        Command="{Binding DecreaseCommand}" IsEnabled="{Binding CanDecrease}" ToolTip="Diminuer de 0,1"/>
+                                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
             <TabItem Header="Utilisateurs">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,12,0,0" MaxWidth="900" HorizontalAlignment="Left">

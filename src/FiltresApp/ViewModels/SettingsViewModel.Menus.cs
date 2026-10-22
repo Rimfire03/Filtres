@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
@@ -84,6 +84,7 @@ public partial class SettingsViewModel
     {
         LoadMenuEdits();
         LoadHourCounterViews();
+        LoadLoadCoefficients();
     }
 
     /// <summary>Carte « Comportement » : une case par vue « Changement filtre périodique » pour activer la saisie

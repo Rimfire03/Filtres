@@ -112,9 +112,9 @@ public class EditField
 
     /// <summary>Nombre de filtres déjà à changer chaque mois (index 0 = janvier) : sert à colorer les mois du champ
     /// <see cref="EditFieldType.Months"/> (rouge : mois chargés, vert : mois peu chargés).</summary>
-    public int[]? MonthLoad { get; init; }
+    public double[]? MonthLoad { get; init; }
 
-    public static EditField MonthsField(string label, Func<List<int>> get, Action<List<int>> set, int[]? monthLoad = null) => new()
+    public static EditField MonthsField(string label, Func<List<int>> get, Action<List<int>> set, double[]? monthLoad = null) => new()
     {
         Label = label,
         MonthLoad = monthLoad,

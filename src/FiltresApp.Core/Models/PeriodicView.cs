@@ -38,6 +38,11 @@ public class PeriodicView : ISiteScoped
     /// fonctionnement, repris dans l'export Excel de l'année.</summary>
     public bool TracksOperatingHours { get; set; }
 
+    /// <summary>Coefficient de correction de la charge de travail de cette vue (Paramètres, « Calcul de charge ») : 1 par
+    /// défaut, réglable par pas de 0,1. Chaque filtre de la vue compte pour ce coefficient dans la charge des mois
+    /// (couleurs des mois à l'édition d'un filtre, statistiques).</summary>
+    public double LoadCoefficient { get; set; } = 1.0;
+
     /// <summary>Besoin semestriel de Commande calculé automatiquement pour les filtres de cette vue : toutes les
     /// vues sauf Charbon (voir <see cref="OrderLine.UsesComputedNeed"/>).</summary>
     public bool ComputesNeed => Category != FilterCategory.Charbon;

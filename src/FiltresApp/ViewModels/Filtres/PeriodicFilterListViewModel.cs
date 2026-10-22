@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FiltresApp.Core.Models;
@@ -369,16 +369,10 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         App.Dialogs.ShowMessage("Déplacer", $"« {location} » a été déplacé vers « {labels[targetIndex]} ».");
     }
 
-    /// <summary>Nombre de filtres de la vue à changer chaque mois (janvier à décembre), hors le filtre en cours d'édition.
-    /// Les filtres lavables comptent aussi : ils représentent du travail ce mois-là.</summary>
-    private int[] MonthLoadExcluding(PeriodicFilter edited)
-    {
-        var load = new int[12];
-        foreach (var f in _allFilters.Where(f => edited.Id == 0 || f.Id != edited.Id))
-            foreach (var m in f.GetPeriodicityMonths())
-                if (m is >= 1 and <= 12) load[m - 1]++;
-        return load;
-    }
+    /// <summary>Charge de chaque mois (janvier à décembre), hors le filtre en cours d'édition : tous les filtres périodiques
+    /// du site, pondérés par le coefficient de leur vue (Paramètres, « Calcul de charge »). Les filtres lavables comptent aussi :
+    /// ils représentent du travail ce mois-là.</summary>
+    private double[] MonthLoadExcluding(PeriodicFilter edited) => WorkloadService.MonthlyLoad(App.Db, edited.Id);
 
     private bool EditEntity(PeriodicFilter entity, bool isNew)
     {
