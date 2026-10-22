@@ -16,7 +16,7 @@ public sealed record MonthlyWorkloadRow(int Month, string MonthName, int Filters
 
 /// <summary>Charge pondérée d'un mois : chaque filtre à changer ce mois-là compte pour le coefficient de sa vue
 /// (Paramètres, « Calcul de charge »). Statistique distincte de la charge mensuelle en nombre de filtres.</summary>
-public sealed record WeightedLoadRow(int Month, string MonthName, double WeightedLoad, int FilterCount, IReadOnlyDictionary<string, double> LoadByView);
+public sealed record WeightedLoadRow(int Month, string MonthName, double WeightedLoad, double PercentOfAverage);
 
 /// <summary>Filtre périodique dont une échéance passée n'a pas été réalisée.</summary>
 public sealed record OverdueRow(string View, string Location, string Dimension, int Month, int Year, int DaysLate, int Quantity)
@@ -87,23 +87,22 @@ public static class StatisticsService
         return rows;
     }
 
-    /// <summary>Charge pondérée par mois : somme, pour chaque filtre (à changer ou à laver) dont la périodicité tombe dans le
-    /// mois, du coefficient de sa vue. Répartie par vue pour le graphique empilé.</summary>
+    /// <summary>Charge pondérée globale par mois : chaque filtre (à changer ou à laver) dont la périodicité tombe dans le mois
+    /// compte pour le coefficient de sa vue (Paramètres, « Calcul de charge »). Exprimée aussi en pourcentage de la charge
+    /// moyenne mensuelle de l'année : 100 % = charge moyenne annuelle.</summary>
     public static List<WeightedLoadRow> WeightedWorkload(FiltresDbContext ctx, int year)
     {
         var coefficients = ctx.PeriodicViews.AsNoTracking().ToDictionary(v => v.Id, v => v.LoadCoefficient);
         var filters = LoadPeriodicFilters(ctx, year);
-        var rows = new List<WeightedLoadRow>();
-        for (var m = 1; m <= 12; m++)
-        {
-            var due = filters.Where(f => f.GetPeriodicityMonths().Contains(m)).ToList();
-            double Coef(PeriodicFilter f) => f.PeriodicViewId is int id && coefficients.TryGetValue(id, out var c) ? c : 1.0;
-            var byView = due.GroupBy(ViewName).ToDictionary(g => g.Key, g => Math.Round(g.Sum(Coef), 2));
-            rows.Add(new WeightedLoadRow(m, MonthNames[m - 1], Math.Round(due.Sum(Coef), 2), due.Count, byView));
-        }
-        return rows;
-    }
+        double Coef(PeriodicFilter f) => f.PeriodicViewId is int id && coefficients.TryGetValue(id, out var c) ? c : 1.0;
 
+        var loads = Enumerable.Range(1, 12)
+            .Select(m => filters.Where(f => f.GetPeriodicityMonths().Contains(m)).Sum(Coef))
+            .ToList();
+        var average = loads.Average();
+        return loads.Select((load, i) => new WeightedLoadRow(i + 1, MonthNames[i], Math.Round(load, 2),
+            average > 0 ? Math.Round(load / average * 100, 1) : 0)).ToList();
+    }
     /// <summary>Échéances des mois écoulés de l'année en cours non réalisées (le mois en cours n'est pas en retard).</summary>
     public static List<OverdueRow> Overdue(FiltresDbContext ctx, DateOnly today)
     {

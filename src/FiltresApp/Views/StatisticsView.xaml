@@ -51,6 +51,16 @@
                                 <lvc:CartesianChart Series="{Binding WorkloadSeries}" XAxes="{Binding MonthAxes}" LegendPosition="Bottom"/>
                             </DockPanel>
                         </Border>
+
+                        <!-- Charge pondérée globale : 100 % = charge moyenne annuelle, coefficients des vues appliqués. -->
+                        <Border Style="{StaticResource CardBorder}" Height="340" Margin="0,16,0,0">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="Charge pondérée globale (100 % = charge moyenne annuelle)" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                                <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,6"
+                                           Text="Tous les filtres périodiques, pondérés par le coefficient de leur vue (Paramètres, Calcul de charge)."/>
+                                <lvc:CartesianChart Series="{Binding WeightedSeries}" XAxes="{Binding MonthAxes}" YAxes="{Binding WeightedYAxes}" LegendPosition="Bottom"/>
+                            </DockPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -85,24 +95,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Charge pondérée : chaque filtre compte pour le coefficient de sa vue (Paramètres, Calcul de charge). -->
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Text="Charge pondérée par mois" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                <TextBlock Style="{StaticResource SectionText}" TextWrapping="Wrap" Margin="0,0,0,8"
-                                           Text="Somme, pour chaque mois, des filtres à changer ou à laver, pondérée par le coefficient de leur vue (Paramètres, Calcul de charge). Différente de la charge mensuelle en nombre de filtres."/>
-                                <DataGrid ItemsSource="{Binding WeightedLoad}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="420">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Mois" Binding="{Binding MonthName}" Width="*"/>
-                                        <DataGridTextColumn Header="Charge pondérée" Binding="{Binding WeightedLoad, StringFormat=0.0}" Width="150"/>
-                                        <DataGridTextColumn Header="Nombre de filtres" Binding="{Binding FilterCount}" Width="150"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                                <lvc:CartesianChart Series="{Binding WeightedSeries}" XAxes="{Binding MonthAxes}" Height="260" Margin="0,12,0,0" LegendPosition="Bottom"/>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
+<Border Style="{StaticResource CardBorder}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="Taux de réalisation par mois" FontWeight="SemiBold" Margin="0,0,0,6"/>
                                 <lvc:CartesianChart Series="{Binding CompletionSeries}" XAxes="{Binding MonthAxes}" Height="220" LegendPosition="Hidden"/>

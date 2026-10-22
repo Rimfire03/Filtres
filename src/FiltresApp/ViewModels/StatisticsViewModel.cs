@@ -52,9 +52,13 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
     [ObservableProperty] private ISeries[] _viewSeries = [];
     [ObservableProperty] private ISeries[] _completionSeries = [];
 
-    // Charge pondérée (coefficient de chaque vue, Paramètres > Calcul de charge) : statistique distincte de la charge mensuelle.
+    // Charge pondérée globale en % de la charge moyenne annuelle (100 % = moyenne), coefficients des vues appliqués
+    // (Paramètres > Calcul de charge). Graphique du tableau de bord (« Vue d'ensemble »).
     [ObservableProperty] private IReadOnlyList<WeightedLoadRow> _weightedLoad = [];
     [ObservableProperty] private ISeries[] _weightedSeries = [];
+
+    public Axis[] WeightedYAxes { get; } =
+        [new Axis { Labeler = v => $"{v:0} %", MinLimit = 0, LabelsPaint = new SolidColorPaint(SKColor.Parse("#52514e")) }];
     public Axis[] MonthAxes { get; } = [new Axis { Labels = ShortMonths, LabelsPaint = new SolidColorPaint(SKColor.Parse("#52514e")) }];
     [ObservableProperty] private bool _hasOperatingHours;
 
@@ -151,13 +155,20 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
 
         var weighted = StatisticsService.WeightedWorkload(ctx, SelectedYear);
         WeightedLoad = weighted;
-        var weightedViews = weighted.SelectMany(r => r.LoadByView.Keys).Distinct().OrderBy(v => v).ToList();
-        WeightedSeries = weightedViews.Select((v, i) => (ISeries)new StackedColumnSeries<double>
-        {
-            Name = v, Values = weighted.Select(r => r.LoadByView.GetValueOrDefault(v)).ToArray(),
-            Fill = new SolidColorPaint(SKColor.Parse(Palette[i % Palette.Length]))
-        }).ToArray();
-
+        WeightedSeries =
+        [
+            new ColumnSeries<double>
+            {
+                Name = "Charge pondérée (% de la moyenne)", Values = weighted.Select(r => r.PercentOfAverage).ToArray(),
+                Fill = new SolidColorPaint(SKColor.Parse(Palette[0]))
+            },
+            new LineSeries<double>
+            {
+                Name = "Charge moyenne annuelle (100 %)", Values = weighted.Select(_ => 100.0).ToArray(), Fill = null,
+                Stroke = new SolidColorPaint(SKColor.Parse(Palette[1]), 2f) { PathEffect = new LiveChartsCore.SkiaSharpView.Painting.Effects.DashEffect([6f, 4f]) },
+                GeometrySize = 0
+            }
+        ];
         var views = rows.SelectMany(r => r.DueByView.Keys).Distinct().OrderBy(v => v).ToList();
         ViewSeries = views.Select((v, i) => (ISeries)new StackedColumnSeries<int>
         {
@@ -272,8 +283,8 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
             var sheets = new List<StatisticsSheet>();
             if (ShowFilters)
             {
-                sheets.Add(new("Charge pondérée", ["Mois", "Charge pondérée", "Nombre de filtres"],
-                    WeightedLoad.Select(r => new object?[] { r.MonthName, r.WeightedLoad, r.FilterCount }).ToList()));
+                sheets.Add(new("Charge pondérée", ["Mois", "Charge pondérée", "% de la charge moyenne annuelle"],
+                    WeightedLoad.Select(r => new object?[] { r.MonthName, r.WeightedLoad, r.PercentOfAverage }).ToList()));
                 sheets.Add(new("Charge mensuelle", ["Mois", "Filtres à changer", "Quantité à fournir", "Filtres à laver", "Réalisés", "Taux de réalisation"],
                     Workload.Select(r => new object?[] { r.MonthName, r.FiltersDue, r.QuantityToSupply, r.ToWash, r.DoneOfDue, r.CompletionText }).ToList()));
                 sheets.Add(new("Retards", ["Vue", "Emplacement", "Dimension", "Échéance", "Jours de retard", "Quantité"],
