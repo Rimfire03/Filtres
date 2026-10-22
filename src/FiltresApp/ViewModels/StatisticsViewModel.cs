@@ -51,6 +51,10 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
     [ObservableProperty] private ISeries[] _workloadSeries = [];
     [ObservableProperty] private ISeries[] _viewSeries = [];
     [ObservableProperty] private ISeries[] _completionSeries = [];
+
+    // Charge pondérée (coefficient de chaque vue, Paramètres > Calcul de charge) : statistique distincte de la charge mensuelle.
+    [ObservableProperty] private IReadOnlyList<WeightedLoadRow> _weightedLoad = [];
+    [ObservableProperty] private ISeries[] _weightedSeries = [];
     public Axis[] MonthAxes { get; } = [new Axis { Labels = ShortMonths, LabelsPaint = new SolidColorPaint(SKColor.Parse("#52514e")) }];
     [ObservableProperty] private bool _hasOperatingHours;
 
@@ -145,6 +149,15 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
             }
         ];
 
+        var weighted = StatisticsService.WeightedWorkload(ctx, SelectedYear);
+        WeightedLoad = weighted;
+        var weightedViews = weighted.SelectMany(r => r.LoadByView.Keys).Distinct().OrderBy(v => v).ToList();
+        WeightedSeries = weightedViews.Select((v, i) => (ISeries)new StackedColumnSeries<double>
+        {
+            Name = v, Values = weighted.Select(r => r.LoadByView.GetValueOrDefault(v)).ToArray(),
+            Fill = new SolidColorPaint(SKColor.Parse(Palette[i % Palette.Length]))
+        }).ToArray();
+
         var views = rows.SelectMany(r => r.DueByView.Keys).Distinct().OrderBy(v => v).ToList();
         ViewSeries = views.Select((v, i) => (ISeries)new StackedColumnSeries<int>
         {
@@ -189,6 +202,7 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
     {
         Workload = []; Overdue = []; OperatingHours = []; HasOperatingHours = false;
         WorkloadSeries = []; ViewSeries = []; CompletionSeries = [];
+        WeightedLoad = []; WeightedSeries = [];
         DueThisMonth = OverdueCount = YearCompletion = YearTotalDue = "-"; PeakText = "";
     }
 
@@ -258,6 +272,8 @@ public partial class StatisticsViewModel : ObservableObject, IReloadable
             var sheets = new List<StatisticsSheet>();
             if (ShowFilters)
             {
+                sheets.Add(new("Charge pondérée", ["Mois", "Charge pondérée", "Nombre de filtres"],
+                    WeightedLoad.Select(r => new object?[] { r.MonthName, r.WeightedLoad, r.FilterCount }).ToList()));
                 sheets.Add(new("Charge mensuelle", ["Mois", "Filtres à changer", "Quantité à fournir", "Filtres à laver", "Réalisés", "Taux de réalisation"],
                     Workload.Select(r => new object?[] { r.MonthName, r.FiltersDue, r.QuantityToSupply, r.ToWash, r.DoneOfDue, r.CompletionText }).ToList()));
                 sheets.Add(new("Retards", ["Vue", "Emplacement", "Dimension", "Échéance", "Jours de retard", "Quantité"],

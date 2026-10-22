@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using FiltresApp.Core.Data;
 using FiltresApp.Core.Models;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +13,10 @@ public sealed record MonthlyWorkloadRow(int Month, string MonthName, int Filters
     public int Total => FiltersDue + ToWash;
     public string CompletionText => CompletionRate is { } r ? $"{r:P0}" : "-";
 }
+
+/// <summary>Charge pondérée d'un mois : chaque filtre à changer ce mois-là compte pour le coefficient de sa vue
+/// (Paramètres, « Calcul de charge »). Statistique distincte de la charge mensuelle en nombre de filtres.</summary>
+public sealed record WeightedLoadRow(int Month, string MonthName, double WeightedLoad, int FilterCount, IReadOnlyDictionary<string, double> LoadByView);
 
 /// <summary>Filtre périodique dont une échéance passée n'a pas été réalisée.</summary>
 public sealed record OverdueRow(string View, string Location, string Dimension, int Month, int Year, int DaysLate, int Quantity)
@@ -79,6 +83,23 @@ public static class StatisticsService
             var byView = toChange.GroupBy(ViewName).ToDictionary(g => g.Key, g => g.Count());
             rows.Add(new MonthlyWorkloadRow(m, MonthNames[m - 1], toChange.Count, due.Count - toChange.Count, supply, done,
                 due.Count == 0 ? null : (double)done / due.Count, byView));
+        }
+        return rows;
+    }
+
+    /// <summary>Charge pondérée par mois : somme, pour chaque filtre (à changer ou à laver) dont la périodicité tombe dans le
+    /// mois, du coefficient de sa vue. Répartie par vue pour le graphique empilé.</summary>
+    public static List<WeightedLoadRow> WeightedWorkload(FiltresDbContext ctx, int year)
+    {
+        var coefficients = ctx.PeriodicViews.AsNoTracking().ToDictionary(v => v.Id, v => v.LoadCoefficient);
+        var filters = LoadPeriodicFilters(ctx, year);
+        var rows = new List<WeightedLoadRow>();
+        for (var m = 1; m <= 12; m++)
+        {
+            var due = filters.Where(f => f.GetPeriodicityMonths().Contains(m)).ToList();
+            double Coef(PeriodicFilter f) => f.PeriodicViewId is int id && coefficients.TryGetValue(id, out var c) ? c : 1.0;
+            var byView = due.GroupBy(ViewName).ToDictionary(g => g.Key, g => Math.Round(g.Sum(Coef), 2));
+            rows.Add(new WeightedLoadRow(m, MonthNames[m - 1], Math.Round(due.Sum(Coef), 2), due.Count, byView));
         }
         return rows;
     }
