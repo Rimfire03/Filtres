@@ -135,16 +135,12 @@ public partial class DynamicEditWindow : Window
                     // plus chargé de la vue, hors le filtre édité), orange entre les deux. Info-bulle : nombre de filtres.
                     if (field.MonthLoad is { Length: 12 } load && load.Max() > 0)
                     {
-                        var max = load.Max();
-                        var red = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26));
-                        var orange = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06));
-                        var green = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x16, 0xA3, 0x4A));
                         for (var i = 0; i < 12; i++)
                         {
-                            var ratio = (double)load[i] / max;
+                            var level = LoadLevel(load, i);
                             var cb = checkboxes[i];
-                            cb.Foreground = ratio >= 0.67 ? red : ratio <= 0.33 ? green : orange;
-                            cb.FontWeight = ratio >= 0.67 ? FontWeights.SemiBold : FontWeights.Normal;
+                            cb.Foreground = LoadBrush(level);
+                            cb.FontWeight = level == 2 ? FontWeights.SemiBold : FontWeights.Normal;
                             cb.ToolTip = load[i] == 0 ? "Aucun autre filtre ce mois-ci" : $"{load[i]} autre(s) filtre(s) à changer ce mois-ci";
                         }
                         var legend = new TextBlock
@@ -261,6 +257,25 @@ public partial class DynamicEditWindow : Window
         Close();
     }
 
+    /// <summary>Niveau de charge d'un mois, relatif aux autres mois : 0 = peu chargé (vert), 1 = moyen (orange), 2 = chargé
+    /// (rouge). Calculé entre le mois le moins chargé et le plus chargé, de sorte qu'il y a toujours au moins un mois vert
+    /// (le moins chargé) et un mois rouge dès que les charges diffèrent ; charges toutes égales : tout est vert.</summary>
+    private static int LoadLevel(int[] load, int month)
+    {
+        var min = load.Min();
+        var max = load.Max();
+        if (max == min) return 0;
+        var position = (double)(load[month] - min) / (max - min);
+        return position >= 2.0 / 3 ? 2 : position <= 1.0 / 3 ? 0 : 1;
+    }
+
+    private static System.Windows.Media.Brush LoadBrush(int level) => new System.Windows.Media.SolidColorBrush(level switch
+    {
+        2 => System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26),
+        1 => System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06),
+        _ => System.Windows.Media.Color.FromRgb(0x16, 0xA3, 0x4A)
+    });
+
     /// <summary>Préréglage « N fois par an » : demande le mois de départ dans une petite fenêtre et coche les mois
     /// régulièrement espacés (tous les 12 / N mois) en direct. Annuler rétablit la sélection précédente.</summary>
     private void ApplyMonthsPreset(List<CheckBox> checkboxes, int timesPerYear, int[]? monthLoad)
@@ -272,19 +287,13 @@ public partial class DynamicEditWindow : Window
         // Charge des mois (autres filtres de la vue) : chaque mois du sélecteur est coloré (rouge chargé, vert peu chargé) et
         // le départ proposé par défaut est celui qui répartit le mieux le travail (somme des charges la plus faible).
         var hasLoad = monthLoad is { Length: 12 } && monthLoad.Max() > 0;
-        var maxLoad = hasLoad ? monthLoad!.Max() : 0;
         int TotalLoad(int start) => Enumerable.Range(0, timesPerYear).Sum(i => monthLoad![(start + i * interval) % 12]);
 
         var combo = new ComboBox { Margin = new Thickness(0, 6, 0, 10) };
         for (var i = 0; i < 12; i++)
         {
             var item = new ComboBoxItem { Content = hasLoad ? $"{fullNames[i]}  ({monthLoad![i]} filtre(s))" : fullNames[i] };
-            if (hasLoad)
-            {
-                var ratio = (double)monthLoad![i] / maxLoad;
-                item.Foreground = new System.Windows.Media.SolidColorBrush(ratio >= 0.67 ? System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26)
-                    : ratio <= 0.33 ? System.Windows.Media.Color.FromRgb(0x16, 0xA3, 0x4A) : System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06));
-            }
+            if (hasLoad) item.Foreground = LoadBrush(LoadLevel(monthLoad!, i));
             combo.Items.Add(item);
         }
         var bestStart = hasLoad
