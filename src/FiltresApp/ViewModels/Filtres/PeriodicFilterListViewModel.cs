@@ -175,6 +175,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         {
             if (value == true) CheckAllVisible();
             else UncheckAllVisible();
+            if (RemainingOnly) ScheduleRemoveDoneRows();
             // Resynchronise la case (confirmation refusée ou résultat partiel).
             System.Windows.Application.Current.Dispatcher.BeginInvoke(() => OnPropertyChanged(nameof(AllVisibleDone)));
         }
@@ -185,7 +186,33 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     public bool ShowAllDoneCheckbox => App.Settings.AllDoneCheckboxEnabled;
 
     /// <summary>Appelé par une ligne dont la case « Réalisé » ou la date vient de changer.</summary>
-    public void NotifyDoneChanged() => OnPropertyChanged(nameof(AllVisibleDone));
+    public void NotifyDoneChanged()
+    {
+        OnPropertyChanged(nameof(AllVisibleDone));
+        if (RemainingOnly) ScheduleRemoveDoneRows();
+    }
+
+    private System.Windows.Threading.DispatcherTimer? _removeTimer;
+
+    /// <summary>Avec « Reste à faire », une ligne qui vient d'être cochée reste visible quelques secondes (pour voir la date
+    /// enregistrée ou décocher en cas d'erreur), puis disparaît de la liste sans recharger les autres lignes.</summary>
+    private void ScheduleRemoveDoneRows()
+    {
+        _removeTimer ??= new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _removeTimer.Stop();
+        _removeTimer.Tick -= OnRemoveTimerTick;
+        _removeTimer.Tick += OnRemoveTimerTick;
+        _removeTimer.Start();   // chaque nouvelle coche relance le délai
+    }
+
+    private void OnRemoveTimerTick(object? sender, EventArgs e)
+    {
+        _removeTimer?.Stop();
+        if (!RemainingOnly) return;
+        foreach (var row in Filters.Where(r => r.IsDoneForConsultedMonth).ToList())
+            Filters.Remove(row);
+        OnPropertyChanged(nameof(AllVisibleDone));
+    }
 
     // ---- Filtres placés sous les titres de colonnes ----
 
