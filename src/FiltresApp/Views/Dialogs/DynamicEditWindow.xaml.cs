@@ -123,6 +123,12 @@ public partial class DynamicEditWindow : Window
                         button.Click += (_, _) => ApplyMonthsPreset(checkboxes, preset);
                         presets.Children.Add(button);
                     }
+                    // « Tous les mois » : les 12 mois d'un coup, sans mois de départ à choisir.
+                    var everyMonth = new Button { Content = "Tous les mois", Margin = new Thickness(0, 0, 6, 0), Padding = new Thickness(10, 3, 10, 3) };
+                    if (TryFindResource("SecondaryButton") is Style everyStyle) everyMonth.Style = everyStyle;
+                    everyMonth.Click += (_, _) => { foreach (var cb in checkboxes) cb.IsChecked = true; };
+                    presets.Children.Add(everyMonth);
+
                     container.Children.Add(presets);
                     container.Children.Add(wrap);
 
