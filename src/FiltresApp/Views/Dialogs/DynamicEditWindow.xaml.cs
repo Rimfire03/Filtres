@@ -110,11 +110,10 @@ public partial class DynamicEditWindow : Window
                         checkboxes.Add(cb);
                         wrap.Children.Add(cb);
                     }
-                    container.Children.Add(wrap);
-
-                    // Préréglages « 2 x par an », « 3 x par an », « 4 x par an » : une fenêtre demande le mois de départ et les
-                    // mois suivants se cochent aussitôt (aperçu en direct) ; « Annuler » rétablit la sélection d'avant.
-                    var presets = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+                    // Préréglages « 2 x par an », « 3 x par an », « 4 x par an » (au-dessus des mois, à cocher à la main) : une
+                    // fenêtre demande le mois de départ et les mois suivants se cochent aussitôt (aperçu en direct) ;
+                    // « Annuler » rétablit la sélection d'avant.
+                    var presets = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
                     presets.Children.Add(new TextBlock { Text = "Préréglages :", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) });
                     foreach (var times in new[] { 2, 3, 4 })
                     {
@@ -125,6 +124,7 @@ public partial class DynamicEditWindow : Window
                         presets.Children.Add(button);
                     }
                     container.Children.Add(presets);
+                    container.Children.Add(wrap);
 
                     _readers.Add(() =>
                     {
