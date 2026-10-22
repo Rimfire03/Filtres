@@ -130,8 +130,38 @@ public partial class DynamicEditWindow : Window
                     everyMonth.Click += (_, _) => { foreach (var cb in checkboxes) cb.IsChecked = true; };
                     presets.Children.Add(everyMonth);
 
-                    container.Children.Add(presets);
-                    container.Children.Add(wrap);
+
+                    // Charge des mois : rouge pour les mois les plus chargés, vert pour les moins chargés (relatif au mois le
+                    // plus chargé de la vue, hors le filtre édité), orange entre les deux. Info-bulle : nombre de filtres.
+                    if (field.MonthLoad is { Length: 12 } load && load.Max() > 0)
+                    {
+                        var max = load.Max();
+                        var red = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26));
+                        var orange = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06));
+                        var green = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x16, 0xA3, 0x4A));
+                        for (var i = 0; i < 12; i++)
+                        {
+                            var ratio = (double)load[i] / max;
+                            var cb = checkboxes[i];
+                            cb.Foreground = ratio >= 0.67 ? red : ratio <= 0.33 ? green : orange;
+                            cb.FontWeight = ratio >= 0.67 ? FontWeights.SemiBold : FontWeights.Normal;
+                            cb.ToolTip = load[i] == 0 ? "Aucun autre filtre ce mois-ci" : $"{load[i]} autre(s) filtre(s) à changer ce mois-ci";
+                        }
+                        var legend = new TextBlock
+                        {
+                            TextWrapping = TextWrapping.Wrap, FontSize = 11, Margin = new Thickness(0, 4, 0, 0),
+                            Foreground = (System.Windows.Media.Brush)FindResource("BrushTextSecondary"),
+                            Text = "Couleur des mois : rouge = chargé, orange = moyen, vert = peu chargé (autres filtres de cette vue)."
+                        };
+                        container.Children.Add(presets);
+                        container.Children.Add(wrap);
+                        container.Children.Add(legend);
+                    }
+                    else
+                    {
+                        container.Children.Add(presets);
+                        container.Children.Add(wrap);
+                    }
 
                     _readers.Add(() =>
                     {

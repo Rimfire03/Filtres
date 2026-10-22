@@ -369,6 +369,17 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         App.Dialogs.ShowMessage("Déplacer", $"« {location} » a été déplacé vers « {labels[targetIndex]} ».");
     }
 
+    /// <summary>Nombre de filtres de la vue à changer chaque mois (janvier à décembre), hors le filtre en cours d'édition.
+    /// Les filtres lavables comptent aussi : ils représentent du travail ce mois-là.</summary>
+    private int[] MonthLoadExcluding(PeriodicFilter edited)
+    {
+        var load = new int[12];
+        foreach (var f in _allFilters.Where(f => edited.Id == 0 || f.Id != edited.Id))
+            foreach (var m in f.GetPeriodicityMonths())
+                if (m is >= 1 and <= 12) load[m - 1]++;
+        return load;
+    }
+
     private bool EditEntity(PeriodicFilter entity, bool isNew)
     {
         var months = entity.GetPeriodicityMonths();
@@ -379,7 +390,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             EditField.Multiline("Dimension", () => entity.Dimension, v => entity.Dimension = v ?? ""),
             EditField.Text("Type", () => entity.MediaType, v => entity.MediaType = v, uppercase: true),
             EditField.IntField("Quantité en place", () => entity.QuantityInPlace, v => entity.QuantityInPlace = v),
-            EditField.MonthsField("Périodicité de remplacement (mois)", () => months, v => months = v)
+            // Charge de chaque mois (autres filtres de la vue) : mois chargés en rouge, mois peu chargés en vert.
+            EditField.MonthsField("Périodicité de remplacement (mois)", () => months, v => months = v, MonthLoadExcluding(entity))
         };
 
         fields.Add(EditField.Multiline("Commentaire", () => entity.Commentaire, v => entity.Commentaire = v));

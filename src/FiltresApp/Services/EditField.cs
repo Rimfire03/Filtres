@@ -1,4 +1,4 @@
-namespace FiltresApp.Services;
+﻿namespace FiltresApp.Services;
 
 public enum EditFieldType
 {
@@ -110,9 +110,14 @@ public class EditField
         SetValue = v => set(v is DateTime dt ? DateOnly.FromDateTime(dt) : null)
     };
 
-    public static EditField MonthsField(string label, Func<List<int>> get, Action<List<int>> set) => new()
+    /// <summary>Nombre de filtres déjà à changer chaque mois (index 0 = janvier) : sert à colorer les mois du champ
+    /// <see cref="EditFieldType.Months"/> (rouge : mois chargés, vert : mois peu chargés).</summary>
+    public int[]? MonthLoad { get; init; }
+
+    public static EditField MonthsField(string label, Func<List<int>> get, Action<List<int>> set, int[]? monthLoad = null) => new()
     {
         Label = label,
+        MonthLoad = monthLoad,
         Type = EditFieldType.Months,
         GetValue = () => get(),
         SetValue = v => set((List<int>)v!)
