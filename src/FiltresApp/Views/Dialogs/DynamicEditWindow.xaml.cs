@@ -111,6 +111,21 @@ public partial class DynamicEditWindow : Window
                         wrap.Children.Add(cb);
                     }
                     container.Children.Add(wrap);
+
+                    // Préréglages « 2 x par an », « 3 x par an », « 4 x par an » : une fenêtre demande le mois de départ et les
+                    // mois suivants se cochent aussitôt (aperçu en direct) ; « Annuler » rétablit la sélection d'avant.
+                    var presets = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 6, 0, 0) };
+                    presets.Children.Add(new TextBlock { Text = "Préréglages :", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) });
+                    foreach (var times in new[] { 2, 3, 4 })
+                    {
+                        var preset = times;
+                        var button = new Button { Content = $"{preset} x par an", Margin = new Thickness(0, 0, 6, 0), Padding = new Thickness(10, 3, 10, 3) };
+                        if (TryFindResource("SecondaryButton") is Style secondary) button.Style = secondary;
+                        button.Click += (_, _) => ApplyMonthsPreset(checkboxes, preset);
+                        presets.Children.Add(button);
+                    }
+                    container.Children.Add(presets);
+
                     _readers.Add(() =>
                     {
                         var selected = checkboxes.Where(c => c.IsChecked == true).Select(c => (int)c.Tag!).ToList();
@@ -207,5 +222,51 @@ public partial class DynamicEditWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    /// <summary>Préréglage « N fois par an » : demande le mois de départ dans une petite fenêtre et coche les mois
+    /// régulièrement espacés (tous les 12 / N mois) en direct. Annuler rétablit la sélection précédente.</summary>
+    private void ApplyMonthsPreset(List<CheckBox> checkboxes, int timesPerYear)
+    {
+        var fullNames = new[] { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
+        var before = checkboxes.Select(c => c.IsChecked == true).ToList();
+        var interval = 12 / timesPerYear;
+
+        var combo = new ComboBox { ItemsSource = fullNames, SelectedIndex = DateTime.Today.Month - 1, Margin = new Thickness(0, 6, 0, 10) };
+        var info = new TextBlock { TextWrapping = TextWrapping.Wrap };
+
+        void Refresh()
+        {
+            var start = Math.Max(0, combo.SelectedIndex);
+            var months = Enumerable.Range(0, timesPerYear).Select(i => (start + i * interval) % 12).OrderBy(m => m).ToList();
+            for (var i = 0; i < checkboxes.Count; i++) checkboxes[i].IsChecked = months.Contains(i);
+            info.Text = $"{timesPerYear} x par an, tous les {interval} mois : {string.Join(", ", months.Select(m => fullNames[m]))}.";
+        }
+
+        var ok = new Button { Content = "Appliquer", IsDefault = true, Width = 100, Margin = new Thickness(0, 0, 8, 0) };
+        var cancel = new Button { Content = "Annuler", IsCancel = true, Width = 100 };
+        if (TryFindResource("PrimaryButton") is Style primary) ok.Style = primary;
+        if (TryFindResource("SecondaryButton") is Style secondary) cancel.Style = secondary;
+
+        var panel = new StackPanel { Margin = new Thickness(16) };
+        panel.Children.Add(new TextBlock { Text = $"Mois de départ du calcul ({timesPerYear} x par an) :", FontWeight = FontWeights.SemiBold });
+        panel.Children.Add(combo);
+        panel.Children.Add(info);
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
+        buttons.Children.Add(ok);
+        buttons.Children.Add(cancel);
+        panel.Children.Add(buttons);
+
+        var window = new Window
+        {
+            Title = "Préréglage de périodicité", Content = panel, Owner = this, Width = 380, SizeToContent = SizeToContent.Height,
+            ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false
+        };
+        ok.Click += (_, _) => window.DialogResult = true;
+        combo.SelectionChanged += (_, _) => Refresh();
+        Refresh();   // aperçu immédiat dès l'ouverture
+
+        if (window.ShowDialog() != true)
+            for (var i = 0; i < checkboxes.Count; i++) checkboxes[i].IsChecked = before[i];
     }
 }
