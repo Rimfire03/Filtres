@@ -291,11 +291,17 @@ public partial class DynamicEditWindow : Window
         var hasLoad = monthLoad is { Length: 12 } && monthLoad.Max() > 0;
         double TotalLoad(int start) => Enumerable.Range(0, timesPerYear).Sum(i => monthLoad![(start + i * interval) % 12]);
 
+        // Couleur de chaque mois de départ : moyenne de charge de TOUS les mois que ce départ cocherait (ex. 2 x par an : un
+        // départ en janvier coche janvier et juillet, donc janvier et juillet ont la même couleur, celle de la moyenne des deux).
+        var averages = hasLoad
+            ? Enumerable.Range(0, 12).Select(s => TotalLoad(s) / timesPerYear).ToArray()
+            : new double[12];
+
         var combo = new ComboBox { Margin = new Thickness(0, 6, 0, 10) };
         for (var i = 0; i < 12; i++)
         {
-            var item = new ComboBoxItem { Content = hasLoad ? $"{fullNames[i]}  (charge {Fmt(monthLoad![i])})" : fullNames[i] };
-            if (hasLoad) item.Foreground = LoadBrush(LoadLevel(monthLoad!, i));
+            var item = new ComboBoxItem { Content = hasLoad ? $"{fullNames[i]}  (charge moyenne {Fmt(averages[i])})" : fullNames[i] };
+            if (hasLoad) item.Foreground = LoadBrush(LoadLevel(averages, i));
             combo.Items.Add(item);
         }
         var bestStart = hasLoad
@@ -310,7 +316,7 @@ public partial class DynamicEditWindow : Window
             var months = Enumerable.Range(0, timesPerYear).Select(i => (start + i * interval) % 12).OrderBy(m => m).ToList();
             for (var i = 0; i < checkboxes.Count; i++) checkboxes[i].IsChecked = months.Contains(i);
             info.Text = $"{timesPerYear} x par an, tous les {interval} mois : {string.Join(", ", months.Select(m => fullNames[m]))}."
-                        + (hasLoad ? $" Charge cumulée de ces mois : {Fmt(TotalLoad(start))}" + (start == bestStart ? " (meilleur départ)." : ".") : string.Empty);
+                        + (hasLoad ? $" Charge moyenne de ces mois : {Fmt(averages[start])}" + (start == bestStart ? " (meilleur départ)." : ".") : string.Empty);
         }
 
         var ok = new Button { Content = "Appliquer", IsDefault = true, Width = 100, Margin = new Thickness(0, 0, 8, 0) };
