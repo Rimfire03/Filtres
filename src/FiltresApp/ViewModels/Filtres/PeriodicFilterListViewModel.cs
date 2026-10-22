@@ -78,7 +78,22 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     /// grille. Par défaut, le mois calendaire du jour dans l'année choisie.</summary>
     [ObservableProperty] private ConsultedMonthOption? _selectedConsultedMonth;
 
-    partial void OnSelectedConsultedMonthChanged(ConsultedMonthOption? value) => RefreshRows();
+    partial void OnSelectedConsultedMonthChanged(ConsultedMonthOption? value)
+    {
+        RefreshRows();
+        if (RemainingOnly) ApplyFilters(); // la liste « reste à faire » dépend du mois du changement
+    }
+
+    /// <summary>Case « Reste à faire » du bandeau : n'affiche que les filtres non réalisés pour le mois du changement
+    /// choisi. Décochée par défaut et jamais mémorisée : elle redevient décochée à chaque ouverture de l'application.</summary>
+    [ObservableProperty] private bool _remainingOnly;
+
+    partial void OnRemainingOnlyChanged(bool value) => ApplyFilters();
+
+    /// <summary>Le filtre est-il réalisé pour le mois du changement choisi ?</summary>
+    private bool IsDoneForSelectedMonth(PeriodicFilter f) =>
+        SelectedConsultedMonth is { } c
+        && f.Replacements.Any(r => r.Month == c.Month && r.Year == c.Year && r.DateDone.HasValue);
 
     /// <summary>Numéro de jour du mois utilisé quand on coche "Réalisé" : la date enregistrée est ce jour dans
     /// le <see cref="SelectedConsultedMonth">mois consulté</see> (ramené au dernier jour du mois s'il n'existe
@@ -185,7 +200,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     {
         var filtered = _allFilters.Where(f =>
             (!MonthFilter.HasValue || f.GetPeriodicityMonths().Contains(MonthFilter.Value))
-            && HeaderFilter.Matches(f.Location, f.Dimension));
+            && HeaderFilter.Matches(f.Location, f.Dimension)
+            && (!RemainingOnly || !IsDoneForSelectedMonth(f)));
 
         // Trié explicitement ici (plutôt que via CollectionViewSource.SortDescriptions, qui ne garantit
         // pas l'ordre des groupes dans la grille) : rang de famille (Filtres à remplacer avant Filtres à
@@ -236,6 +252,7 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
     [RelayCommand]
     private void ResetFilter()
     {
+        RemainingOnly = false;
         MonthFilter = null;
         HeaderFilter.Reset();
     }
