@@ -26,12 +26,17 @@ public static class PeriodicViewRegistry
 
     public static IReadOnlyList<Entry> Entries => _entries;
 
+    /// <summary>Déclenché après chaque rechargement (vue créée, renommée, supprimée, site changé) : les écrans qui
+    /// listent les vues (Paramètres : compteur d'heures, coefficients de charge) se rafraîchissent.</summary>
+    public static event Action? Changed;
+
     public static void Load(FiltresDbContext db)
     {
         var views = db.PeriodicViews.AsNoTracking().OrderBy(v => v.Ordre).ThenBy(v => v.Nom).ToList();
         _entries = views.Count == 0
             ? Defaults()
             : views.Select(v => new Entry(v.Id, v.Nom, v.Category, v.ComputesNeed)).ToList();
+        Changed?.Invoke();
     }
 
     /// <summary>Titre courant de la vue d'origine <paramref name="category"/>.</summary>

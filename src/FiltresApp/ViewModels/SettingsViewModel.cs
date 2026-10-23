@@ -94,6 +94,12 @@ public partial class SettingsViewModel : ObservableObject
         InitializePrintColumns();
         InitializeCoverPage();
         InitializeMenus();
+        // Vue créée / renommée / supprimée ou site changé : les listes par vue se mettent à jour.
+        PeriodicViewRegistry.Changed += () => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            LoadHourCounterViews();
+            LoadLoadCoefficients();
+        });
         InitializeLastWrite();
         InitializeRowColors();
         ReloadAccess();
