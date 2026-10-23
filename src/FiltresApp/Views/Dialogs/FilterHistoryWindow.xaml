@@ -31,7 +31,7 @@
                 <DataGridTextColumn Header="Mois" Binding="{Binding MonthLabel}" Width="2*" ElementStyle="{StaticResource WrappingCellStyle}"/>
                 <DataGridTextColumn Header="Date du changement" Binding="{Binding DateLabel}" Width="1.6*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn x:Name="HoursColumn" Header="Compteur horaire" Binding="{Binding HoursLabel}" Width="1.4*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn x:Name="LifetimeColumn" Header="Durée de vie" Binding="{Binding LifetimeLabel}" Width="1.2*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <DataGridTextColumn x:Name="LifetimeColumn" Header="Durée d'utilisation&#10;de l'ancien filtre" Binding="{Binding LifetimeLabel}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
         </DataGrid>
 

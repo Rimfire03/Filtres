@@ -37,10 +37,12 @@ public partial class FilterHistoryWindow : Window
     /// <summary>Construit les lignes affichées (plus récent en premier) ; rappelée après la modification d'un compteur.</summary>
     private void BuildRows()
     {
-        // Durée de vie = compteur relevé à ce changement moins celui du changement précédent (ordre chronologique).
+        // Durée d'utilisation de l'ancien filtre (celui qu'on retire à ce changement) = compteur relevé à ce changement
+        // moins celui du dernier changement relevé avant lui, toutes années confondues (ordre chronologique). Un compteur
+        // plus petit que le précédent (compteur remplacé ou remis à zéro) ne donne pas de durée.
         var chronological = _replacements
             .Where(r => r.DateDone.HasValue)
-            .OrderBy(r => r.Year).ThenBy(r => r.Month)
+            .OrderBy(r => r.Year).ThenBy(r => r.Month).ThenBy(r => r.DateDone)
             .ToList();
         var lifetimes = new Dictionary<int, int>();
         int? previousHours = null;
