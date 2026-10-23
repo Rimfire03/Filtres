@@ -27,16 +27,39 @@ public partial class FilterHistoryWindow : Window
         var dimensionText = string.IsNullOrWhiteSpace(dimension) ? "-" : dimension;
         HeaderText.Text = $"{locationLabel} : {location}    —    Dimension : {dimensionText}";
 
-        _rows = replacements
+        // Durée de vie = compteur relevé à ce changement moins celui du changement précédent (ordre chronologique).
+        var chronological = replacements
             .Where(r => r.DateDone.HasValue)
-            .OrderByDescending(r => r.Year).ThenByDescending(r => r.Month)
+            .OrderBy(r => r.Year).ThenBy(r => r.Month)
+            .ToList();
+        var lifetimes = new Dictionary<int, int>();
+        int? previousHours = null;
+        foreach (var r in chronological)
+        {
+            if (r.OperatingHours is int h)
+            {
+                if (previousHours is int p && h >= p) lifetimes[r.Id] = h - p;
+                previousHours = h;
+            }
+        }
+
+        _rows = chronological
+            .AsEnumerable().Reverse()
             .Select(r => new MonthHistoryRow
             {
                 Id = r.Id,
                 MonthLabel = $"{ConsultedMonthOption.MonthLabels[r.Month - 1]} {r.Year}",
-                DateLabel = r.DateDone!.Value.ToString("dd/MM/yyyy")
+                DateLabel = r.DateDone!.Value.ToString("dd/MM/yyyy"),
+                HoursLabel = r.OperatingHours?.ToString() ?? "-",
+                LifetimeLabel = lifetimes.TryGetValue(r.Id, out var life) ? $"{life} h" : "-"
             })
             .ToList();
+
+        if (!chronological.Any(r => r.OperatingHours.HasValue))
+        {
+            HoursColumn.Visibility = Visibility.Collapsed;
+            LifetimeColumn.Visibility = Visibility.Collapsed;
+        }
 
         if (_rows.Count == 0)
         {
@@ -93,4 +116,6 @@ public class MonthHistoryRow
     public int Id { get; set; }
     public string MonthLabel { get; set; } = string.Empty;
     public string DateLabel { get; set; } = string.Empty;
+    public string HoursLabel { get; set; } = "-";
+    public string LifetimeLabel { get; set; } = "-";
 }

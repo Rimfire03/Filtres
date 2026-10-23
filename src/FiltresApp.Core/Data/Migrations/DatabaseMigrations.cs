@@ -57,7 +57,45 @@ internal static class DatabaseMigrations
         (31, "Module Suivi ZAC : valeurs mesurées d'un contrôle", AddZacMeasurements),
         (32, "Module Suivi ZAC : spécification et résultat texte des valeurs (import de rapport)", AddZacMeasurementSpecification),
         (33, "Coefficient de charge par vue de changement de filtre périodique", AddPeriodicViewLoadCoefficient),
+        (34, "Filtres G3 à laver déplacés dans une vue dédiée", MoveWashableG3FiltersToOwnView),
     };
+
+    /// <summary>Nom de la vue qui reçoit les filtres G3 « à laver ».</summary>
+    internal const string WashableViewName = "Filtres G3 à laver";
+
+    /// <summary>Pour chaque site ayant des filtres G3 dont la dimension contient « laver » : crée la vue « Filtres G3 à laver »
+    /// (vue libre, coefficient de charge 1) et y rattache ces filtres. Leurs remplacements (historique) restent liés au filtre,
+    /// donc conservés. Code portable (LINQ), utilisé aussi pour les serveurs. Idempotent.</summary>
+    private static void MoveWashableG3FiltersToOwnView(FiltresDbContext ctx)
+    {
+        var washable = ctx.PeriodicFilters.IgnoreQueryFilters()
+            .Where(f => f.Category == FilterCategory.G3 && f.Dimension.ToLower().Contains("laver"))
+            .ToList();
+        foreach (var bySite in washable.GroupBy(f => f.SiteId))
+        {
+            var siteId = bySite.Key;
+            var view = ctx.PeriodicViews.IgnoreQueryFilters().FirstOrDefault(v => v.SiteId == siteId && v.Nom == WashableViewName);
+            if (view is null)
+            {
+                var g3 = ctx.PeriodicViews.IgnoreQueryFilters().FirstOrDefault(v => v.SiteId == siteId && v.Category == FilterCategory.G3);
+                var order = (ctx.PeriodicViews.IgnoreQueryFilters().Where(v => v.SiteId == siteId).Max(v => (int?)v.Ordre) ?? -1) + 1;
+                view = new PeriodicView
+                {
+                    SiteId = siteId, Nom = WashableViewName, Icon = g3?.Icon ?? PeriodicView.DefaultIcon, Ordre = order,
+                    LocationLabel = g3?.LocationLabel ?? PeriodicView.DefaultLocationLabel, Category = null, LoadCoefficient = 1.0
+                };
+                ctx.PeriodicViews.Add(view);
+                ctx.SaveChanges();
+            }
+            foreach (var f in bySite)
+            {
+                f.PeriodicViewId = view.Id;
+                f.Category = FilterCategory.Custom;
+            }
+            ctx.SaveChanges();
+        }
+        ctx.ChangeTracker.Clear();
+    }
 
     /// <summary>Colonne « LoadCoefficient » des vues de changement de filtre périodique (1 par défaut). Idempotent.</summary>
     private static void AddPeriodicViewLoadCoefficient(FiltresDbContext ctx)
@@ -146,6 +184,7 @@ internal static class DatabaseMigrations
         (31, "Module Suivi ZAC : valeurs mesurées d'un contrôle", AddZacMeasurementsServer),
         (32, "Module Suivi ZAC : spécification et résultat texte des valeurs (import de rapport)", AddZacMeasurementSpecificationServer),
         (33, "Coefficient de charge par vue de changement de filtre périodique", AddPeriodicViewLoadCoefficientServer),
+        (34, "Filtres G3 à laver déplacés dans une vue dédiée", MoveWashableG3FiltersToOwnView),
     };
 
     /// <summary>Valeurs mesurées d'un contrôle du module « Suivi ZAC ». Idempotent.</summary>
