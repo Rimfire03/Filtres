@@ -545,7 +545,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             .AsNoTracking()
             .Where(r => r.PeriodicFilterId == filter.Id)
             .ToList();
-        App.Dialogs.ShowFilterHistory(_locationColumnLabel, filter.Location, filter.Dimension, replacements);
+        var tracksHours = App.Db.PeriodicViews.AsNoTracking().Any(v => v.Id == _viewId && v.TracksOperatingHours);
+        App.Dialogs.ShowFilterHistory(_locationColumnLabel, filter.Location, filter.Dimension, replacements, tracksHours);
         Reload();
     }
 

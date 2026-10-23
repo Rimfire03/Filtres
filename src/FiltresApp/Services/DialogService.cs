@@ -32,7 +32,7 @@ public interface IDialogService
     bool ShowConfirm(string title, string message);
     bool EditFields(string title, List<EditField> fields);
     List<FilterRef>? PickFilterLinks(List<FilterPickItem> items);
-    void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements);
+    void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements, bool tracksHours = false);
 
     /// <summary>Historique d'un élément suivi sans périodicité fixe ; la suppression d'un enregistrement
     /// depuis la fenêtre est immédiatement enregistrée en base.</summary>
@@ -64,9 +64,9 @@ public class DialogService : IDialogService
         return window.ShowDialog() == true ? window.SelectedFilters : null;
     }
 
-    public void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements)
+    public void ShowFilterHistory(string locationLabel, string location, string dimension, List<FilterReplacement> replacements, bool tracksHours = false)
     {
-        var window = new FilterHistoryWindow(locationLabel, location, dimension, replacements) { Owner = Application.Current.MainWindow };
+        var window = new FilterHistoryWindow(locationLabel, location, dimension, replacements, tracksHours) { Owner = Application.Current.MainWindow };
         window.ShowDialog();
     }
 

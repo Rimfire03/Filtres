@@ -18,17 +18,27 @@ namespace FiltresApp.Views.Dialogs;
 /// <see cref="PeriodicFilterListViewModel.SetReplacementDone"/>).</summary>
 public partial class FilterHistoryWindow : Window
 {
-    private readonly List<MonthHistoryRow> _rows;
+    private List<MonthHistoryRow> _rows = new();
+    private readonly List<FilterReplacement> _replacements;
+    private readonly bool _tracksHours;
 
-    public FilterHistoryWindow(string locationLabel, string location, string dimension, List<FilterReplacement> replacements)
+    public FilterHistoryWindow(string locationLabel, string location, string dimension, List<FilterReplacement> replacements, bool tracksHours = false)
     {
         InitializeComponent();
+        _replacements = replacements;
+        _tracksHours = tracksHours;
 
         var dimensionText = string.IsNullOrWhiteSpace(dimension) ? "-" : dimension;
         HeaderText.Text = $"{locationLabel} : {location}    —    Dimension : {dimensionText}";
 
+        BuildRows();
+    }
+
+    /// <summary>Construit les lignes affichées (plus récent en premier) ; rappelée après la modification d'un compteur.</summary>
+    private void BuildRows()
+    {
         // Durée de vie = compteur relevé à ce changement moins celui du changement précédent (ordre chronologique).
-        var chronological = replacements
+        var chronological = _replacements
             .Where(r => r.DateDone.HasValue)
             .OrderBy(r => r.Year).ThenBy(r => r.Month)
             .ToList();
@@ -55,11 +65,8 @@ public partial class FilterHistoryWindow : Window
             })
             .ToList();
 
-        if (!chronological.Any(r => r.OperatingHours.HasValue))
-        {
-            HoursColumn.Visibility = Visibility.Collapsed;
-            LifetimeColumn.Visibility = Visibility.Collapsed;
-        }
+        var showHours = _tracksHours || chronological.Any(r => r.OperatingHours.HasValue);
+        HoursColumn.Visibility = LifetimeColumn.Visibility = showHours ? Visibility.Visible : Visibility.Collapsed;
 
         if (_rows.Count == 0)
         {
@@ -68,7 +75,30 @@ public partial class FilterHistoryWindow : Window
             return;
         }
 
+        MonthsGrid.ItemsSource = null;
         MonthsGrid.ItemsSource = _rows;
+    }
+
+    /// <summary>Saisie du compteur horaire d'un enregistrement (clic droit sur la ligne). Vide = compteur effacé.</summary>
+    private void EditHours(MonthHistoryRow row)
+    {
+        if (!App.GuardWritable()) return;
+        var replacement = _replacements.FirstOrDefault(r => r.Id == row.Id);
+        if (replacement is null) return;
+
+        var hours = replacement.OperatingHours;
+        var fields = new List<EditField>
+        {
+            EditField.NullableInt("Compteur d'heures de fonctionnement", () => hours, v => hours = v)
+        };
+        if (!App.Dialogs.EditFields($"Compteur horaire : {row.MonthLabel}", fields)) return;
+
+        var tracked = App.Db.FilterReplacements.FirstOrDefault(r => r.Id == row.Id);
+        if (tracked is null) return;
+        tracked.OperatingHours = hours;
+        App.Db.SaveChanges();
+        replacement.OperatingHours = hours;
+        BuildRows();
     }
 
     /// <summary>Clic droit sur une ligne : affiche "Supprimer cet enregistrement" (construit ici plutôt
@@ -79,6 +109,12 @@ public partial class FilterHistoryWindow : Window
         MonthsGrid.SelectedItem = row;
 
         var menu = new ContextMenu { PlacementTarget = dgRow, Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint };
+        if (HoursColumn.Visibility == Visibility.Visible)
+        {
+            var editHours = new MenuItem { Header = "Modifier le compteur horaire...", IsEnabled = App.IsWritable };
+            editHours.Click += (_, _) => EditHours(row);
+            menu.Items.Add(editHours);
+        }
         var delete = new MenuItem { Header = "Supprimer cet enregistrement", IsEnabled = App.IsWritable };
         delete.Click += (_, _) => DeleteReplacement(row);
         menu.Items.Add(delete);
@@ -98,13 +134,8 @@ public partial class FilterHistoryWindow : Window
             App.Db.SaveChanges();
         }
 
-        _rows.Remove(row);
-        MonthsGrid.Items.Refresh();
-        if (_rows.Count == 0)
-        {
-            NoHistoryText.Visibility = Visibility.Visible;
-            MonthsGrid.Visibility = Visibility.Collapsed;
-        }
+        _replacements.RemoveAll(r => r.Id == row.Id);
+        BuildRows();
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
