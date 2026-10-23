@@ -433,6 +433,12 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
         };
         if (!App.Dialogs.EditFields($"Changement réalisé : {filter.Location}", fields)) return;
         SaveConsultedMonthReplacement(filter, DateForConsultedMonth(), refreshQuantity: true, hours, setHours: true);
+
+        if (hours is int h && SelectedConsultedMonth is { } c
+            && ReplacementTrackingService.LastReadingBefore(App.Db, filter.Id, c.Year, c.Month) is int last && h < last)
+            App.Dialogs.ShowMessage("Compteur horaire à vérifier",
+                $"Le compteur saisi ({h}) est inférieur au dernier relevé ({last}). La valeur est enregistrée : vérifiez les valeurs saisies " +
+                "(modifiables par clic droit dans l'historique).");
     }
 
     /// <summary>Bouton « Tout cocher » : marque comme réalisés, pour le mois consulté, tous les filtres actuellement

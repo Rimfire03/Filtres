@@ -12,6 +12,16 @@ public static class ReplacementTrackingService
     /// <summary>Filtre à périodicité : fixe (<paramref name="date"/> non nulle) ou efface (null) le
     /// remplacement du mois donné. Ne touche jamais aux autres mois / années. Une ligne créée reçoit la
     /// quantité <paramref name="quantity"/> ; une ligne existante aussi si <paramref name="refreshQuantity"/>.</summary>
+    /// <summary>Dernier compteur horaire relevé pour ce filtre avant le mois donné (toutes années confondues), null si
+    /// aucun. <paramref name="year"/>/<paramref name="month"/> exclus.</summary>
+    public static int? LastReadingBefore(FiltresDbContext db, int filterId, int year, int month) =>
+        db.FilterReplacements.AsNoTracking()
+            .Where(r => r.PeriodicFilterId == filterId && r.OperatingHours != null && r.DateDone != null
+                        && (r.Year < year || (r.Year == year && r.Month < month)))
+            .OrderByDescending(r => r.Year).ThenByDescending(r => r.Month)
+            .Select(r => r.OperatingHours)
+            .FirstOrDefault();
+
     public static List<FilterReplacement> SetMonthReplacement(FiltresDbContext db, int filterId, int year, int month,
         DateOnly? date, int quantity, bool refreshQuantity, int? operatingHours = null, bool setOperatingHours = false)
     {

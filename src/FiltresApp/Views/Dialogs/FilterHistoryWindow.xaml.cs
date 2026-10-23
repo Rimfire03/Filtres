@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using FiltresApp.Core.Models;
+using FiltresApp.Core.Services;
 using FiltresApp.Services;
 using FiltresApp.ViewModels;
 using FiltresApp.ViewModels.Filtres;
@@ -101,6 +102,10 @@ public partial class FilterHistoryWindow : Window
         App.Db.SaveChanges();
         replacement.OperatingHours = hours;
         BuildRows();
+
+        if (hours is int h && ReplacementTrackingService.LastReadingBefore(App.Db, tracked.PeriodicFilterId, tracked.Year, tracked.Month) is int last && h < last)
+            App.Dialogs.ShowMessage("Compteur horaire à vérifier",
+                $"Le compteur saisi ({h}) est inférieur au dernier relevé ({last}). La valeur est enregistrée : vérifiez les valeurs saisies.");
     }
 
     /// <summary>Clic droit sur une ligne : affiche "Supprimer cet enregistrement" (construit ici plutôt
