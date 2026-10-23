@@ -143,6 +143,8 @@ public partial class PeriodicFilterListViewModel : ObservableObject, IReloadable
             RefreshConsultedMonthOptions();
             RefreshRows();
         };
+        // Par défaut, le filtre par mois affiche le mois en cours.
+        MonthFilter = DateTime.Today.Month;
         Load();
     }
 
