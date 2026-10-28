@@ -164,6 +164,7 @@ public partial class App
         }
         DatabaseVersion = DbFactory.GetDatabaseVersion();
         Db = DbFactory.Create();
+        OrderNeedSettings.Load(Db);
         PeriodicViewRegistry.Load(Db);
         LoadCompanyLogo();
     }

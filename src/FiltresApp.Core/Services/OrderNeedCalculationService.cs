@@ -20,11 +20,9 @@ namespace FiltresApp.Core.Services;
 /// </summary>
 public static class OrderNeedCalculationService
 {
-    /// <summary>Août, Septembre, Octobre, Novembre, Décembre, Janvier, Février, Mars.</summary>
-    private static readonly int[] WindowSeptembre = { 8, 9, 10, 11, 12, 1, 2, 3 };
-
-    /// <summary>Février, Mars, Avril, Mai, Juin, Juillet, Août, Septembre.</summary>
-    private static readonly int[] WindowMars = { 2, 3, 4, 5, 6, 7, 8, 9 };
+    // Fenêtres d'origine (livraisons en septembre et mars, 2 mois de marge), maintenant calculées par
+    // OrderNeedSettings.Window selon le réglage du site : août à mars pour septembre, février à septembre pour mars.
+    // « Mars » = première livraison du réglage, « Septembre » = seconde (noms conservés pour les colonnes).
 
     public static int NeedForFilter(PeriodicFilter filter, int[] window)
     {
@@ -35,8 +33,21 @@ public static class OrderNeedCalculationService
         return filter.ChangedEvery15Days ? need * 2 : need;
     }
 
-    public static int NeedForFilterSeptembre(PeriodicFilter filter) => NeedForFilter(filter, WindowSeptembre);
-    public static int NeedForFilterMars(PeriodicFilter filter) => NeedForFilter(filter, WindowMars);
+    /// <summary>Mode « inventaire à chaque changement » : un changement + la marge en % d'un changement, arrondi au-dessus.</summary>
+    private static int NeedEveryChange(PeriodicFilter filter, OrderNeedSettings s) =>
+        (int)Math.Ceiling(filter.QuantityInPlace * (1 + s.SafetyPercent / 100.0));
+
+    public static int NeedForFilterSeptembre(PeriodicFilter filter)
+    {
+        var s = OrderNeedSettings.Current;
+        return s.Mode == OrderNeedMode.EveryChange ? NeedEveryChange(filter, s) : NeedForFilter(filter, s.Window(s.Delivery2, s.Delivery1));
+    }
+
+    public static int NeedForFilterMars(PeriodicFilter filter)
+    {
+        var s = OrderNeedSettings.Current;
+        return s.Mode == OrderNeedMode.EveryChange ? NeedEveryChange(filter, s) : NeedForFilter(filter, s.Window(s.Delivery1, s.Delivery2));
+    }
 
     public static int ComputeNeedSeptembre(IEnumerable<PeriodicFilter> filters) =>
         filters.Sum(f => NeedForFilterSeptembre(f));

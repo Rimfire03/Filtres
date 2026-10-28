@@ -86,6 +86,7 @@ public partial class App
         Db.CurrentSiteId = site.Id;
         DbFactory.SiteId = site.Id;
         Db.ChangeTracker.Clear();
+        OrderNeedSettings.Load(Db); // avant PeriodicViewRegistry.Load, dont l'événement Changed rafraîchit les Paramètres
         PeriodicViewRegistry.Load(Db);
         if (Settings.LastSiteId != site.Id)
         {

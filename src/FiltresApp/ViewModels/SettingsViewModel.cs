@@ -99,6 +99,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             LoadHourCounterViews();
             LoadLoadCoefficients();
+            LoadOrderNeed();
         });
         InitializeLastWrite();
         InitializeRowColors();
