@@ -47,7 +47,7 @@
             </DockPanel>
         </Border>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}"
+        <DataGrid x:Name="InventoryGrid" Grid.Row="3" ItemsSource="{Binding Source={StaticResource GroupedLines}}"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True" svc:ColumnChooser.Key="Inventaire" SelectedItem="{Binding SelectedLine}" IsReadOnly="True"
                   ContextMenuOpening="Grid_ContextMenuOpening">
             <DataGrid.Resources>
@@ -69,8 +69,7 @@
                 <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="1.3*" ElementStyle="{StaticResource CenteredCellStyle}" HeaderTemplate="{StaticResource DestinationFilterHeaderTemplate}"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Dimension}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
                 <DataGridTextColumn Header="Référence fournisseur" Binding="{Binding Notes}" Width="1.5*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Besoin mars (calculé)" Binding="{Binding NeedMars}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
-                <DataGridTextColumn Header="Besoin septembre (calculé)" Binding="{Binding NeedSeptembre}" Width="*" ElementStyle="{StaticResource CenteredCellStyle}"/>
+                <!-- Colonnes « Besoin ... (calculé) » : une par livraison du réglage du site, ajoutées par InventoryView.xaml.cs (RefreshNeedColumns). -->
                 <DataGridTemplateColumn Header="Inventaire" Width="0.8*" SortMemberPath="Inventaire">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -81,7 +80,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!-- Calculée : max(Besoin mars, Besoin septembre) - Inventaire (OrderLine.InventoryQuantity). -->
+                <!-- Calculée : max(besoins calculés) - Inventaire (OrderLine.InventoryQuantity). -->
                 <DataGridTextColumn x:Name="QuantityColumn" Header="Quantité" Binding="{Binding InventoryQuantity}" Width="0.7*" ElementStyle="{StaticResource CenteredCellStyle}"/>
             </DataGrid.Columns>
             <DataGrid.GroupStyle>

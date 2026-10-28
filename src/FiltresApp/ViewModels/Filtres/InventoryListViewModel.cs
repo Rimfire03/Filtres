@@ -54,13 +54,13 @@ public partial class InventoryListViewModel : OrderLineListViewModelBase
         Load();
     }
 
-    protected override string[] PrintHeaders { get; } =
-        { "Dimension", "Destination", "Type", "Référence fournisseur", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Inventaire", "Quantité" };
+    protected override string[] PrintHeaders => PrintableColumnsRegistry.InventoryColumns();
 
-    protected override string[] PrintRow(OrderLine l) => new[]
-    {
-        l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "", l.NeedMars?.ToString() ?? "", l.NeedSeptembre?.ToString() ?? "", l.Inventaire?.ToString() ?? "", l.InventoryQuantity?.ToString() ?? ""
-    };
+    protected override string[] PrintRow(OrderLine l) =>
+        new[] { l.Designation, l.Destination ?? "", l.Dimension ?? "", l.Notes ?? "" }
+            .Concat(l.Needs.Select(n => n?.ToString() ?? ""))
+            .Concat(new[] { l.Inventaire?.ToString() ?? "", l.InventoryQuantity?.ToString() ?? "" })
+            .ToArray();
 
     /// <summary>Le PDF de cet écran est aussi un bon de commande.</summary>
     protected override string PdfTitle => "Commande";

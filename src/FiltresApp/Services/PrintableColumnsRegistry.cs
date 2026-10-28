@@ -17,11 +17,17 @@ public static class PrintableColumnsRegistry
     private static readonly string[] FilterListsColumns =
         { "Lié", "Nom", "Dimension", "Type", "Qté en place", "Périodicité", "Prochaine échéance", "Dernier changement", "Réalisé", "Date du changement", "Nb remplacements", "Commentaire" };
 
-    public static readonly IReadOnlyList<PrintableScreen> All = new List<PrintableScreen>
+    /// <summary>Colonnes de l'écran Inventaire : les colonnes « Besoin ... (calculé) » suivent le réglage du site courant.</summary>
+    public static string[] InventoryColumns() =>
+        new[] { "Dimension", "Destination", "Type", "Référence fournisseur" }
+            .Concat(Core.Services.OrderNeedSettings.Current.NeedHeaders())
+            .Concat(new[] { "Inventaire", "Quantité" }).ToArray();
+
+    public static IReadOnlyList<PrintableScreen> All => new List<PrintableScreen>
     {
         new(FilterListsKey, "Listes de filtres (G4, G3, Charbon, F7 à H14 - toutes)", FilterListsColumns),
         new("Liste K7", "Liste K7", new[] { "Famille", "Lieu", "N° porte", "Changement réalisé", "Nb de filtres" }),
         new("Commande", "Commande", new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Besoin", "Quantité à commander" }),
-        new("Inventaire", "Inventaire", new[] { "Dimension", "Destination", "Type", "Référence fournisseur", "Besoin mars (calculé)", "Besoin septembre (calculé)", "Inventaire", "Quantité" })
+        new("Inventaire", "Inventaire", InventoryColumns())
     };
 }

@@ -195,16 +195,21 @@
                                 <RadioButton GroupName="OrderNeedMode" Content="Deux livraisons par an (date de livraison + mois de sécurité)"
                                              IsChecked="{Binding OrderDeliveryMode, Mode=TwoWay}" IsEnabled="{x:Static app:App.IsWritable}" Margin="0,0,0,6"/>
                                 <StackPanel Margin="24,0,0,10" IsEnabled="{Binding OrderDeliveryMode}">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                        <TextBlock Text="Première livraison en" VerticalAlignment="Center" Width="170"/>
-                                        <ComboBox Width="140" ItemsSource="{Binding OrderMonthChoices}" DisplayMemberPath="Value" SelectedValuePath="Key"
-                                                  SelectedValue="{Binding OrderDelivery1, Mode=TwoWay}"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                        <TextBlock Text="Seconde livraison en" VerticalAlignment="Center" Width="170"/>
-                                        <ComboBox Width="140" ItemsSource="{Binding OrderMonthChoices}" DisplayMemberPath="Value" SelectedValuePath="Key"
-                                                  SelectedValue="{Binding OrderDelivery2, Mode=TwoWay}"/>
-                                    </StackPanel>
+                                    <ItemsControl ItemsSource="{Binding OrderDeliveries}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <TextBlock Text="Livraison en" VerticalAlignment="Center" Width="170"/>
+                                                    <ComboBox Width="140" DisplayMemberPath="Value" SelectedValuePath="Key"
+                                                              ItemsSource="{Binding DataContext.OrderMonthChoices, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                              SelectedValue="{Binding Month, Mode=TwoWay}"/>
+                                                    <Button Content="Retirer" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Command="{Binding RemoveCommand}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="Ajouter une livraison" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,0,0,8"
+                                            Command="{Binding AddOrderDeliveryCommand}"/>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Mois de changement de sécurité" VerticalAlignment="Center" Width="170"/>
                                         <ComboBox Width="80" ItemsSource="{Binding SafetyMonthChoices}" SelectedItem="{Binding OrderSafetyMonths, Mode=TwoWay}"/>

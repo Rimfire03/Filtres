@@ -152,22 +152,19 @@ public class OrderLine : ISiteScoped
     [NotMapped]
     public bool UsesManualNeed => !UsesComputedNeed;
 
-    /// <summary>Besoin calculé pour l'inventaire de septembre (15/07 au 31/07), somme sur tous les
-    /// filtres rattachés. Uniquement pour les familles G4 plissé, G4 plan et G3 ; nul sinon ou tant
-    /// qu'aucun filtre n'est rattaché.</summary>
+    /// <summary>Besoins calculés, somme sur tous les filtres rattachés, un par livraison du réglage du site (Paramètres, « Commande »)
+    /// : voir <see cref="OrderNeedCalculationService.ComputeNeeds"/>. Uniquement pour les familles à besoin calculé ; vide sinon ou
+    /// tant qu'aucun filtre n'est rattaché.</summary>
     [NotMapped]
-    public int? NeedSeptembre => !UsesComputedNeed || FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedSeptembre(LinkedFilters);
+    public int?[] Needs => !UsesComputedNeed || FilterLinks.Count == 0
+        ? new int?[OrderNeedSettings.Current.NeedHeaders().Length]
+        : OrderNeedCalculationService.ComputeNeeds(LinkedFilters.ToList()).Select(n => (int?)n).ToArray();
 
-    /// <summary>Besoin calculé pour l'inventaire de mars (15/01 au 31/01), même règle que
-    /// <see cref="NeedSeptembre"/>.</summary>
-    [NotMapped]
-    public int? NeedMars => !UsesComputedNeed || FilterLinks.Count == 0 ? null : OrderNeedCalculationService.ComputeNeedMars(LinkedFilters);
-
-    /// <summary>Colonne "Besoin" de l'écran Commande : plus grand des deux besoins calculés pour les
-    /// familles G4 plissé, G4 plan et G3, besoin saisi (<see cref="ManualNeed"/>) pour les autres.</summary>
+    /// <summary>Colonne "Besoin" de l'écran Commande : plus grand des besoins calculés pour les familles à besoin calculé,
+    /// besoin saisi (<see cref="ManualNeed"/>) pour les autres.</summary>
     [NotMapped]
     public int? Need => UsesComputedNeed
-        ? NeedMars is null && NeedSeptembre is null ? null : Math.Max(NeedMars ?? 0, NeedSeptembre ?? 0)
+        ? Needs.All(n => n is null) ? null : Needs.Max(n => n ?? 0)
         : ManualNeed;
 
     /// <summary>Colonne "Quantité" de l'écran Inventaire et "Quantité à commander" de l'écran Commande :

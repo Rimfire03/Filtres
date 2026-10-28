@@ -18,6 +18,30 @@ public partial class InventoryView : UserControl
         _inventaireCell = new InlineIntCell(
             box => box.DataContext is OrderLine line && DataContext is InventoryListViewModel vm && vm.SetInventaire(line, box.Text),
             QuantityColumn);
+        Loaded += (_, _) => RefreshNeedColumns();
+    }
+
+    private readonly List<DataGridColumn> _needColumns = new();
+
+    /// <summary>Une colonne « Besoin ... (calculé) » par besoin du réglage du site courant (Paramètres, « Commande »), placée avant
+    /// « Inventaire » ; reconstruite à chaque affichage de l'écran puisque le réglage peut avoir changé.</summary>
+    private void RefreshNeedColumns()
+    {
+        foreach (var c in _needColumns) InventoryGrid.Columns.Remove(c);
+        _needColumns.Clear();
+        var headers = Core.Services.OrderNeedSettings.Current.NeedHeaders();
+        for (var i = 0; i < headers.Length; i++)
+        {
+            var column = new DataGridTextColumn
+            {
+                Header = headers[i],
+                Binding = new System.Windows.Data.Binding($"Needs[{i}]"),
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+                ElementStyle = (Style)FindResource("CenteredCellStyle")
+            };
+            InventoryGrid.Columns.Insert(4 + i, column);
+            _needColumns.Add(column);
+        }
     }
 
     private void InventaireBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _inventaireCell.GotFocus((TextBox)sender);

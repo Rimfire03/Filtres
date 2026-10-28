@@ -22,7 +22,6 @@ public static class OrderNeedCalculationService
 {
     // Fenêtres d'origine (livraisons en septembre et mars, 2 mois de marge), maintenant calculées par
     // OrderNeedSettings.Window selon le réglage du site : août à mars pour septembre, février à septembre pour mars.
-    // « Mars » = première livraison du réglage, « Septembre » = seconde (noms conservés pour les colonnes).
 
     public static int NeedForFilter(PeriodicFilter filter, int[] window)
     {
@@ -37,21 +36,13 @@ public static class OrderNeedCalculationService
     private static int NeedEveryChange(PeriodicFilter filter, OrderNeedSettings s) =>
         (int)Math.Ceiling(filter.QuantityInPlace * (1 + s.SafetyPercent / 100.0));
 
-    public static int NeedForFilterSeptembre(PeriodicFilter filter)
+    /// <summary>Besoins calculés (somme sur les filtres), dans l'ordre de <see cref="OrderNeedSettings.NeedHeaders"/> : un par livraison
+    /// du réglage du site, ou un seul en mode inventaire à chaque changement.</summary>
+    public static int[] ComputeNeeds(IReadOnlyCollection<PeriodicFilter> filters)
     {
         var s = OrderNeedSettings.Current;
-        return s.Mode == OrderNeedMode.EveryChange ? NeedEveryChange(filter, s) : NeedForFilter(filter, s.Window(s.Delivery2, s.Delivery1));
+        return s.Mode == OrderNeedMode.EveryChange
+            ? [filters.Sum(f => NeedEveryChange(f, s))]
+            : s.Deliveries.Select(d => { var window = s.Window(d); return filters.Sum(f => NeedForFilter(f, window)); }).ToArray();
     }
-
-    public static int NeedForFilterMars(PeriodicFilter filter)
-    {
-        var s = OrderNeedSettings.Current;
-        return s.Mode == OrderNeedMode.EveryChange ? NeedEveryChange(filter, s) : NeedForFilter(filter, s.Window(s.Delivery1, s.Delivery2));
-    }
-
-    public static int ComputeNeedSeptembre(IEnumerable<PeriodicFilter> filters) =>
-        filters.Sum(f => NeedForFilterSeptembre(f));
-
-    public static int ComputeNeedMars(IEnumerable<PeriodicFilter> filters) =>
-        filters.Sum(f => NeedForFilterMars(f));
 }

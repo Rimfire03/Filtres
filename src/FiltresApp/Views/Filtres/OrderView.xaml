@@ -84,7 +84,7 @@
                                             <DataTrigger Binding="{Binding UsesManualNeed}" Value="False">
                                                 <Setter Property="IsReadOnly" Value="True"/>
                                                 <Setter Property="Focusable" Value="False"/>
-                                                <Setter Property="ToolTip" Value="Besoin calculé (max de Besoin mars / septembre) : non modifiable pour les familles G4 plissés, G4 plan et G3"/>
+                                                <Setter Property="ToolTip" Value="Besoin calculé (plus grand des besoins de l'écran Inventaire) : non modifiable pour les familles G4 plissés, G4 plan et G3"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
