@@ -33,8 +33,8 @@ public static class OrderNeedCalculationService
     }
 
     /// <summary>Mode « inventaire à chaque changement » : un changement + la marge en % d'un changement, arrondi au-dessus.</summary>
-    private static int NeedEveryChange(PeriodicFilter filter, OrderNeedSettings s) =>
-        (int)Math.Ceiling(filter.QuantityInPlace * (1 + s.SafetyPercent / 100.0));
+    private static int NeedEveryChange(IReadOnlyCollection<PeriodicFilter> filters, OrderNeedSettings s) =>
+        (int)Math.Ceiling(filters.Sum(f => f.QuantityInPlace) * (1 + s.SafetyPercent / 100.0) - 1e-9);
 
     /// <summary>Besoins calculés (somme sur les filtres), dans l'ordre de <see cref="OrderNeedSettings.NeedHeaders"/> : un par livraison
     /// du réglage du site, ou un seul en mode inventaire à chaque changement.</summary>
@@ -42,7 +42,7 @@ public static class OrderNeedCalculationService
     {
         var s = OrderNeedSettings.Current;
         return s.Mode == OrderNeedMode.EveryChange
-            ? [filters.Sum(f => NeedEveryChange(f, s))]
+            ? [NeedEveryChange(filters, s)]
             : s.Deliveries.Select(d => { var window = s.Window(d); return filters.Sum(f => NeedForFilter(f, window)); }).ToArray();
     }
 }
