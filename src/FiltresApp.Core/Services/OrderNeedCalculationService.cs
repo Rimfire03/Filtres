@@ -34,7 +34,7 @@ public static class OrderNeedCalculationService
 
     /// <summary>Mode « inventaire à chaque changement » : un changement + la marge en % d'un changement, arrondi au-dessus.</summary>
     private static int NeedEveryChange(IReadOnlyCollection<PeriodicFilter> filters, OrderNeedSettings s) =>
-        (int)Math.Ceiling(filters.Sum(f => f.QuantityInPlace) * (1 + s.SafetyPercent / 100.0) - 1e-9);
+        (filters.Sum(f => f.QuantityInPlace) * (100 + s.SafetyPercent) + 99) / 100; // entier supérieur, calcul exact (pas de flottant)
 
     /// <summary>Besoins calculés (somme sur les filtres), dans l'ordre de <see cref="OrderNeedSettings.NeedHeaders"/> : un par livraison
     /// du réglage du site, ou un seul en mode inventaire à chaque changement.</summary>
