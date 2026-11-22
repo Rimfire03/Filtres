@@ -1,5 +1,7 @@
 ﻿# Suivi maintenance filtres à air
 
+[![Release](https://img.shields.io/github/v/release/Rimfire03/Filtres)](https://github.com/Rimfire03/Filtres/releases/latest) [![Téléchargements](https://img.shields.io/github/downloads/Rimfire03/Filtres/total)](https://github.com/Rimfire03/Filtres/releases) ![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white) ![WPF](https://img.shields.io/badge/UI-WPF-5C2D91) ![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows&logoColor=white)
+
 Application Windows (.NET 8 / WPF) de suivi de maintenance des filtres à air, courroies et
 roulements. Stockage SQLite portable, exécutable unique autonome (aucune installation requise).
 
